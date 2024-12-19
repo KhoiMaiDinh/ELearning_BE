@@ -18,7 +18,9 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/account/tsconfig.app.json",
-        "assets": ["proto/*.proto"],
+        "assets": [
+          "proto/*.proto"
+        ],
         "watchAssets": true
       }
     },
@@ -29,7 +31,9 @@
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/api/tsconfig.app.json",
-        "assets": ["proto/*.proto"],
+        "assets": [
+          "proto/*.proto"
+        ],
         "watchAssets": true
       }
     },
@@ -40,6 +44,15 @@
       "sourceRoot": "libs/common/src",
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "database": {
+      "type": "library",
+      "root": "libs/database",
+      "entryFile": "index",
+      "sourceRoot": "libs/database/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/database/tsconfig.lib.json"
       }
     }
   }

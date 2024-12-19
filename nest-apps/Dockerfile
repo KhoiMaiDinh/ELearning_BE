@@ -20,6 +20,7 @@ RUN chown -R node:node /app
 
 
 COPY --chown=node:node package*.json ./
+# COPY --chown=node:node .husky ./.husky
 
 # Install all dependencies (including devDependencies)
 RUN pnpm install
@@ -40,7 +41,7 @@ WORKDIR /app
 
 COPY --chown=node:node package*.json ./
 COPY --chown=node:node --from=development /app/node_modules ./node_modules
-COPY --chown=node:node --from=development /app/apps ./apps
+COPY --chown=node:node --from=development /app/apps/${APP} ./apps/${APP}
 COPY --chown=node:node --from=development /app/libs ./libs
 COPY --chown=node:node --from=development /app/proto ./proto
 COPY --chown=node:node --from=development /app/tsconfig.json ./tsconfig.json

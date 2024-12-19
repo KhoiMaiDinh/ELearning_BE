@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
+import generateModulesSet from './utils/modules-set';
 
 @Module({
-  imports: [UsersModule],
-  controllers: [],
-  providers: [],
+  imports: generateModulesSet(),
 })
 export class AccountModule {}

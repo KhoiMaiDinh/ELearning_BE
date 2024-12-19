@@ -18,12 +18,12 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@app/common": [
-        "libs/common/src"
-      ],
-      "@app/common/*": [
-        "libs/common/src/*"
-      ]
+      "@app/common": ["libs/common/src"],
+      "@app/common/*": ["libs/common/src/*"],
+      "@app/database": ["libs/database/src"],
+      "@app/database/*": ["libs/database/src/*"],
+      "@app/account": ["apps/account"],
+      "@app/account/*": ["apps/account/*"]
     }
   }
 }

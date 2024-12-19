@@ -3,9 +3,16 @@
 *Dockerfile*
 *docker-compose*
 node_modules
-.dockerignore
 dist
 
+.gitignore
+.prettierrc
+eslint.config.mjs
+lint-staged.config.mjs
+pnpm-lock.yaml
+README.node_modules
+.commitlintrc.json
+.dockerignore
 kubernetes
 iac
 graphs
