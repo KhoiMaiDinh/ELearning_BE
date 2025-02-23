@@ -55,6 +55,9 @@ describe('setupSwagger', () => {
     setupSwagger(app);
     expect(setupSpy).toHaveBeenCalledWith('api-docs', app, expect.any(Object), {
       customSiteTitle: 'TestApp',
+      swaggerOptions: {
+        withCredentials: true,
+      },
     });
   });
 });

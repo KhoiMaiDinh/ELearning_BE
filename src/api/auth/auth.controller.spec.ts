@@ -9,7 +9,6 @@ describe('AuthController', () => {
   beforeAll(async () => {
     authServiceValue = {
       emailLogIn: jest.fn(),
-      emailRegister: jest.fn(),
       logout: jest.fn(),
       refreshToken: jest.fn(),
     };

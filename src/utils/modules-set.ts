@@ -147,6 +147,7 @@ function generateModulesSet(): ModuleMetadata['imports'] {
         dbModule,
         i18nModule,
         loggerModule,
+        MailModule,
       ];
       break;
     case 'background':
