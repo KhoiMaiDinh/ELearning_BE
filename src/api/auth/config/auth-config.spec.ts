@@ -177,4 +177,76 @@ describe('AuthConfig', () => {
       await expect(async () => await authConfig()).rejects.toThrow(Error);
     });
   });
+
+  describe('googleClientID', () => {
+    it('should return the value of AUTH_GOOGLE_CLIENT_ID', async () => {
+      process.env.AUTH_GOOGLE_CLIENT_ID = 'id';
+      const config = await authConfig();
+      expect(config.confirmEmailExpires).toBe('id');
+    });
+
+    it('should throw an error when AUTH_GOOGLE_CLIENT_ID is an empty', async () => {
+      process.env.AUTH_GOOGLE_CLIENT_ID = '';
+      await expect(async () => await authConfig()).rejects.toThrow(Error);
+    });
+
+    it('should throw an error when AUTH_GOOGLE_CLIENT_ID is not set', async () => {
+      delete process.env.AUTH_GOOGLE_CLIENT_ID;
+      await expect(async () => await authConfig()).rejects.toThrow(Error);
+    });
+  });
+
+  describe('googleClientSecret', () => {
+    it('should return the value of AUTH_GOOGLE_CLIENT_SECRET', async () => {
+      process.env.AUTH_GOOGLE_CLIENT_SECRET = 'id';
+      const config = await authConfig();
+      expect(config.confirmEmailExpires).toBe('id');
+    });
+
+    it('should throw an error when AUTH_GOOGLE_CLIENT_SECRET is an empty', async () => {
+      process.env.AUTH_GOOGLE_CLIENT_SECRET = '';
+      await expect(async () => await authConfig()).rejects.toThrow(Error);
+    });
+
+    it('should throw an error when AUTH_GOOGLE_CLIENT_SECRET is not set', async () => {
+      delete process.env.AUTH_GOOGLE_CLIENT_SECRET;
+      await expect(async () => await authConfig()).rejects.toThrow(Error);
+    });
+  });
+
+  describe('facebookAppID', () => {
+    it('should return the value of AUTH_FACEBOOK_APP_ID', async () => {
+      process.env.AUTH_FACEBOOK_APP_ID = 'id';
+      const config = await authConfig();
+      expect(config.confirmEmailExpires).toBe('id');
+    });
+
+    it('should throw an error when AUTH_FACEBOOK_APP_ID is an empty', async () => {
+      process.env.AUTH_FACEBOOK_APP_ID = '';
+      await expect(async () => await authConfig()).rejects.toThrow(Error);
+    });
+
+    it('should throw an error when AUTH_FACEBOOK_APP_ID is not set', async () => {
+      delete process.env.AUTH_FACEBOOK_APP_ID;
+      await expect(async () => await authConfig()).rejects.toThrow(Error);
+    });
+  });
+
+  describe('facebookClientSecret', () => {
+    it('should return the value of AUTH_FACEBOOK_CLIENT_SECRET', async () => {
+      process.env.AUTH_FACEBOOK_CLIENT_SECRET = 'id';
+      const config = await authConfig();
+      expect(config.confirmEmailExpires).toBe('id');
+    });
+
+    it('should throw an error when AUTH_FACEBOOK_CLIENT_SECRET is an empty', async () => {
+      process.env.AUTH_FACEBOOK_CLIENT_SECRET = '';
+      await expect(async () => await authConfig()).rejects.toThrow(Error);
+    });
+
+    it('should throw an error when AUTH_FACEBOOK_CLIENT_SECRET is not set', async () => {
+      delete process.env.AUTH_FACEBOOK_CLIENT_SECRET;
+      await expect(async () => await authConfig()).rejects.toThrow(Error);
+    });
+  });
 });
