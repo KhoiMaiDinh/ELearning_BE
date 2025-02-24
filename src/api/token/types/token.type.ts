@@ -1,4 +1,4 @@
-import { Branded } from '@/common/index';
+import { Branded } from '@/common';
 
 export type Token = Branded<
   {

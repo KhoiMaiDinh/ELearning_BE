@@ -1,15 +1,8 @@
-import { AllConfigType } from '@/config/config.type';
+import { ErrorDetailDto, ErrorDto } from '@/common';
+import { AllConfigType } from '@/config';
+import { constraintErrors, ErrorCode } from '@/constants';
+import { ValidationException } from '@/exceptions';
 import { I18nTranslations } from '@/generated/i18n.generated';
-// import {
-//   constraintErrors,
-//   ErrorCode,
-//   ErrorDetailDto,
-//   ErrorDto,
-//   ValidationException,
-// } from '@khelearning/common';
-import { ErrorDetailDto, ErrorDto } from '@/common/index';
-import { constraintErrors, ErrorCode } from '@/constants/index';
-import { ValidationException } from '@/exceptions/index';
 import {
   type ArgumentsHost,
   Catch,

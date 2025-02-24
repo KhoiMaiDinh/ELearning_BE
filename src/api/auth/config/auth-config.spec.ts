@@ -182,7 +182,7 @@ describe('AuthConfig', () => {
     it('should return the value of AUTH_GOOGLE_CLIENT_ID', async () => {
       process.env.AUTH_GOOGLE_CLIENT_ID = 'id';
       const config = await authConfig();
-      expect(config.confirmEmailExpires).toBe('id');
+      expect(config.googleClientID).toBe('id');
     });
 
     it('should throw an error when AUTH_GOOGLE_CLIENT_ID is an empty', async () => {
@@ -200,7 +200,7 @@ describe('AuthConfig', () => {
     it('should return the value of AUTH_GOOGLE_CLIENT_SECRET', async () => {
       process.env.AUTH_GOOGLE_CLIENT_SECRET = 'id';
       const config = await authConfig();
-      expect(config.confirmEmailExpires).toBe('id');
+      expect(config.googleClientSecret).toBe('id');
     });
 
     it('should throw an error when AUTH_GOOGLE_CLIENT_SECRET is an empty', async () => {
@@ -218,7 +218,7 @@ describe('AuthConfig', () => {
     it('should return the value of AUTH_FACEBOOK_APP_ID', async () => {
       process.env.AUTH_FACEBOOK_APP_ID = 'id';
       const config = await authConfig();
-      expect(config.confirmEmailExpires).toBe('id');
+      expect(config.facebookAppID).toBe('id');
     });
 
     it('should throw an error when AUTH_FACEBOOK_APP_ID is an empty', async () => {
@@ -236,7 +236,7 @@ describe('AuthConfig', () => {
     it('should return the value of AUTH_FACEBOOK_CLIENT_SECRET', async () => {
       process.env.AUTH_FACEBOOK_CLIENT_SECRET = 'id';
       const config = await authConfig();
-      expect(config.confirmEmailExpires).toBe('id');
+      expect(config.facebookClientSecret).toBe('id');
     });
 
     it('should throw an error when AUTH_FACEBOOK_CLIENT_SECRET is an empty', async () => {

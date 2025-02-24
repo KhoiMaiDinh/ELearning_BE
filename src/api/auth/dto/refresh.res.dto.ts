@@ -1,4 +1,4 @@
-import { NumberField, StringField } from '@/decorators/index';
+import { NumberField, StringField } from '@/decorators';
 
 export class RefreshRes {
   @StringField()

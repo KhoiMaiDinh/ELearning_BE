@@ -1,6 +1,6 @@
-import { AllConfigType } from '@/config/config.type';
-import { ErrorCode } from '@/constants/index';
-import { UnauthorizedException } from '@/exceptions/index';
+import { AllConfigType } from '@/config';
+import { ErrorCode } from '@/constants';
+import { UnauthorizedException } from '@/exceptions';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

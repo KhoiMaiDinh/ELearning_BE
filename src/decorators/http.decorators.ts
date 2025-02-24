@@ -1,4 +1,5 @@
-import { ErrorDto } from '@/common/index';
+import { ErrorDto } from '@/common';
+import { CookiesEnum } from '@/constants';
 import {
   HttpCode,
   HttpStatus,
@@ -16,7 +17,6 @@ import {
   ApiSecurity,
 } from '@nestjs/swagger';
 import { STATUS_CODES } from 'http';
-import { CookiesEnum } from '../constants/cookie.constant';
 import { Public } from './public.decorator';
 import { ApiPaginatedResponse } from './swagger.decorators';
 
@@ -90,7 +90,7 @@ export const ApiAuth = (options: IApiAuthOptions = {}): MethodDecorator => {
     description: options?.description ?? 'OK',
     paginationType: options.paginationType || 'offset',
   };
-  const auths = options.auths || ['cookie'];
+  const auths = options.auths || ['jwt'];
 
   const errorResponses = (options.errorResponses || defaultErrorResponses)?.map(
     (statusCode) =>

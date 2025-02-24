@@ -1,7 +1,7 @@
 import {
   OffsetPaginationDto,
   PageOffsetOptionsDto as PageOptionsDto,
-} from '@/common/index';
+} from '@/common';
 import { SelectQueryBuilder } from 'typeorm';
 
 export async function paginate<T>(

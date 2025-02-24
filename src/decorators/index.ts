@@ -3,6 +3,7 @@ export * from './cookie.decorator';
 export * from './current-user.decorator';
 export * from './field.decorators';
 export * from './http.decorators';
+export * from './permission.decorator';
 export * from './public.decorator';
 export * from './short-id.decorator';
 export * from './swagger.decorators';

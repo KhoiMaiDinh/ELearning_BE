@@ -1,4 +1,4 @@
-import { Uuid } from '@/common/index';
+import { Uuid } from '@/common';
 
 export type JwtRefreshPayloadType = {
   sessionId: Uuid;

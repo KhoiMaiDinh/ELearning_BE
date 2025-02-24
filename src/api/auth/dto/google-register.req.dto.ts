@@ -1,4 +1,4 @@
-import { EmailField, StringField } from '@/decorators/index';
+import { EmailField, StringField } from '@/decorators';
 
 export class GoogleRegisterReq {
   @EmailField()

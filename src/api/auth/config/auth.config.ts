@@ -1,4 +1,4 @@
-import { IsMs } from '@/decorators/index';
+import { IsMs } from '@/decorators';
 import validateConfig from '@/utils/validate-config';
 import { registerAs } from '@nestjs/config';
 import { IsNotEmpty, IsString } from 'class-validator';

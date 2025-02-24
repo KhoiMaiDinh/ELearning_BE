@@ -1,6 +1,6 @@
-import { Nanoid } from '@/common/index';
+import { UserRepository } from '@/api/user';
+import { Nanoid } from '@/common';
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../user/entities/user.repository';
 import { InstructorRes } from './dto/instructor.res.dto';
 import { RegisterAsInstructorReq } from './dto/register-as-instructor.req.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';

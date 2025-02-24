@@ -1,5 +1,6 @@
 export * from './dto/error-detail.dto';
 export * from './dto/error.dto';
+export * from './dto/success-basic.dto';
 
 export * from './dto/cursor-pagination/cursor-pagination.dto';
 export * from './dto/cursor-pagination/page-options.dto';

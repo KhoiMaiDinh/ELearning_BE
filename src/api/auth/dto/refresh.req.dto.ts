@@ -1,4 +1,4 @@
-import { TokenField } from '@/decorators/index';
+import { TokenField } from '@/decorators';
 
 export class RefreshReq {
   @TokenField()

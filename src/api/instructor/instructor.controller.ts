@@ -1,6 +1,5 @@
-import { Nanoid } from '@/common/index';
-import { CurrentUser } from '@/decorators/current-user.decorator';
-import { ApiAuth } from '@/decorators/http.decorators';
+import { Nanoid } from '@/common';
+import { ApiAuth, CurrentUser } from '@/decorators';
 import {
   Body,
   Controller,

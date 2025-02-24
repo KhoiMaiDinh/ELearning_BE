@@ -1,4 +1,4 @@
-import { StringField } from '@/decorators/index';
+import { StringField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()

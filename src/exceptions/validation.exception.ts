@@ -1,4 +1,4 @@
-import { ErrorCode } from '@/constants/index';
+import { ErrorCode } from '@/constants';
 import { BadRequestException } from '@nestjs/common';
 
 /**

@@ -1,4 +1,4 @@
-import { StringField, StringFieldOptional } from '@/decorators/index';
+import { StringField, StringFieldOptional } from '@/decorators';
 
 export class CreatePostReqDto {
   @StringField()
