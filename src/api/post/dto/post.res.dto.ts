@@ -1,12 +1,12 @@
-import { UserRes } from '@/api/user/dto/user.res.dto';
-import { WrapperType } from '@/common/index';
+import { UserRes } from '@/api/user';
+import { WrapperType } from '@/common';
 import {
   ClassField,
   DateField,
   StringField,
   StringFieldOptional,
   UUIDField,
-} from '@/decorators/index';
+} from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()

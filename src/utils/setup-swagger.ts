@@ -10,7 +10,7 @@ function setupSwagger(app: INestApplication) {
 
   const config = new DocumentBuilder()
     .setTitle(appName)
-    .setDescription('Auth Service APIs')
+    .setDescription('Nova Up')
     .setVersion('1.0')
     .addBearerAuth()
     .addServer(

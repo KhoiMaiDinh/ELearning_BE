@@ -1,29 +1,31 @@
-import { RoleRepository } from '@/api/role/entities/role.repository';
-import { TokenService } from '@/api/token/token.service';
-import { JwtPayloadType } from '@/api/token/types';
-import { UserEntity } from '@/api/user/entities/user.entity';
-import { IEmailJob, IVerifyEmailJob } from '@/common/index';
-import { AllConfigType } from '@/config/config.type';
-import { SYSTEM_USER_ID } from '@/constants/app.constant';
-import { CacheKey } from '@/constants/cache.constant';
-import { ErrorCode } from '@/constants/error-code.constant';
-import { JobName, QueueName } from '@/constants/job.constant';
-import { RegisterMethod } from '@/constants/register-method.enum';
-import { DefaultRole } from '@/constants/role.constant';
-import { NotFoundException } from '@/exceptions/not-found.exception';
-import { RequestThrottledException } from '@/exceptions/request-throttled.exception';
-import { ValidationException } from '@/exceptions/validation.exception';
+import { RoleRepository } from '@/api/role';
+import { JwtPayloadType, TokenService } from '@/api/token';
+import { UserEntity, UserRepository } from '@/api/user';
+import { IEmailJob, IVerifyEmailJob } from '@/common';
+import { AllConfigType } from '@/config';
+import {
+  CacheKey,
+  DefaultRole,
+  ErrorCode,
+  JobName,
+  QueueName,
+  RegisterMethod,
+  SYSTEM_USER_ID,
+} from '@/constants';
+import {
+  NotFoundException,
+  RequestThrottledException,
+  ValidationException,
+} from '@/exceptions';
 import { createCacheKey } from '@/utils/cache.util';
 import { InjectQueue } from '@nestjs/bullmq';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
 import ms from 'ms';
-import { Repository } from 'typeorm';
 import * as DTO from '../dto';
 
 @Injectable()
@@ -35,8 +37,7 @@ export class RegistrationService {
     private readonly emailQueue: Queue<IEmailJob, any, string>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private readonly userRepository: UserRepository,
     private readonly roleRepository: RoleRepository,
   ) {}
 

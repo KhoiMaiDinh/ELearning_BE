@@ -1,15 +1,18 @@
-import { UserRepository } from '@/api/user/entities/user.repository';
-import { IEmailJob, IVerifyEmailJob } from '@/common/index';
-import { AllConfigType } from '@/config/config.type';
-import { SYSTEM_USER_ID } from '@/constants/app.constant';
-import { CacheKey } from '@/constants/cache.constant';
-import { ErrorCode } from '@/constants/error-code.constant';
-import { JobName, QueueName } from '@/constants/job.constant';
-import { Permission } from '@/constants/permission.constant';
-import { RegisterMethod } from '@/constants/register-method.enum';
-import { RequestThrottledException } from '@/exceptions/request-throttled.exception';
-import { createCacheKey } from '@/utils/cache.util';
-import { verifyPassword } from '@/utils/password.util';
+import { JwtPayloadType, TokenService } from '@/api/token';
+import { SessionEntity, UserEntity, UserRepository } from '@/api/user';
+import { IEmailJob, IVerifyEmailJob } from '@/common';
+import { AllConfigType } from '@/config';
+import {
+  CacheKey,
+  ErrorCode,
+  JobName,
+  Permission,
+  QueueName,
+  RegisterMethod,
+  SYSTEM_USER_ID,
+} from '@/constants';
+import { RequestThrottledException } from '@/exceptions';
+import { createCacheKey, verifyPassword } from '@/utils';
 import { InjectQueue } from '@nestjs/bullmq';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
@@ -20,16 +23,11 @@ import {
 } from '@nestjs/common';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
 import ms from 'ms';
-import { TokenService } from '../../token/token.service';
-import { JwtPayloadType } from '../../token/types';
-import { SessionEntity } from '../../user/entities/session.entity';
-import { UserEntity } from '../../user/entities/user.entity';
 import * as DTO from '../dto';
 import { OAuthService } from './oauth.service';
 
@@ -39,7 +37,6 @@ export class AuthService {
     private readonly configService: ConfigService<AllConfigType>,
     private readonly tokenService: TokenService,
     private readonly OAuthService: OAuthService,
-    @InjectRepository(UserEntity)
     private readonly userRepository: UserRepository,
     @InjectQueue(QueueName.EMAIL)
     private readonly emailQueue: Queue<IEmailJob, any, string>,

@@ -1,7 +1,6 @@
-import { Nanoid } from '@/common/index';
-import { ErrorCode } from '@/constants/error-code.constant';
-import { RegisterMethod } from '@/constants/register-method.enum';
-import { NotFoundException } from '@/exceptions/not-found.exception';
+import { Nanoid } from '@/common';
+import { ErrorCode, RegisterMethod } from '@/constants';
+import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { UserEntity } from './user.entity';

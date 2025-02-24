@@ -1,5 +1,5 @@
-import { Uuid } from '@/common/index';
-import { Permission, PermissionGroup } from '@/constants/permission.constant';
+import { Uuid } from '@/common';
+import { Permission, PermissionGroup } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { RoleEntity } from './role.entity';

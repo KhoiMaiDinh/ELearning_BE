@@ -1,4 +1,4 @@
-import { PasswordField } from '@/decorators/index';
+import { PasswordField } from '@/decorators';
 
 export class ChangePasswordReq {
   @PasswordField()

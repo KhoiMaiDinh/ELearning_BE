@@ -41,3 +41,7 @@ process.env.AUTH_FORGOT_SECRET = 'secret_for_forgot';
 process.env.AUTH_FORGOT_TOKEN_EXPIRES_IN = '7d';
 process.env.AUTH_CONFIRM_EMAIL_SECRET = 'secret_for_confirm_email';
 process.env.AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN = '1d';
+process.env.AUTH_GOOGLE_CLIENT_ID = 'google_id';
+process.env.AUTH_GOOGLE_CLIENT_SECRET = 'goole_secret';
+process.env.AUTH_FACEBOOK_APP_ID = 'facebook_id';
+process.env.AUTH_FACEBOOK_CLIENT_SECRET = 'facebook_secret';

@@ -3,7 +3,7 @@ import {
   PasswordField,
   StringField,
   StringFieldOptional,
-} from '@/decorators/index';
+} from '@/decorators';
 import { lowerCaseTransformer } from '@/utils/transformers/lower-case.transformer';
 import { Transform } from 'class-transformer';
 

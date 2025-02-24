@@ -1,5 +1,5 @@
 import { type AllConfigType } from '@/config/config.type';
-import { loggingRedactPaths, LogService } from '@/constants/index';
+import { loggingRedactPaths, LogService } from '@/constants';
 import { ConfigService } from '@nestjs/config';
 import { type IncomingMessage, type ServerResponse } from 'http';
 import { Params } from 'nestjs-pino';

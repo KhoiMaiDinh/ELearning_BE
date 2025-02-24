@@ -1,6 +1,6 @@
-import { RoleEntity } from '@/api/role/entities/role.entity';
-import { UserEntity } from '@/api/user/entities/user.entity';
-import { DefaultRole, RegisterMethod } from '@/constants/index';
+import { RoleEntity } from '@/api/role';
+import { UserEntity } from '@/api/user';
+import { DefaultRole, RegisterMethod } from '@/constants';
 import { DataSource } from 'typeorm';
 import { Seeder, SeederFactoryManager } from 'typeorm-extension';
 

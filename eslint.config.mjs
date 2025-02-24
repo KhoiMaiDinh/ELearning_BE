@@ -20,7 +20,6 @@ export default tsEslint.config(
       'src/generated/i18n.generated.ts',
     ],
     rules: {
-      'prettier/prettier': 'error',
       '@typescript-eslint/interface-name-prefix': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -31,6 +30,12 @@ export default tsEslint.config(
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
         },
       ],
     },

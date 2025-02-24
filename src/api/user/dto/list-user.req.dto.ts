@@ -1,3 +1,3 @@
-import { PageOffsetOptionsDto as PageOptionsDto } from '@/common/index';
+import { PageOffsetOptionsDto as PageOptionsDto } from '@/common';
 
 export class ListUserReqDto extends PageOptionsDto {}

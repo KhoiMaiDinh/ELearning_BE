@@ -1,4 +1,4 @@
-import { EmailField, PasswordField, StringField } from '@/decorators/index';
+import { EmailField, PasswordField, StringField } from '@/decorators';
 
 export class EmailRegisterReq {
   @EmailField()

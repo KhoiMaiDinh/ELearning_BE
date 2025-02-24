@@ -1,10 +1,6 @@
-import { WrapperType } from '@/common/index';
-import { Permission, PermissionGroup } from '@/constants/permission.constant';
-import {
-  ClassField,
-  EnumField,
-  StringField,
-} from '@/decorators/field.decorators';
+import { WrapperType } from '@/common';
+import { Permission, PermissionGroup } from '@/constants';
+import { ClassField, EnumField, StringField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 import { RoleRes } from './role.res.dto';
 

@@ -1,6 +1,6 @@
-import { AllConfigType } from '@/config/config.type';
-import { Environment } from '@/constants/index';
-import { Public } from '@/decorators/index';
+import { AllConfigType } from '@/config';
+import { Environment } from '@/constants';
+import { Public } from '@/decorators';
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';

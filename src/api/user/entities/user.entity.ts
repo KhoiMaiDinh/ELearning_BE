@@ -1,11 +1,11 @@
-import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
+import { InstructorEntity } from '@/api/instructor/instructor.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
 import { RoleEntity } from '@/api/role/entities/role.entity';
-import { Uuid } from '@/common/index';
-import { RegisterMethod } from '@/constants/index';
+import { Uuid } from '@/common';
+import { RegisterMethod } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
-import { AutoNanoId } from '@/decorators/index';
-import { hashPassword as hashPass } from '@/utils/password.util';
+import { AutoNanoId } from '@/decorators';
+import { hashPassword as hashPass } from '@/utils';
 import slugify from 'slugify';
 import {
   BeforeInsert,

@@ -1,8 +1,6 @@
-import { CursorPaginatedDto, Nanoid, OffsetPaginatedDto } from '@/common/index';
-import { Permission } from '@/constants/permission.constant';
-import { CurrentUser } from '@/decorators/current-user.decorator';
-import { ApiAuth } from '@/decorators/http.decorators';
-import { Permissions } from '@/decorators/permission.decorator';
+import { CursorPaginatedDto, Nanoid, OffsetPaginatedDto } from '@/common';
+import { Permission } from '@/constants';
+import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
 import {
   Body,
   Controller,

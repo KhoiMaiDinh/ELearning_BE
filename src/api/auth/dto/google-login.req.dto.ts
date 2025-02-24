@@ -1,4 +1,4 @@
-import { StringField } from '@/decorators/index';
+import { StringField } from '@/decorators';
 import { IsNotEmpty } from 'class-validator';
 
 export class GoogleLoginReq {

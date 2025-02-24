@@ -1,4 +1,4 @@
-import { Nanoid } from '@/common/index';
+import { Nanoid } from '@/common';
 
 export type JwtVerificationPayloadType = {
   id: Nanoid;

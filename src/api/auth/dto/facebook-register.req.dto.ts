@@ -1,4 +1,4 @@
-import { EmailField, StringField } from '@/decorators/index';
+import { EmailField, StringField } from '@/decorators';
 import { Matches } from 'class-validator';
 import { UsernameRegex } from '../../../regex';
 

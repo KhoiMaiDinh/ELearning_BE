@@ -1,4 +1,4 @@
-import { Uuid } from '@/common/index';
+import { Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,

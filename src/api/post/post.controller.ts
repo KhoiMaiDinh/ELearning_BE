@@ -1,5 +1,5 @@
-import { OffsetPaginatedDto, Uuid } from '@/common/index';
-import { ApiAuth } from '@/decorators/index';
+import { OffsetPaginatedDto, Uuid } from '@/common';
+import { ApiAuth } from '@/decorators';
 import {
   Body,
   Controller,
@@ -28,7 +28,7 @@ export class PostController {
 
   @Get()
   @ApiAuth({
-    type: PostResDto,
+    type: OffsetPaginatedDto<PostResDto>,
     summary: 'Get posts',
     isPaginated: true,
   })

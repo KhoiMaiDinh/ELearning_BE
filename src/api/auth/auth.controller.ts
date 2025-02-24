@@ -1,6 +1,7 @@
-import { SuccessBasicDto } from '@/common/dto/success-basic.dto';
-import { CookiesEnum } from '@/constants/index';
-import { ApiAuth, ApiPublic, Cookies, CurrentUser } from '@/decorators/index';
+import { JwtPayloadType } from '@/api/token';
+import { SuccessBasicDto } from '@/common';
+import { CookiesEnum } from '@/constants';
+import { ApiAuth, ApiPublic, Cookies, CurrentUser } from '@/decorators';
 import {
   Body,
   Controller,
@@ -11,21 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { JwtPayloadType } from '../token/types/jwt-payload.type';
-import {
-  EmailLoginReq,
-  EmailRegisterReq,
-  FacebookLoginReq,
-  FacebookRegisterReq,
-  ForgotPasswordReq,
-  GoogleLoginReq,
-  GoogleRegisterReq,
-  LoginRes,
-  RefreshRes,
-  RegisterRes,
-  ResetPasswordReq,
-  VerifyEmailReq,
-} from './dto';
+import * as DTO from './dto';
 import { AuthService } from './services/auth.service';
 import { RegistrationService } from './services/registration.service';
 
@@ -41,14 +28,14 @@ export class AuthController {
   ) {}
 
   @ApiPublic({
-    type: LoginRes,
+    type: DTO.LoginRes,
     summary: 'Log in with email',
   })
   @Post('email/login')
   async emailLogIn(
-    @Body() userLogin: EmailLoginReq,
+    @Body() userLogin: DTO.EmailLoginReq,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<LoginRes> {
+  ): Promise<DTO.LoginRes> {
     const result = await this.authService.emailLogIn(userLogin);
     response.cookie(CookiesEnum.ACCESS_TOKEN, `Bearer ${result.access_token}`);
     response.cookie(CookiesEnum.REFRESH_TOKEN, result.refresh_token, {
@@ -59,14 +46,14 @@ export class AuthController {
   }
 
   @ApiPublic({
-    type: LoginRes,
+    type: DTO.LoginRes,
     summary: 'Log in with Facebook',
   })
   @Post('facebook/login')
   async facebookLogIn(
-    @Body() userLogin: FacebookLoginReq,
+    @Body() userLogin: DTO.FacebookLoginReq,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<LoginRes> {
+  ): Promise<DTO.LoginRes> {
     const result = await this.authService.facebookLogIn(userLogin);
     response.cookie(CookiesEnum.ACCESS_TOKEN, `Bearer ${result.access_token}`);
     response.cookie(CookiesEnum.REFRESH_TOKEN, result.refresh_token, {
@@ -77,14 +64,14 @@ export class AuthController {
   }
 
   @ApiPublic({
-    type: LoginRes,
+    type: DTO.LoginRes,
     summary: 'Log in with Google',
   })
   @Post('google/login')
   async googleLogIn(
-    @Body() userLogin: GoogleLoginReq,
+    @Body() userLogin: DTO.GoogleLoginReq,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<LoginRes> {
+  ): Promise<DTO.LoginRes> {
     const result = await this.authService.googleLogIn(userLogin);
     response.cookie(CookiesEnum.ACCESS_TOKEN, `Bearer ${result.access_token}`);
     response.cookie(CookiesEnum.REFRESH_TOKEN, result.refresh_token, {
@@ -96,7 +83,7 @@ export class AuthController {
 
   @ApiPublic({ statusCode: HttpStatus.CREATED })
   @Post('email/register')
-  async register(@Body() dto: EmailRegisterReq): Promise<SuccessBasicDto> {
+  async register(@Body() dto: DTO.EmailRegisterReq): Promise<SuccessBasicDto> {
     await this.registrationService.emailRegister(dto);
 
     return {
@@ -108,14 +95,16 @@ export class AuthController {
   @ApiPublic()
   @Post('facebook/register')
   async facebookRegister(
-    @Body() dto: FacebookRegisterReq,
-  ): Promise<RegisterRes> {
+    @Body() dto: DTO.FacebookRegisterReq,
+  ): Promise<DTO.RegisterRes> {
     return await this.registrationService.facebookRegister(dto);
   }
 
   @ApiPublic()
   @Post('google/register')
-  async googleRegister(@Body() dto: GoogleRegisterReq): Promise<RegisterRes> {
+  async googleRegister(
+    @Body() dto: DTO.GoogleRegisterReq,
+  ): Promise<DTO.RegisterRes> {
     return await this.registrationService.googleRegister(dto);
   }
 
@@ -128,7 +117,7 @@ export class AuthController {
   }
 
   @ApiPublic({
-    type: RefreshRes,
+    type: DTO.RefreshRes,
     summary: 'Refresh token',
   })
   @Post('refresh')
@@ -136,7 +125,7 @@ export class AuthController {
   async refresh(
     @Cookies(CookiesEnum.REFRESH_TOKEN) refreshToken: string,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<RefreshRes> {
+  ): Promise<DTO.RefreshRes> {
     const tokens = await this.authService.refreshToken({ refreshToken });
     response.cookie(CookiesEnum.ACCESS_TOKEN, tokens.access_token);
     response.cookie(CookiesEnum.REFRESH_TOKEN, tokens.refresh_token, {
@@ -150,7 +139,7 @@ export class AuthController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(
-    @Body() dto: ForgotPasswordReq,
+    @Body() dto: DTO.ForgotPasswordReq,
   ): Promise<SuccessBasicDto> {
     await this.authService.forgotPassword(dto);
 
@@ -163,7 +152,9 @@ export class AuthController {
   @ApiPublic()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  async resetPassword(@Body() dto: ResetPasswordReq): Promise<SuccessBasicDto> {
+  async resetPassword(
+    @Body() dto: DTO.ResetPasswordReq,
+  ): Promise<SuccessBasicDto> {
     await this.authService.resetPassword(dto);
 
     return {
@@ -175,7 +166,7 @@ export class AuthController {
   @ApiPublic()
   @Post('verify/email')
   @HttpCode(HttpStatus.OK)
-  async verifyEmail(@Body() dto: VerifyEmailReq): Promise<SuccessBasicDto> {
+  async verifyEmail(@Body() dto: DTO.VerifyEmailReq): Promise<SuccessBasicDto> {
     await this.registrationService.verifyEmail(dto);
 
     return {

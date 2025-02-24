@@ -3,35 +3,24 @@ import {
   CursorPaginationDto,
   Nanoid,
   OffsetPaginatedDto,
-} from '@/common/index';
-import { ErrorCode, RegisterMethod, SYSTEM_USER_ID } from '@/constants/index';
-import { ValidationException } from '@/exceptions/index';
-import { buildPaginator } from '@/utils/cursor-pagination';
-import { paginate } from '@/utils/offset-pagination';
-import { verifyPassword } from '@/utils/password.util';
+} from '@/common';
+import { ErrorCode, RegisterMethod, SYSTEM_USER_ID } from '@/constants';
+import { ValidationException } from '@/exceptions';
+import { buildPaginator, paginate, verifyPassword } from '@/utils';
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
-import { ChangePasswordReq } from './dto/change-password.req.dto';
-import { CreateUserReqDto } from './dto/create-user.req.dto';
-import { ListUserReqDto } from './dto/list-user.req.dto';
-import { LoadMoreUsersReqDto } from './dto/load-more-users.req.dto';
-import { UpdateUserReqDto } from './dto/update-user.req.dto';
-import { UserRes } from './dto/user.res.dto';
+import * as DTO from './dto';
 import { UserEntity } from './entities/user.entity';
+import { UserRepository } from './entities/user.repository';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
-  ) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
-  async create(dto: CreateUserReqDto): Promise<UserRes> {
+  async create(dto: DTO.CreateUserReqDto): Promise<DTO.UserRes> {
     const { username, email, password, profile_image } = dto;
 
     // check uniqueness of username/email
@@ -63,10 +52,12 @@ export class UserService {
     const savedUser = await this.userRepository.save(newUser);
     this.logger.debug(savedUser);
 
-    return plainToInstance(UserRes, savedUser);
+    return plainToInstance(DTO.UserRes, savedUser);
   }
 
-  async findAll(reqDto: ListUserReqDto): Promise<OffsetPaginatedDto<UserRes>> {
+  async findAll(
+    reqDto: DTO.ListUserReqDto,
+  ): Promise<OffsetPaginatedDto<DTO.UserRes>> {
     const query = this.userRepository
       .createQueryBuilder('user')
       .orderBy('user.createdAt', 'DESC');
@@ -74,12 +65,12 @@ export class UserService {
       skipCount: false,
       takeAll: false,
     });
-    return new OffsetPaginatedDto(plainToInstance(UserRes, users), metaDto);
+    return new OffsetPaginatedDto(plainToInstance(DTO.UserRes, users), metaDto);
   }
 
   async loadMoreUsers(
-    reqDto: LoadMoreUsersReqDto,
-  ): Promise<CursorPaginatedDto<UserRes>> {
+    reqDto: DTO.LoadMoreUsersReqDto,
+  ): Promise<CursorPaginatedDto<DTO.UserRes>> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
     const paginator = buildPaginator({
       entity: UserEntity,
@@ -102,17 +93,17 @@ export class UserService {
       reqDto,
     );
 
-    return new CursorPaginatedDto(plainToInstance(UserRes, data), metaDto);
+    return new CursorPaginatedDto(plainToInstance(DTO.UserRes, data), metaDto);
   }
 
-  async findOne(id: Nanoid): Promise<UserRes> {
+  async findOne(id: Nanoid): Promise<DTO.UserRes> {
     assert(id, 'id is required');
     const user = await this.userRepository.findOneByOrFail({ id });
 
-    return user.toDto(UserRes);
+    return user.toDto(DTO.UserRes);
   }
 
-  async update(id: Nanoid, updateUserDto: UpdateUserReqDto) {
+  async update(id: Nanoid, updateUserDto: DTO.UpdateUserReqDto) {
     const user = await this.userRepository.findOneByOrFail({ id });
 
     user.profile_image = updateUserDto.profile_image;
@@ -126,7 +117,7 @@ export class UserService {
     await this.userRepository.softDelete(id);
   }
 
-  async changePassword(user_id: Nanoid, dto: ChangePasswordReq) {
+  async changePassword(user_id: Nanoid, dto: DTO.ChangePasswordReq) {
     const user = await this.userRepository.findOneByOrFail({ id: user_id });
 
     if (!(user.register_method == RegisterMethod.LOCAL)) {

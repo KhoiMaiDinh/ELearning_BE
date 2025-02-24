@@ -1,6 +1,6 @@
 import { PostResDto } from '@/api/post/dto/post.res.dto';
-import { WrapperType } from '@/common/index';
-import { ClassField, StringField } from '@/decorators/index';
+import { WrapperType } from '@/common';
+import { ClassField, StringField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
