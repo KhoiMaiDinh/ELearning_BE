@@ -1,16 +1,20 @@
 import {
+  ObjectField,
   StringField,
   StringFieldOptional,
+  URLField,
 } from '@/decorators/field.decorators';
+import { TransformStorageUrl } from '@/decorators/transform-url.decorator';
 
 export class RegisterAsInstructorReq {
-  @StringField({ maxLength: 1000, minLength: 50 })
-  biography: string;
+  @ObjectField()
+  biography: object;
 
   @StringField({ maxLength: 60 })
   headline: string;
 
-  @StringField()
+  @URLField({ isAppUrl: true, require_tld: false })
+  @TransformStorageUrl()
   resume_url: string;
 
   @StringField()
@@ -21,4 +25,16 @@ export class RegisterAsInstructorReq {
 
   @StringFieldOptional()
   linkedin_url?: string;
+
+  @URLField({ isAppUrl: true, require_tld: false, nullable: true })
+  @TransformStorageUrl()
+  first_certificate_url?: string;
+
+  @URLField({ isAppUrl: true, require_tld: false, nullable: true })
+  @TransformStorageUrl()
+  second_certificate_url?: string;
+
+  @URLField({ isAppUrl: true, require_tld: false, nullable: true })
+  @TransformStorageUrl()
+  third_certificate_url?: string;
 }

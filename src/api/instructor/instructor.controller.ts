@@ -3,16 +3,18 @@ import { ApiAuth, CurrentUser } from '@/decorators';
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
-  Patch,
   Post,
+  Put,
 } from '@nestjs/common';
+import { ApproveInstructorDto } from './dto/approve-instructor.dto';
+import { InstructorRes } from './dto/instructor.res.dto';
+import { ListInstructorReq } from './dto/list-instructor.req.dto';
 import { RegisterAsInstructorReq } from './dto/register-as-instructor.req.dto';
-import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import { UpdateInstructorDto } from './dto/update-instructor.dto';
 import { InstructorService } from './instructor.service';
 
 @Controller('instructor')
@@ -25,28 +27,50 @@ export class InstructorController {
   async registerAsInstructor(
     @CurrentUser('id') user_public_id: Nanoid,
     @Body() dto: RegisterAsInstructorReq,
-  ) {
+  ): Promise<InstructorRes> {
     const instructor = await this.instructorService.create(user_public_id, dto);
     return instructor;
   }
 
   @Get()
-  findAll() {
-    return this.instructorService.findAll();
+  @ApiAuth({
+    type: InstructorRes,
+    summary: 'List instructor',
+    isPaginated: true,
+  })
+  load(@Body() dto: ListInstructorReq) {
+    return this.instructorService.load(dto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.instructorService.findOne(+id);
+  @Get(':username')
+  findOne(@Param('username') username: string) {
+    return this.instructorService.findOneByUsername(username);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTeacherDto: UpdateTeacherDto) {
-    return this.instructorService.update(+id, updateTeacherDto);
+  @Put(':username')
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    type: InstructorRes,
+    summary: 'Update instructor profile',
+  })
+  update(
+    @Param('username') username: string,
+    @Body() dto: UpdateInstructorDto,
+  ): Promise<InstructorRes> {
+    return this.instructorService.update(username, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.instructorService.remove(+id);
+  @Post(':username/approve')
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    type: InstructorRes,
+    summary: 'Approve instructor',
+  })
+  async approve(
+    @CurrentUser('id') id: Nanoid,
+    @Param('username') username: string,
+    @Body() dto: ApproveInstructorDto,
+  ): Promise<InstructorRes> {
+    return await this.instructorService.approve(username, id, dto);
   }
 }
