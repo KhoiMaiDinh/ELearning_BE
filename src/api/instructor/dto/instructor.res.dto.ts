@@ -1,15 +1,17 @@
 import { UserRes } from '@/api/user/dto';
 import {
   ClassFieldOptional,
+  ObjectField,
   StringField,
   StringFieldOptional,
 } from '@/decorators/field.decorators';
+import { RestoreStorageUrl } from '@/decorators/transform-url.decorator';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
 export class InstructorRes {
   @Expose()
-  @StringField()
+  @ObjectField()
   biography: string;
 
   @Expose()
@@ -18,6 +20,7 @@ export class InstructorRes {
 
   @Expose()
   @StringField()
+  @RestoreStorageUrl()
   resume_url: string;
 
   @Expose()
@@ -36,7 +39,7 @@ export class InstructorRes {
   @StringField()
   is_approved: boolean;
 
-  @Exclude()
+  @Expose()
   @ClassFieldOptional(() => UserRes)
   user?: UserRes;
 }
