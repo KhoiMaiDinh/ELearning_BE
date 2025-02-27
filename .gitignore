@@ -2,6 +2,7 @@
 /dist
 /node_modules
 /build
+pnpm-lock.yaml
 
 # Logs
 logs
@@ -20,6 +21,7 @@ infras/local/data
 /coverage
 /.nyc_output
 /.jest-cache
+swagger.json
 
 # Turbo
 .turbo
