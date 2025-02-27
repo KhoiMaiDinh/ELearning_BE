@@ -6,6 +6,7 @@ import { AllConfigType } from '@/config/config.type';
 import { Environment } from '@/constants/index';
 import databaseConfig from '@/database/config/database.config';
 import { TypeOrmConfigService } from '@/database/typeorm-config.service';
+import minioConfig from '@/libs/minio/config/minio.config';
 import mailConfig from '@/mail/config/mail.config';
 import { MailModule } from '@/mail/mail.module';
 import redisConfig from '@/redis/config/redis.config';
@@ -30,7 +31,14 @@ function generateModulesSet(): ModuleMetadata['imports'] {
   const imports: ModuleMetadata['imports'] = [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, redisConfig, authConfig, mailConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        redisConfig,
+        authConfig,
+        mailConfig,
+        minioConfig,
+      ],
       envFilePath: ['.env'],
     }),
   ];

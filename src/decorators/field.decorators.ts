@@ -10,12 +10,14 @@ import {
   IsInt,
   IsJWT,
   IsNumber,
+  IsObject,
   IsOptional,
   IsPositive,
   IsString,
   IsStrongPassword,
   IsUrl,
   IsUUID,
+  Matches,
   Max,
   MaxLength,
   Min,
@@ -46,6 +48,11 @@ interface IStringFieldOptions extends IFieldOptions {
   maxLength?: number;
   toLowerCase?: boolean;
   toUpperCase?: boolean;
+}
+
+interface IURLFieldOptions extends IFieldOptions {
+  isAppUrl?: boolean;
+  require_tld?: boolean;
 }
 
 interface IEnumFieldOptions extends IFieldOptions {
@@ -320,14 +327,30 @@ export function UUIDFieldOptional(
 }
 
 export function URLField(
-  options: Omit<ApiPropertyOptions, 'type'> & IStringFieldOptions = {},
+  options: Omit<ApiPropertyOptions, 'type'> &
+    IURLFieldOptions &
+    IStringFieldOptions = {},
 ): PropertyDecorator {
-  const decorators = [StringField(options), IsUrl({}, { each: true })];
+  const decorators = [
+    StringField(options),
+    IsUrl({ require_tld: options.require_tld }, { each: options.each }),
+  ];
 
   if (options.nullable) {
     decorators.push(IsNullable({ each: options.each }));
   } else {
     decorators.push(NotEquals(null, { each: options.each }));
+  }
+
+  if (options.isAppUrl) {
+    const storagePath = process.env.STORAGE_PATH;
+    const regex = new RegExp(`^${storagePath}`);
+    decorators.push(
+      Matches(regex, {
+        message: `URL must start with ${storagePath}`,
+        each: options.each,
+      }),
+    );
   }
 
   return applyDecorators(...decorators);
@@ -340,6 +363,27 @@ export function URLFieldOptional(
     IsOptional({ each: options.each }),
     URLField({ required: false, ...options }),
   );
+}
+
+export function ObjectField(
+  options: Omit<ApiPropertyOptions, 'type'> & IFieldOptions = {},
+): PropertyDecorator {
+  const decorators = [Type(() => Object), IsObject()];
+
+  if (options.nullable) {
+    decorators.push(IsNullable());
+  } else {
+    decorators.push(NotEquals(null));
+  }
+
+  if (options.swagger !== false) {
+    const { required = true, ...restOptions } = options;
+    decorators.push(
+      ApiProperty({ type: Object, required: !!required, ...restOptions }),
+    );
+  }
+
+  return applyDecorators(...decorators);
 }
 
 export function DateField(

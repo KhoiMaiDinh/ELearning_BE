@@ -1,3 +1,7 @@
+import { TokenService } from '@/api/token';
+import { type AllConfigType } from '@/config';
+import { AuthGuard, PermissionGuard } from '@/guards';
+import { RemoveStoragePrefixPipe } from '@/pipes';
 import {
   ClassSerializerInterceptor,
   HttpStatus,
@@ -11,14 +15,12 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import 'dotenv/config';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
-import { TokenService } from './api/token/token.service';
 import { AppModule } from './app.module';
-import { type AllConfigType } from './config/config.type';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
-import { AuthGuard } from './guard/auth.guard';
-import { PermissionGuard } from './guard/permission.guard';
+import { MinioClientService } from './libs/minio';
 import setupSwagger from './utils/setup-swagger';
 
 async function bootstrap() {
@@ -48,7 +50,7 @@ async function bootstrap() {
   app.enableCors({
     origin: corsOrigin,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
     credentials: true,
   });
   console.info('CORS Origin:', corsOrigin);
@@ -81,6 +83,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.useGlobalPipes(new RemoveStoragePrefixPipe(app.get(MinioClientService)));
   app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
 
   if (isDevelopment) {
