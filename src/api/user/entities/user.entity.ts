@@ -1,4 +1,4 @@
-import { InstructorEntity } from '@/api/instructor/instructor.entity';
+import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
 import { RoleEntity } from '@/api/role/entities/role.entity';
 import { Uuid } from '@/common';

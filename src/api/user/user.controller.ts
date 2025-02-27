@@ -11,6 +11,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
@@ -87,7 +88,7 @@ export class UserController {
 
   @Patch(':id')
   @Permissions(Permission.WRITE_USER)
-  @ApiAuth({ type: UserRes, summary: 'Update user' })
+  @ApiAuth({ type: UserRes, summary: 'Update user', statusCode: HttpStatus.OK })
   @ApiParam({ name: 'id', type: 'String' })
   updateUser(
     @Param('id', ParseNanoidPipe) id: Nanoid,
@@ -96,21 +97,22 @@ export class UserController {
     return this.userService.update(id, reqDto);
   }
 
-  @Patch(':id')
-  @Permissions(Permission.WRITE_USER)
-  @ApiAuth({ type: UserRes, summary: 'Update user' })
-  @ApiParam({ name: 'id', type: 'String' })
-  updateCurrentUser(
-    @CurrentUser('id') user_id: Nanoid,
+  @Put('me')
+  @ApiAuth({
+    type: UserRes,
+    summary: 'Update current user',
+    statusCode: HttpStatus.OK,
+  })
+  async updateCurrentUser(
+    @CurrentUser('id') id: Nanoid,
     @Body() reqDto: UpdateUserReqDto,
   ) {
-    return this.userService.update(user_id, reqDto);
+    return await this.userService.update(id, reqDto);
   }
 
   @Delete(':id')
   @ApiAuth({
     summary: 'Delete user',
-    errorResponses: [400, 401, 403, 404, 500],
   })
   @ApiParam({ name: 'id', type: 'String' })
   removeUser(@Param('id', ParseNanoidPipe) id: Nanoid) {

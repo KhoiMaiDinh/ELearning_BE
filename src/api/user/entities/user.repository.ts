@@ -11,9 +11,13 @@ export class UserRepository extends Repository<UserEntity> {
     super(UserEntity, dataSource.createEntityManager());
   }
 
-  async findOneByPublicId(id: Nanoid): Promise<UserEntity> {
-    const user = await this.findOneBy({
-      id,
+  async findOneByPublicId(
+    id: Nanoid,
+    load_instructor = false,
+  ): Promise<UserEntity> {
+    const user = await this.findOne({
+      where: { id },
+      relations: load_instructor ? ['instructor_profile'] : [],
     });
 
     if (!user) {
@@ -31,6 +35,21 @@ export class UserRepository extends Repository<UserEntity> {
     const user = await this.findOne({
       where: { email, register_method },
       relations: load_roles ? ['roles', 'roles.permissions'] : [],
+    });
+
+    if (!user) {
+      throw new NotFoundException(ErrorCode.E002, 'User not found');
+    }
+    return user;
+  }
+
+  async findOneByUsername(
+    username: string,
+    load_instructor = false,
+  ): Promise<UserEntity> {
+    const user = await this.findOne({
+      where: { username },
+      relations: load_instructor ? ['instructor'] : [],
     });
 
     if (!user) {
