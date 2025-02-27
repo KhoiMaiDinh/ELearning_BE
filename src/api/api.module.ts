@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { HomeModule } from './home/home.module';
 import { InstructorModule } from './instructor/instructor.module';
+import { MediaModule } from './media/media.module';
 import { PostModule } from './post/post.module';
 import { RoleModule } from './role/role.module';
 
@@ -16,6 +17,7 @@ import { RoleModule } from './role/role.module';
     PostModule,
     RoleModule,
     InstructorModule,
+    MediaModule,
   ],
 })
 export class ApiModule {}

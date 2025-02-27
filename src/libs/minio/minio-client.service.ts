@@ -108,7 +108,7 @@ export class MinioClientService implements OnModuleInit {
     resource: UploadResource,
     object_name: string,
     max_file_size_bytes: number = 5 * 1024 * 1024, // 5MB limit
-    expiry_ms: number = 60, // Expiry time for the pre-signed URL
+    expiry_ms: number = 1000 * 60 * 60 * 24, // Expiry time for the pre-signed URL
   ): Promise<PresignedUrlInterface> {
     const expires_at = new Date(Date.now() + expiry_ms);
     const policy = this.client.newPostPolicy();
