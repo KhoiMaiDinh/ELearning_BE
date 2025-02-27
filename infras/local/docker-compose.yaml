@@ -1,0 +1,5 @@
+services:
+  minio:
+    extends:
+      file: ./minio.yaml
+      service: minio

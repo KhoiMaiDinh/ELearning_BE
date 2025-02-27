@@ -56,7 +56,9 @@
       "@/shared": ["src/shared"],
       "@/shared/*": ["src/shared/*"],
       "@/utils": ["src/utils"],
-      "@/utils/*": ["src/utils/*"]
+      "@/utils/*": ["src/utils/*"],
+      "@/pipes": ["src/pipes"],
+      "@/pipes/*": ["src/pipes/*"]
     }
   }
 }
