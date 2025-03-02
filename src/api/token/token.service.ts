@@ -1,8 +1,6 @@
-import { AllConfigType } from '@/config/config.type';
-import { CacheKey } from '@/constants/cache.constant';
-import { ErrorCode } from '@/constants/error-code.constant';
-import { Permission } from '@/constants/permission.constant';
-import { UnauthorizedException } from '@/exceptions/unauthorized.exception';
+import { AllConfigType } from '@/config';
+import { CacheKey, ErrorCode, Permission } from '@/constants';
+import { UnauthorizedException } from '@/exceptions';
 import { createCacheKey } from '@/utils/cache.util';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
@@ -31,8 +29,16 @@ export class TokenService {
       payload = this.jwtService.verify(token, {
         secret: this.configService.getOrThrow('auth.secret', { infer: true }),
       });
-    } catch {
-      throw new UnauthorizedException(ErrorCode.E009);
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException(ErrorCode.E010);
+      }
+      if (
+        error.name === 'JsonWebTokenError' &&
+        error.message.includes('invalid secret')
+      ) {
+        throw new UnauthorizedException(ErrorCode.E009);
+      }
     }
 
     // Force logout if the session is in the blacklist
