@@ -10,6 +10,7 @@ export class RegisterAsInstructorReq {
   @StringField()
   category_slug: string;
 
+
   @ObjectField()
   biography: object;
 

@@ -8,3 +8,4 @@ export class ListInstructorQuery extends PageOptionsDto {
   @BooleanFieldOptional()
   is_approved?: boolean;
 }
+
