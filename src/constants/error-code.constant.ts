@@ -10,6 +10,13 @@ export enum ErrorCode {
   // Forbidden
   F001 = 'common.forbidden.error',
 
+  // Category
+  E008 = 'category.error.category_not_found',
+  E013 = 'category.error.invalid_parent_category',
+  E014 = 'category.error.self_parenting',
+  E015 = 'category.error.circular_dependency',
+  E016 = 'category.error.delete_with_children',
+
   // User
   E001 = 'user.error.username_or_email_exists',
   E002 = 'user.error.not_found',
@@ -20,10 +27,11 @@ export enum ErrorCode {
   // Instructor
   E011 = 'instructor.error.existed',
   E012 = 'instructor.error.not_found',
+  E017 = 'instructor.error.invalid_specialized',
 
   // Token
   E009 = 'token.error.invalid_secret',
-  E010 = 'token.error.wrong_token',
+  E010 = 'token.error.expired',
 
   // Role
   E006 = 'role.error.not_found',
