@@ -9,12 +9,15 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
-import { ApproveInstructorDto } from './dto/approve-instructor.dto';
-import { InstructorRes } from './dto/instructor.res.dto';
-import { ListInstructorReq } from './dto/list-instructor.req.dto';
-import { RegisterAsInstructorReq } from './dto/register-as-instructor.req.dto';
-import { UpdateInstructorDto } from './dto/update-instructor.dto';
+import {
+  ApproveInstructorDto,
+  InstructorRes,
+  ListInstructorQuery,
+  RegisterAsInstructorReq,
+  UpdateInstructorReq,
+} from './dto';
 import { InstructorService } from './instructor.service';
 
 @Controller('instructor')
@@ -38,7 +41,7 @@ export class InstructorController {
     summary: 'List instructor',
     isPaginated: true,
   })
-  load(@Body() dto: ListInstructorReq) {
+  load(@Query() dto: ListInstructorQuery) {
     return this.instructorService.load(dto);
   }
 
@@ -55,7 +58,7 @@ export class InstructorController {
   })
   update(
     @Param('username') username: string,
-    @Body() dto: UpdateInstructorDto,
+    @Body() dto: UpdateInstructorReq,
   ): Promise<InstructorRes> {
     return this.instructorService.update(username, dto);
   }

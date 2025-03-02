@@ -20,7 +20,7 @@ export class InstructorRepository extends Repository<InstructorEntity> {
     });
 
     if (!instructor) {
-      throw new NotFoundException(ErrorCode.E012, 'Instructor not found');
+      throw new NotFoundException(ErrorCode.E012);
     }
     return instructor;
   }

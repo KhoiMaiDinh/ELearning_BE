@@ -1,10 +1,12 @@
-import { UserEntity } from '@/api/user';
+import { CategoryEntity } from '@/api/category/entities/category.entity';
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   Relation,
@@ -57,4 +59,11 @@ export class InstructorEntity extends AbstractEntity {
   second_certificate_url?: string;
   @Column({ type: 'varchar', length: 255, nullable: true })
   third_certificate_url?: string;
+
+  @ManyToOne(() => CategoryEntity, (category) => category.instructors)
+  @JoinColumn({ name: 'category_id' })
+  category: Relation<CategoryEntity>;
+
+  @Column({ type: 'uuid' })
+  category_id: Uuid;
 }

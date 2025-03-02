@@ -2,11 +2,14 @@ import {
   ObjectField,
   StringField,
   StringFieldOptional,
+  TransformStorageUrl,
   URLField,
-} from '@/decorators/field.decorators';
-import { TransformStorageUrl } from '@/decorators/transform-url.decorator';
+} from '@/decorators';
 
 export class RegisterAsInstructorReq {
+  @StringField()
+  category_slug: string;
+
   @ObjectField()
   biography: object;
 
