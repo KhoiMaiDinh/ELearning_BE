@@ -26,7 +26,9 @@ function setupSwagger(app: INestApplication) {
       withCredentials: true,
     },
   });
-  writeFileSync('./swagger.json', JSON.stringify(document));
+  if (!process.env.DOCKER) {
+    writeFileSync('./swagger.json', JSON.stringify(document));
+  }
 }
 
 export default setupSwagger;

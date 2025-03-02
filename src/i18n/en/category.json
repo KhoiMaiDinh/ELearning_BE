@@ -1,0 +1,13 @@
+{
+  "unique": {
+    "slug": "Slug must be unique",
+    "name": "Name must be unique"
+  },
+  "error": {
+    "category_not_found": "Category not found",
+    "invalid_parent_category": "Invalid parent category: a valid parent category must not have a parent",
+    "self_parenting": "A category cannot be its own parent",
+    "circular_dependency": "Circular dependency detected in category hierarchy",
+    "delete_with_children": "Can not delete because category has children"
+  }
+}

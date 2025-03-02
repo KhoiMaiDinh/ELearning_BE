@@ -1,11 +1,12 @@
+import { CategoryRes } from '@/api/category';
 import { UserRes } from '@/api/user/dto';
 import {
   ClassFieldOptional,
   ObjectField,
+  RestoreStorageUrl,
   StringField,
   StringFieldOptional,
-} from '@/decorators/field.decorators';
-import { RestoreStorageUrl } from '@/decorators/transform-url.decorator';
+} from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
@@ -42,4 +43,8 @@ export class InstructorRes {
   @Expose()
   @ClassFieldOptional(() => UserRes)
   user?: UserRes;
+
+  @Expose()
+  @ClassFieldOptional(() => CategoryRes)
+  category?: CategoryRes;
 }

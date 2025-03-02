@@ -4,6 +4,19 @@
 import { Path } from "nestjs-i18n";
 /* prettier-ignore */
 export type I18nTranslations = {
+    "category": {
+        "unique": {
+            "slug": string;
+            "name": string;
+        };
+        "error": {
+            "category_not_found": string;
+            "invalid_parent_category": string;
+            "self_parenting": string;
+            "circular_dependency": string;
+            "delete_with_children": string;
+        };
+    };
     "common": {
         "validation": {
             "error": string;
@@ -11,6 +24,19 @@ export type I18nTranslations = {
         "error": {
             "internal_server_error": string;
             "entity_not_found": string;
+        };
+    };
+    "instructor": {
+        "error": {
+            "not_found": string;
+            "existed": string;
+            "invalid_specialized": string;
+        };
+    };
+    "token": {
+        "error": {
+            "invalid_secret": string;
+            "expired": string;
         };
     };
     "user": {

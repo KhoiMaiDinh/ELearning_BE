@@ -103,13 +103,14 @@ export class UserService {
     return user.toDto(DTO.UserRes);
   }
 
-  async update(id: Nanoid, updateUserDto: DTO.UpdateUserReqDto) {
+  async update(id: Nanoid, dto: DTO.UpdateUserReqDto): Promise<DTO.UserRes> {
     const user = await this.userRepository.findOneByOrFail({ id });
 
-    user.profile_image = updateUserDto.profile_image;
+    Object.assign(user, { user, ...dto });
     user.updatedBy = SYSTEM_USER_ID;
 
     await this.userRepository.save(user);
+    return user.toDto(DTO.UserRes);
   }
 
   async remove(id: Nanoid) {

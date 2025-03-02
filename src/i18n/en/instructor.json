@@ -1,0 +1,7 @@
+{
+  "error": {
+    "not_found": "Instructor not found",
+    "existed": "User is already an instructor",
+    "invalid_specialized": "Invalid specialized: Specialize must be level 0 category"
+  }
+}
