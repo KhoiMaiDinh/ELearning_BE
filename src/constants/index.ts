@@ -5,6 +5,7 @@ export * from './cookie.constant';
 export * from './error-code.constant';
 export * from './job.constant';
 export * from './permission.constant';
+export * from './preference.constant';
 export * from './register-method.enum';
 export * from './role.constant';
 export * from './upload-resource.constant';

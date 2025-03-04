@@ -1,6 +1,8 @@
-import { InstructorEntity } from '@/api/instructor/instructor.entity';
+import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
+import { PreferenceEntity } from '@/api/preference/entities/preference.entity';
 import { RoleEntity } from '@/api/role/entities/role.entity';
+import { SessionEntity } from '@/api/user/entities/session.entity';
 import { Uuid } from '@/common';
 import { RegisterMethod } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
@@ -21,7 +23,6 @@ import {
   Relation,
   Unique,
 } from 'typeorm';
-import { SessionEntity } from './session.entity';
 
 type RequiredUserProps = Pick<
   UserEntity,
@@ -105,6 +106,9 @@ export class UserEntity extends AbstractEntity {
 
   @OneToOne(() => InstructorEntity, (instructor) => instructor.user)
   instructor_profile?: Relation<InstructorEntity>;
+
+  @OneToOne(() => PreferenceEntity, (preference) => preference.user)
+  preference?: Relation<PreferenceEntity>;
 
   @BeforeInsert()
   @BeforeUpdate()

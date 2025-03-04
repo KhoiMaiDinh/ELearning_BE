@@ -1,4 +1,4 @@
-import { UserEntity } from '@/api/user';
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {

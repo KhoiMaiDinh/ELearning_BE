@@ -20,11 +20,6 @@ export enum Order {
   DESC = 'DESC',
 }
 
-export enum Language {
-  EN = 'en',
-  VI = 'vi',
-}
-
 // Redact value of these paths from logs
 export const loggingRedactPaths = [
   'req.headers.authorization',

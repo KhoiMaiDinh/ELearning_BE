@@ -70,7 +70,7 @@ export class InstructorService {
       })
       .orderBy('instructor.createdAt', 'DESC')
       .leftJoinAndSelect('instructor.user', 'user');
-  
+
     const [instructors, metaDto] = await paginate<InstructorEntity>(
       query,
       dto,
