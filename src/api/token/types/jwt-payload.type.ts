@@ -1,5 +1,7 @@
+import { Nanoid } from '@/common';
+
 export type JwtPayloadType = {
-  id: string;
+  id: Nanoid;
   sessionId: string;
   iat: number;
   exp: number;

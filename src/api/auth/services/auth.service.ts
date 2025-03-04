@@ -1,5 +1,7 @@
 import { JwtPayloadType, TokenService } from '@/api/token';
-import { SessionEntity, UserEntity, UserRepository } from '@/api/user';
+import { UserRepository } from '@/api/user';
+import { SessionEntity } from '@/api/user/entities/session.entity';
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { IEmailJob, IVerifyEmailJob } from '@/common';
 import { AllConfigType } from '@/config';
 import {
@@ -49,15 +51,12 @@ export class AuthService {
 
     const user = await this.userRepository.findOneByPublicId(payload.id);
 
-    const passwordResetToken = await this.cacheManager.get<string>(
+    const password_reset_token = await this.cacheManager.get<string>(
       createCacheKey(CacheKey.PASSWORD_RESET, user.id),
     );
 
-    if (!passwordResetToken || passwordResetToken !== dto.token) {
-      throw new NotFoundException(
-        ErrorCode.E002,
-        'Password reset token not found or invalid',
-      );
+    if (!password_reset_token || password_reset_token !== dto.token) {
+      throw new NotFoundException(ErrorCode.E020);
     }
 
     user.password = dto.password;
@@ -75,27 +74,30 @@ export class AuthService {
       RegisterMethod.LOCAL,
     );
 
-    const retryTimestamp = await this.cacheManager.get<Date>(
+    const retry_timestamp = await this.cacheManager.get<Date>(
       createCacheKey(CacheKey.PASSWORD_RESET_TIME, user.id),
     );
-    if (retryTimestamp) {
+    if (retry_timestamp) {
       throw new RequestThrottledException(
         ErrorCode.E006,
         'You can only request password reset once every minute',
-        retryTimestamp,
+        retry_timestamp,
       ); // Less than 1 minute has passed
     }
 
     const token = await this.tokenService.createVerificationToken({
       id: user.id,
     });
-    const tokenExpiresIn = this.configService.get('auth.confirmEmailExpires', {
-      infer: true,
-    });
+    const token_expires_in = this.configService.get(
+      'auth.confirmEmailExpires',
+      {
+        infer: true,
+      },
+    );
     await this.cacheManager.set(
       createCacheKey(CacheKey.PASSWORD_RESET, user.id),
       token,
-      ms(tokenExpiresIn),
+      ms(token_expires_in),
     );
     await this.cacheManager.set(
       createCacheKey(CacheKey.PASSWORD_RESET_TIME, user.id),

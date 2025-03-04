@@ -37,6 +37,10 @@ export type I18nTranslations = {
         "error": {
             "invalid_secret": string;
             "expired": string;
+            "password_reset_token_not_found_or_invalid": string;
+            "password_reset_too_frequent": string;
+            "email_verification_too_frequent": string;
+            "email_verification_token_not_found_or_invalid": string;
         };
     };
     "user": {

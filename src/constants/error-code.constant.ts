@@ -10,6 +10,9 @@ export enum ErrorCode {
   // Forbidden
   F001 = 'common.forbidden.error',
 
+  // Internal Server
+  I000 = 'common.internal_server.error',
+
   // Category
   E008 = 'category.error.category_not_found',
   E013 = 'category.error.invalid_parent_category',
@@ -24,6 +27,9 @@ export enum ErrorCode {
   E004 = 'user.error.password_not_match',
   E005 = 'user.error.invalid_for_non_local_user',
 
+  // Preference
+  E018 = 'preference.error.not_found',
+
   // Instructor
   E011 = 'instructor.error.existed',
   E012 = 'instructor.error.not_found',
@@ -32,6 +38,10 @@ export enum ErrorCode {
   // Token
   E009 = 'token.error.invalid_secret',
   E010 = 'token.error.expired',
+  E020 = 'token.error.password_reset_token_not_found_or_invalid',
+  E021 = 'token.error.password_reset_too_frequent',
+  E022 = 'token.error.email_verification_too_frequent',
+  E023 = 'token.error.email_verification_token_not_found_or_invalid',
 
   // Role
   E006 = 'role.error.not_found',

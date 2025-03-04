@@ -1,3 +1,4 @@
+import { CourseEntity } from '@/api/course/entities/course.entity';
 import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
@@ -28,6 +29,13 @@ export class CategoryEntity extends AbstractEntity {
   @Column({ type: 'varchar', length: 50 })
   slug: string;
 
+  @TreeParent({ onDelete: 'CASCADE' })
+  parent?: CategoryEntity;
+
+  @TreeChildren()
+  children?: CategoryEntity[];
+
+  // relation
   @OneToMany(
     () => CategoryTranslationEntity,
     (translation) => translation.category,
@@ -35,12 +43,9 @@ export class CategoryEntity extends AbstractEntity {
   )
   translations: Relation<CategoryTranslationEntity[]>;
 
-  @TreeParent({ onDelete: 'CASCADE' })
-  parent?: CategoryEntity;
-
-  @TreeChildren()
-  children?: CategoryEntity[];
-
   @OneToMany(() => InstructorEntity, (instructor) => instructor.category)
   instructors?: Relation<InstructorEntity[]>;
+
+  @OneToMany(() => CourseEntity, (course) => course.category)
+  courses?: Relation<CourseEntity[]>;
 }

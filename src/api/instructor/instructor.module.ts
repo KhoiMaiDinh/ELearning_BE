@@ -10,12 +10,13 @@ import { InstructorService } from './instructor.service';
 
 @Module({
   imports: [
-    UserModule,
+    forwardRef(() => CategoryModule),
+    forwardRef(() => UserModule),
     MinioClientModule,
     TypeOrmModule.forFeature([InstructorEntity]),
-    forwardRef(() => CategoryModule),
   ],
   controllers: [InstructorController],
   providers: [InstructorService, InstructorRepository],
+  exports: [InstructorRepository],
 })
 export class InstructorModule {}

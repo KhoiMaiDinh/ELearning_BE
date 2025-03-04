@@ -29,6 +29,7 @@ export class AuthController {
 
   @ApiPublic({
     type: DTO.LoginRes,
+    statusCode: HttpStatus.OK,
     summary: 'Log in with email',
   })
   @Post('email/login')
@@ -47,15 +48,15 @@ export class AuthController {
 
   @ApiPublic({
     type: DTO.LoginRes,
+    statusCode: HttpStatus.OK,
     summary: 'Log in with Facebook',
   })
   @Post('facebook/login')
   async facebookLogIn(
-    @Body() userLogin: DTO.FacebookLoginReq,
+    @Body() dto: DTO.FacebookLoginReq,
     @Res({ passthrough: true }) response: Response,
   ): Promise<DTO.LoginRes> {
-    const result = await this.authService.facebookLogIn(userLogin);
-    response.cookie(CookiesEnum.ACCESS_TOKEN, `Bearer ${result.access_token}`);
+    const result = await this.authService.facebookLogIn(dto);
     response.cookie(CookiesEnum.REFRESH_TOKEN, result.refresh_token, {
       httpOnly: true,
       secure: true,
@@ -65,15 +66,15 @@ export class AuthController {
 
   @ApiPublic({
     type: DTO.LoginRes,
+    statusCode: HttpStatus.OK,
     summary: 'Log in with Google',
   })
   @Post('google/login')
   async googleLogIn(
-    @Body() userLogin: DTO.GoogleLoginReq,
+    @Body() dto: DTO.GoogleLoginReq,
     @Res({ passthrough: true }) response: Response,
   ): Promise<DTO.LoginRes> {
-    const result = await this.authService.googleLogIn(userLogin);
-    response.cookie(CookiesEnum.ACCESS_TOKEN, `Bearer ${result.access_token}`);
+    const result = await this.authService.googleLogIn(dto);
     response.cookie(CookiesEnum.REFRESH_TOKEN, result.refresh_token, {
       httpOnly: true,
       secure: true,
@@ -81,7 +82,11 @@ export class AuthController {
     return result;
   }
 
-  @ApiPublic({ statusCode: HttpStatus.CREATED })
+  @ApiPublic({
+    statusCode: HttpStatus.CREATED,
+    type: SuccessBasicDto,
+    summary: 'Register with email',
+  })
   @Post('email/register')
   async register(@Body() dto: DTO.EmailRegisterReq): Promise<SuccessBasicDto> {
     await this.registrationService.emailRegister(dto);
@@ -92,7 +97,11 @@ export class AuthController {
     };
   }
 
-  @ApiPublic()
+  @ApiPublic({
+    statusCode: HttpStatus.CREATED,
+    type: SuccessBasicDto,
+    summary: 'Register with facebook',
+  })
   @Post('facebook/register')
   async facebookRegister(
     @Body() dto: DTO.FacebookRegisterReq,
@@ -100,7 +109,11 @@ export class AuthController {
     return await this.registrationService.facebookRegister(dto);
   }
 
-  @ApiPublic()
+  @ApiPublic({
+    statusCode: HttpStatus.CREATED,
+    type: SuccessBasicDto,
+    summary: 'Register with google',
+  })
   @Post('google/register')
   async googleRegister(
     @Body() dto: DTO.GoogleRegisterReq,
@@ -110,6 +123,7 @@ export class AuthController {
 
   @ApiAuth({
     summary: 'Logout',
+    statusCode: HttpStatus.NO_CONTENT,
   })
   @Post('logout')
   async logout(@CurrentUser() userToken: JwtPayloadType): Promise<void> {
@@ -119,25 +133,28 @@ export class AuthController {
   @ApiPublic({
     type: DTO.RefreshRes,
     summary: 'Refresh token',
+    statusCode: HttpStatus.OK,
   })
   @Post('refresh')
-  @HttpCode(204)
   async refresh(
     @Cookies(CookiesEnum.REFRESH_TOKEN) refreshToken: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<DTO.RefreshRes> {
     const tokens = await this.authService.refreshToken({ refreshToken });
-    response.cookie(CookiesEnum.ACCESS_TOKEN, tokens.access_token);
     response.cookie(CookiesEnum.REFRESH_TOKEN, tokens.refresh_token, {
       httpOnly: true,
       secure: true,
     });
-    return;
+    return tokens;
   }
 
   @ApiPublic()
   @Post('forgot-password')
-  @HttpCode(HttpStatus.OK)
+  @ApiPublic({
+    type: SuccessBasicDto,
+    statusCode: HttpStatus.OK,
+    summary: 'Forgot password',
+  })
   async forgotPassword(
     @Body() dto: DTO.ForgotPasswordReq,
   ): Promise<SuccessBasicDto> {
@@ -149,9 +166,12 @@ export class AuthController {
     };
   }
 
-  @ApiPublic()
+  @ApiPublic({
+    type: SuccessBasicDto,
+    statusCode: HttpStatus.OK,
+    summary: 'Reset password',
+  })
   @Post('reset-password')
-  @HttpCode(HttpStatus.OK)
   async resetPassword(
     @Body() dto: DTO.ResetPasswordReq,
   ): Promise<SuccessBasicDto> {
@@ -163,9 +183,12 @@ export class AuthController {
     };
   }
 
-  @ApiPublic()
+  @ApiPublic({
+    type: SuccessBasicDto,
+    statusCode: HttpStatus.OK,
+    summary: 'Verify email',
+  })
   @Post('verify/email')
-  @HttpCode(HttpStatus.OK)
   async verifyEmail(@Body() dto: DTO.VerifyEmailReq): Promise<SuccessBasicDto> {
     await this.registrationService.verifyEmail(dto);
 
@@ -175,7 +198,11 @@ export class AuthController {
     };
   }
 
-  @ApiAuth()
+  @ApiAuth({
+    type: SuccessBasicDto,
+    statusCode: HttpStatus.OK,
+    summary: 'Resend verify email',
+  })
   @Post('verify/email/resend')
   @HttpCode(HttpStatus.OK)
   async resendVerifyEmail(

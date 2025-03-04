@@ -1,23 +1,17 @@
+import { PreferenceEntity } from '@/api/preference/entities/preference.entity';
 import { RoleRepository } from '@/api/role';
 import { JwtPayloadType, TokenService } from '@/api/token';
-import { UserEntity, UserRepository } from '@/api/user';
+import { UserRepository } from '@/api/user';
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { IEmailJob, IVerifyEmailJob } from '@/common';
 import { AllConfigType } from '@/config';
-import {
-  CacheKey,
-  DefaultRole,
-  ErrorCode,
-  JobName,
-  QueueName,
-  RegisterMethod,
-  SYSTEM_USER_ID,
-} from '@/constants';
+import * as CONST from '@/constants';
 import {
   NotFoundException,
   RequestThrottledException,
   ValidationException,
 } from '@/exceptions';
-import { createCacheKey } from '@/utils/cache.util';
+import { createCacheKey } from '@/utils';
 import { InjectQueue } from '@nestjs/bullmq';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
@@ -33,7 +27,7 @@ export class RegistrationService {
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
     private readonly tokenService: TokenService,
-    @InjectQueue(QueueName.EMAIL)
+    @InjectQueue(CONST.QueueName.EMAIL)
     private readonly emailQueue: Queue<IEmailJob, any, string>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
@@ -43,16 +37,16 @@ export class RegistrationService {
 
   async emailRegister(dto: DTO.EmailRegisterReq): Promise<DTO.RegisterRes> {
     // Check if the user already exists
-    const isExistUser = await UserEntity.exists({
-      where: { email: dto.email, register_method: RegisterMethod.LOCAL },
+    const is_exist_user = await UserEntity.exists({
+      where: { email: dto.email, register_method: CONST.RegisterMethod.LOCAL },
     });
 
-    if (isExistUser) {
-      throw new ValidationException(ErrorCode.E003);
+    if (is_exist_user) {
+      throw new ValidationException(CONST.ErrorCode.E003);
     }
 
     const role = await this.roleRepository.getRoleByRoleName(
-      DefaultRole.STUDENT,
+      CONST.DefaultRole.STUDENT,
     );
 
     // Register user
@@ -61,13 +55,14 @@ export class RegistrationService {
       password: dto.password,
       first_name: dto.first_name,
       last_name: dto.last_name,
-      register_method: RegisterMethod.LOCAL,
+      register_method: CONST.RegisterMethod.LOCAL,
       roles: [role],
-      createdBy: SYSTEM_USER_ID,
-      updatedBy: SYSTEM_USER_ID,
+      createdBy: CONST.SYSTEM_USER_ID,
+      updatedBy: CONST.SYSTEM_USER_ID,
     });
 
     await user.save();
+    await this.createPreference(user);
 
     return await this.sendVerificationEmail(user);
   }
@@ -82,11 +77,11 @@ export class RegistrationService {
     });
 
     if (isExistUser) {
-      throw new ValidationException(ErrorCode.E003);
+      throw new ValidationException(CONST.ErrorCode.E003);
     }
 
     const role = await this.roleRepository.getRoleByRoleName(
-      DefaultRole.STUDENT,
+      CONST.DefaultRole.STUDENT,
     );
 
     // Register user
@@ -96,14 +91,15 @@ export class RegistrationService {
       username: username,
       first_name: first_name,
       last_name: last_name,
-      register_method: RegisterMethod.FACEBOOK,
+      register_method: CONST.RegisterMethod.FACEBOOK,
       roles: [role],
       is_verified: true,
-      createdBy: SYSTEM_USER_ID,
-      updatedBy: SYSTEM_USER_ID,
+      createdBy: CONST.SYSTEM_USER_ID,
+      updatedBy: CONST.SYSTEM_USER_ID,
     });
 
     await user.save();
+    await this.createPreference(user);
 
     return plainToInstance(DTO.RegisterRes, {
       user_id: user.id,
@@ -113,16 +109,16 @@ export class RegistrationService {
   async googleRegister(dto: DTO.GoogleRegisterReq): Promise<DTO.RegisterRes> {
     const { email, google_id, first_name, last_name, username } = dto;
     // Check if the user already exists
-    const isExistUser = await UserEntity.exists({
+    const is_exist_user = await UserEntity.exists({
       where: { google_id: google_id },
     });
 
-    if (isExistUser) {
-      throw new ValidationException(ErrorCode.E003);
+    if (is_exist_user) {
+      throw new ValidationException(CONST.ErrorCode.E003);
     }
 
     const role = await this.roleRepository.getRoleByRoleName(
-      DefaultRole.STUDENT,
+      CONST.DefaultRole.STUDENT,
     );
 
     // Register user
@@ -132,18 +128,24 @@ export class RegistrationService {
       first_name: first_name,
       last_name: last_name,
       username: username,
-      register_method: RegisterMethod.GOOGLE,
+      register_method: CONST.RegisterMethod.GOOGLE,
       roles: [role],
       is_verified: true,
-      createdBy: SYSTEM_USER_ID,
-      updatedBy: SYSTEM_USER_ID,
+      createdBy: CONST.SYSTEM_USER_ID,
+      updatedBy: CONST.SYSTEM_USER_ID,
     });
 
     await user.save();
+    await this.createPreference(user);
 
     return plainToInstance(DTO.RegisterRes, {
       user_id: user.id,
     });
+  }
+
+  private async createPreference(user: UserEntity): Promise<void> {
+    const preference = new PreferenceEntity({ user });
+    await preference.save();
   }
 
   private async sendVerificationEmail(
@@ -160,17 +162,17 @@ export class RegistrationService {
       },
     );
     await this.cacheManager.set(
-      createCacheKey(CacheKey.EMAIL_VERIFICATION, user.id),
+      createCacheKey(CONST.CacheKey.EMAIL_VERIFICATION, user.id),
       token,
       ms(tokenExpiresIn),
     );
     await this.cacheManager.set(
-      createCacheKey(CacheKey.EMAIL_VERIFICATION_TIME, user.id),
+      createCacheKey(CONST.CacheKey.EMAIL_VERIFICATION_TIME, user.id),
       token,
       ms(tokenExpiresIn),
     );
     await this.emailQueue.add(
-      JobName.EMAIL_VERIFICATION,
+      CONST.JobName.EMAIL_VERIFICATION,
       {
         email: user.email,
         token,
@@ -184,21 +186,16 @@ export class RegistrationService {
   }
 
   async resendVerifyEmail(userToken: JwtPayloadType): Promise<void> {
-    const user = await this.userRepository.findOneBy({
-      id: userToken.id,
-    });
+    const user = await this.userRepository.findOneByPublicId(userToken.id);
 
-    if (!user) {
-      throw new NotFoundException(ErrorCode.E002, 'User not found');
-    }
-    const retryTimestamp = await this.cacheManager.get<Date>(
-      createCacheKey(CacheKey.EMAIL_VERIFICATION_TIME, user.id),
+    const retry_timestamp = await this.cacheManager.get<Date>(
+      createCacheKey(CONST.CacheKey.EMAIL_VERIFICATION_TIME, user.id),
     );
-    if (retryTimestamp) {
+    if (retry_timestamp) {
       throw new RequestThrottledException(
-        ErrorCode.E006,
-        'You can only request email verification once every minute',
-        retryTimestamp,
+        CONST.ErrorCode.E022,
+        undefined,
+        retry_timestamp,
       ); // Less than 1 minute has passed
     }
     await this.sendVerificationEmail(user);
@@ -207,31 +204,22 @@ export class RegistrationService {
   async verifyEmail(dto: DTO.VerifyEmailReq) {
     const payload = this.tokenService.verifyVerificationToken(dto.token);
 
-    const user = await this.userRepository.findOneBy({
-      id: payload.id,
-    });
+    const user = await this.userRepository.findOneByPublicId(payload.id);
 
-    if (!user) {
-      throw new NotFoundException(ErrorCode.E002, 'User not found');
-    }
-
-    const verifyEmailToken = await this.cacheManager.get<string>(
-      createCacheKey(CacheKey.EMAIL_VERIFICATION, user.id),
+    const cache_key = createCacheKey(
+      CONST.CacheKey.EMAIL_VERIFICATION,
+      user.id,
     );
+    const verify_email_token = await this.cacheManager.get<string>(cache_key);
 
-    if (!verifyEmailToken || verifyEmailToken !== dto.token) {
-      throw new NotFoundException(
-        ErrorCode.E010,
-        'Email verification token not found or invalid',
-      );
+    if (!verify_email_token || verify_email_token !== dto.token) {
+      throw new NotFoundException(CONST.ErrorCode.E023);
     }
 
     user.is_verified = true;
-    user.updatedBy = SYSTEM_USER_ID;
+    user.updatedBy = CONST.SYSTEM_USER_ID;
     await user.save();
 
-    await this.cacheManager.del(
-      createCacheKey(CacheKey.EMAIL_VERIFICATION, user.id),
-    );
+    await this.cacheManager.del(cache_key);
   }
 }
