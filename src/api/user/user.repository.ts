@@ -1,9 +1,9 @@
+import { UserEntity } from '@/api/user';
 import { Nanoid } from '@/common';
 import { ErrorCode, RegisterMethod } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { UserEntity } from './user.entity';
 
 @Injectable()
 export class UserRepository extends Repository<UserEntity> {
@@ -21,7 +21,7 @@ export class UserRepository extends Repository<UserEntity> {
     });
 
     if (!user) {
-      throw new NotFoundException(ErrorCode.E002, 'User not found');
+      throw new NotFoundException(ErrorCode.E002);
     }
 
     return user;
@@ -38,7 +38,7 @@ export class UserRepository extends Repository<UserEntity> {
     });
 
     if (!user) {
-      throw new NotFoundException(ErrorCode.E002, 'User not found');
+      throw new NotFoundException(ErrorCode.E002);
     }
     return user;
   }
@@ -53,7 +53,7 @@ export class UserRepository extends Repository<UserEntity> {
     });
 
     if (!user) {
-      throw new NotFoundException(ErrorCode.E002, 'User not found');
+      throw new NotFoundException(ErrorCode.E002);
     }
     return user;
   }

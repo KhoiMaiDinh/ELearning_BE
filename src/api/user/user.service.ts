@@ -1,3 +1,4 @@
+import { UserEntity, UserRepository } from '@/api/user';
 import {
   CursorPaginatedDto,
   CursorPaginationDto,
@@ -11,8 +12,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
 import * as DTO from './dto';
-import { UserEntity } from './entities/user.entity';
-import { UserRepository } from './entities/user.repository';
 
 @Injectable()
 export class UserService {

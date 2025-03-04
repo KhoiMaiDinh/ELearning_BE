@@ -1,6 +1,16 @@
+import {
+  ChangePasswordReq,
+  CreateUserReqDto,
+  ListUserReqDto,
+  LoadMoreUsersReqDto,
+  UpdateUserReqDto,
+  UserRes,
+  UserService,
+} from '@/api/user';
 import { CursorPaginatedDto, Nanoid, OffsetPaginatedDto } from '@/common';
 import { Permission } from '@/constants';
 import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
+import { ParseNanoidPipe } from '@/pipes';
 import {
   Body,
   Controller,
@@ -15,16 +25,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import { ParseNanoidPipe } from '../../pipes';
-import {
-  ChangePasswordReq,
-  CreateUserReqDto,
-  ListUserReqDto,
-  LoadMoreUsersReqDto,
-  UpdateUserReqDto,
-  UserRes,
-} from './dto';
-import { UserService } from './user.service';
 
 @ApiTags('users')
 @Controller({
