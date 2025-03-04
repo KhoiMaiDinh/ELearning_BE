@@ -10,7 +10,7 @@ import {
 import { CursorPaginatedDto, Nanoid, OffsetPaginatedDto } from '@/common';
 import { Permission } from '@/constants';
 import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
-import { ParseNanoidPipe } from '@/pipes';
+import { ParseNanoidPipe } from '@/pipes/nanoid-parse.pipe';
 import {
   Body,
   Controller,
