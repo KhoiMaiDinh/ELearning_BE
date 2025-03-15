@@ -3,3 +3,21 @@ services:
     extends:
       file: ./minio.yaml
       service: minio
+      networks:
+        - app_network
+  kafka:
+    extends:
+      file: ./kafka.yaml
+      service: kafka
+      networks:
+        - app_network
+  kafdrop:
+    extends:
+      file: ./kafka.yaml
+      service: kafdrop
+      networks:
+        - app_network
+
+networks:
+  app_network:
+    driver: bridge

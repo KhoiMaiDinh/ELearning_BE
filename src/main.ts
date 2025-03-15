@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import 'dotenv/config';
@@ -41,6 +42,29 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService<AllConfigType>);
   const reflector = app.get(Reflector);
+  // Use global prefix if you don't have subdomain
+  app.setGlobalPrefix(
+    configService.getOrThrow('app.apiPrefix', { infer: true }),
+    {
+      exclude: [
+        { method: RequestMethod.GET, path: '/' },
+        { method: RequestMethod.GET, path: 'health' },
+      ],
+    },
+  );
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        brokers: configService.getOrThrow('kafka.brokers', { infer: true }),
+      },
+      consumer: {
+        groupId: configService.getOrThrow('kafka.groupId', { infer: true }),
+      },
+    },
+  });
+
   const isDevelopment =
     configService.getOrThrow('app.nodeEnv', { infer: true }) === 'development';
   const corsOrigin = configService.getOrThrow('app.corsOrigin', {
@@ -54,17 +78,6 @@ async function bootstrap() {
     credentials: true,
   });
   console.info('CORS Origin:', corsOrigin);
-
-  // Use global prefix if you don't have subdomain
-  app.setGlobalPrefix(
-    configService.getOrThrow('app.apiPrefix', { infer: true }),
-    {
-      exclude: [
-        { method: RequestMethod.GET, path: '/' },
-        { method: RequestMethod.GET, path: 'health' },
-      ],
-    },
-  );
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -89,6 +102,8 @@ async function bootstrap() {
   if (isDevelopment) {
     setupSwagger(app);
   }
+
+  await app.startAllMicroservices();
 
   await app.listen(configService.getOrThrow('app.port', { infer: true }));
 
