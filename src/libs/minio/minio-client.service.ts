@@ -1,5 +1,6 @@
+import { MediaEntity } from '@/api/media/entities/media.entity';
 import { AllConfigType } from '@/config';
-import { ErrorCode, UploadResource } from '@/constants';
+import { Bucket, Entity, ErrorCode, UploadStatus } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import {
   HttpException,
@@ -17,12 +18,12 @@ import { PresignedUrlInterface } from './interfaces/presigned-url.interface';
 @Injectable()
 export class MinioClientService implements OnModuleInit {
   private readonly logger = new Logger(MinioClientService.name);
-  private readonly base_bucket: string;
+  private readonly image_bucket: string;
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
     private readonly minio: MinioService,
   ) {
-    this.base_bucket = this.configService.get('storage.bucket', {
+    this.image_bucket = this.configService.get('storage.bucket', {
       infer: true,
     });
   }
@@ -33,14 +34,14 @@ export class MinioClientService implements OnModuleInit {
 
   public async onModuleInit(): Promise<void> {
     this.logger.log('MinioClient initialized');
-    await this.createBucket(this.base_bucket);
+    await this.createBucket(this.image_bucket);
+    await this.createBucket(Bucket.DOCUMENT);
   }
 
   private async createBucket(name: string): Promise<void> {
-    const is_bucket_existed = await this.client.bucketExists(this.base_bucket);
+    const is_bucket_existed = await this.client.bucketExists(name);
     if (!is_bucket_existed) {
-      await this.client.makeBucket(this.base_bucket);
-
+      await this.client.makeBucket(name);
       const policy = `
         {
           "Version": "2012-10-17",
@@ -54,13 +55,13 @@ export class MinioClientService implements OnModuleInit {
           ]
         }
       `;
-      await this.client.setBucketPolicy(this.base_bucket, policy);
+      await this.client.setBucketPolicy(name, policy);
     }
   }
 
   public async upload(
     file: BufferedFile,
-    base_bucket: string = this.base_bucket,
+    base_bucket: string = this.image_bucket,
   ): Promise<string> {
     const { mimetype, originalname, buffer } = file;
     if (!(mimetype.includes('jpeg') || mimetype.includes('png'))) {
@@ -93,7 +94,7 @@ export class MinioClientService implements OnModuleInit {
 
   public async isValidFile(file_name: string): Promise<boolean> {
     try {
-      await this.client.statObject(this.base_bucket, file_name);
+      await this.client.statObject(this.image_bucket, file_name);
       return true;
     } catch (error) {
       this.logger.error(error);
@@ -104,16 +105,17 @@ export class MinioClientService implements OnModuleInit {
     }
   }
 
-  public async getPresignedUrl(
-    resource: UploadResource,
+  public async getPostPresignedUrl(
+    entity: Entity,
     object_name: string,
+    bucket: string = this.image_bucket,
     max_file_size_bytes: number = 5 * 1024 * 1024, // 5MB limit
     expiry_ms: number = 1000 * 60 * 60 * 24, // Expiry time for the pre-signed URL
   ): Promise<PresignedUrlInterface> {
     const expires_at = new Date(Date.now() + expiry_ms);
     const policy = this.client.newPostPolicy();
-    policy.setBucket(this.base_bucket);
-    policy.setKey(resource + '/' + this.hashed_filename(object_name));
+    policy.setBucket(bucket);
+    policy.setKey(entity + '/' + this.hashed_filename(object_name));
     policy.setExpires(expires_at);
     policy.setContentLengthRange(0, max_file_size_bytes);
 
@@ -124,6 +126,26 @@ export class MinioClientService implements OnModuleInit {
       expires_at,
     };
     return presigned_url;
+  }
+
+  public async getPresignedUrl(
+    media: MediaEntity,
+    expiry_ms: number = 60 * 60 * 24,
+  ): Promise<MediaEntity> {
+    const { bucket, key, status } = media;
+    if (status != UploadStatus.VALIDATED) {
+      media.key = '';
+      return media;
+    }
+    const presigned_url = await this.client.presignedGetObject(
+      bucket,
+      key,
+      expiry_ms,
+    );
+
+    const url = new URL(presigned_url);
+    media.key = key + '?' + url.searchParams;
+    return media;
   }
 
   private hashed_filename(originalname: string): string {

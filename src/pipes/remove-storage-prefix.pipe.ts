@@ -30,7 +30,7 @@ export class RemoveStoragePrefixPipe implements PipeTransform {
       if (shouldTransform && typeof value[key] === 'string') {
         value[key] = value[key].replace(new RegExp(`^${storagePath}`), '');
 
-        await this.storageService.isValidFile(value[key]);
+        // await this.storageService.isValidFile(value[key]);
       }
     }
 

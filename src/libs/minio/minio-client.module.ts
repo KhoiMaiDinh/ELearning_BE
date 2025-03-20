@@ -9,6 +9,7 @@ import { MinioClientService } from './minio-client.service';
     MinioModule.registerAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService<AllConfigType>) => ({
+        region: 'ap-southeast-1',
         endPoint: config.get('storage.host', { infer: true }),
         port: config.get('storage.port', { infer: true }),
         accessKey: config.get('storage.access_key', { infer: true }),
