@@ -1,5 +1,6 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
+import { Entity as E } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -11,7 +12,7 @@ import {
 } from 'typeorm';
 import { PermissionEntity } from './permission.entity';
 
-@Entity('role')
+@Entity(E.ROLE)
 export class RoleEntity extends AbstractEntity {
   constructor(data?: Partial<RoleEntity>) {
     super();
