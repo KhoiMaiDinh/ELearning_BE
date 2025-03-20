@@ -1,3 +1,4 @@
+import { CategoryTranslationEntity } from '@/api/category/entities/category-translation.entity';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { Uuid } from '@/common';
@@ -13,7 +14,6 @@ import {
   TreeChildren,
   TreeParent,
 } from 'typeorm';
-import { CategoryTranslationEntity } from './category-translation.entity';
 
 @Entity('category')
 @Tree('materialized-path')
