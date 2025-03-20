@@ -14,3 +14,5 @@ export * from './validators/is-both-or-none-present.decorator';
 export * from './validators/is-ms.decorator';
 export * from './validators/is-nullable.decorator';
 export * from './validators/is-password.decorator';
+export * from './validators/is-valid-media-file.decorator';
+export * from './validators/is-valid-upload-type.decorator';
