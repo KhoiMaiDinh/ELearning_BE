@@ -10,6 +10,7 @@ export enum Bucket {
   IMAGE = 'image',
   VIDEO = 'video',
   TEMP_VIDEO = 'temp-video',
+  DOCUMENT = 'document',
 }
 
 export enum UploadStatus {
@@ -21,18 +22,22 @@ export enum UploadStatus {
 }
 
 export enum UploadEntityProperty {
-  AVATAR = 'avatar',
-  PROFILE_IMAGE = 'profile-image',
-  COURSE_THUMBNAIL = 'course-thumbnail',
-  LESSON_VIDEO = 'lesson-video',
-  LESSON_PDF = 'lesson-pdf',
+  PROFILE_IMAGE = 'profile_image',
+  COURSE_THUMBNAIL = 'course_thumbnail',
+  LESSON_VIDEO = 'lesson_video',
+  LESSON_PDF = 'lesson_pdf',
+  RESUME = 'resume',
+  CERTIFICATES = 'certificates',
 }
 
 export const VALID_UPLOAD_TYPES: Record<Entity, UploadEntityProperty[]> = {
-  user: [UploadEntityProperty.AVATAR, UploadEntityProperty.PROFILE_IMAGE],
+  user: [
+    UploadEntityProperty.PROFILE_IMAGE,
+    UploadEntityProperty.PROFILE_IMAGE,
+  ],
+  instructor: [UploadEntityProperty.RESUME, UploadEntityProperty.CERTIFICATES],
   course: [UploadEntityProperty.COURSE_THUMBNAIL],
   lesson: [UploadEntityProperty.LESSON_VIDEO, UploadEntityProperty.LESSON_PDF],
-  instructor: [],
   category: [],
   post: [],
   media: [],
@@ -47,9 +52,10 @@ export const UPLOAD_TYPE_RESOURCE: Record<
   UploadEntityProperty,
   UploadResource
 > = {
-  [UploadEntityProperty.AVATAR]: UploadResource.IMAGE,
   [UploadEntityProperty.PROFILE_IMAGE]: UploadResource.IMAGE,
   [UploadEntityProperty.COURSE_THUMBNAIL]: UploadResource.IMAGE,
   [UploadEntityProperty.LESSON_VIDEO]: UploadResource.VIDEO,
   [UploadEntityProperty.LESSON_PDF]: UploadResource.PDF,
+  [UploadEntityProperty.RESUME]: UploadResource.PDF,
+  [UploadEntityProperty.CERTIFICATES]: UploadResource.PDF,
 };

@@ -6,6 +6,8 @@ import { AllConfigType } from '@/config/config.type';
 import { Environment } from '@/constants/index';
 import databaseConfig from '@/database/config/database.config';
 import { TypeOrmConfigService } from '@/database/typeorm-config.service';
+import { KafkaModule } from '@/kafka';
+import kafkaConfig from '@/kafka/config/kafka.config';
 import minioConfig from '@/libs/minio/config/minio.config';
 import mailConfig from '@/mail/config/mail.config';
 import { MailModule } from '@/mail/mail.module';
@@ -24,6 +26,7 @@ import {
 } from 'nestjs-i18n';
 import { LoggerModule } from 'nestjs-pino';
 import path from 'path';
+import { ConsumerModule } from 'src/consumers';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import loggerFactory from './logger-factory';
 
@@ -38,6 +41,7 @@ function generateModulesSet(): ModuleMetadata['imports'] {
         authConfig,
         mailConfig,
         minioConfig,
+        kafkaConfig,
       ],
       envFilePath: ['.env'],
     }),
@@ -145,6 +149,8 @@ function generateModulesSet(): ModuleMetadata['imports'] {
         i18nModule,
         loggerModule,
         MailModule,
+        KafkaModule,
+        ConsumerModule,
       ];
       break;
     case 'api':
