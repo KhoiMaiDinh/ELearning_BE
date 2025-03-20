@@ -1,4 +1,4 @@
-import { ErrorCode } from '@/constants';
+import { ErrorCode, Language } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -11,6 +11,7 @@ import {
   GetCategoryQuery,
   UpdateCategoryReq,
 } from './dto';
+import { GetCategoriesQuery } from './dto/get-categories.req.dto';
 import { CategoryTranslationEntity } from './entities/category-translation.entity';
 import { CategoryEntity } from './entities/category.entity';
 import { CategoryTranslationRepository } from './repositories/category-translation.repository';
@@ -64,10 +65,20 @@ export class CategoryService {
     return new_category.toDto(CategoryRes);
   }
 
-  async findAll(): Promise<CategoryRes[]> {
+  async findAll(query: GetCategoriesQuery): Promise<CategoryRes[]> {
+    const language = query.language;
+    let depth = 0;
+    if (query.with_children) depth = 1;
+
     const categories = await this.categoryRepository.findTrees({
       relations: ['translations'],
+      depth,
     });
+
+    if (language)
+      categories.forEach((category) =>
+        this.filterTranslations(category, language),
+      );
 
     return plainToInstance(CategoryRes, categories);
   }
@@ -75,12 +86,11 @@ export class CategoryService {
   async findOne(slug: string, query: GetCategoryQuery): Promise<CategoryRes> {
     let category = await this.categoryRepository.findOneBySlug(slug);
     if (!category) throw new NotFoundException(ErrorCode.E008);
-    if (query.with_children) {
+    if (query.with_children)
       category = await this.categoryRepository.findChildren(category, false);
-    }
-    if (query.with_parent) {
+    if (query.with_parent)
       category = await this.categoryRepository.findParent(category);
-    }
+    if (query.language) this.filterTranslations(category, query.language);
     return category.toDto(CategoryRes);
   }
 
@@ -129,5 +139,17 @@ export class CategoryService {
     const counter = await this.categoryRepository.countSlug(unique_slug);
     if (counter > 0) unique_slug = `${base_slug}-${counter}`;
     return unique_slug;
+  }
+
+  private filterTranslations(
+    category: CategoryEntity,
+    language: Language = Language.VI,
+  ): void {
+    category.translations = category.translations.filter(
+      (translation) => translation.language === language,
+    );
+    if (category.children)
+      category.children.forEach((child) => this.filterTranslations(child));
+    if (category.parent) this.filterTranslations(category.parent);
   }
 }

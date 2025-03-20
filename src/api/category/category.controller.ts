@@ -1,5 +1,12 @@
+import {
+  CategoryRes,
+  CreateCategoryReq,
+  GetCategoriesQuery,
+  GetCategoryQuery,
+  UpdateCategoryReq,
+} from '@/api/category';
 import { Permission } from '@/constants';
-import { ApiAuth, Permissions } from '@/decorators';
+import { ApiAuth, ApiPublic, Permissions, Public } from '@/decorators';
 import { SlugParserPipe } from '@/pipes/slug-parse.pipe';
 import {
   Body,
@@ -14,12 +21,6 @@ import {
 } from '@nestjs/common';
 import { InstructorRes } from '../instructor';
 import { CategoryService } from './category.service';
-import {
-  CategoryRes,
-  CreateCategoryReq,
-  GetCategoryQuery,
-  UpdateCategoryReq,
-} from './dto';
 
 @Controller({ path: 'categories', version: '1' })
 export class CategoryController {
@@ -33,9 +34,10 @@ export class CategoryController {
   }
 
   @Get()
-  @ApiAuth({ type: CategoryRes, statusCode: HttpStatus.OK })
-  findAll(): Promise<CategoryRes[]> {
-    return this.categoryService.findAll();
+  @Public()
+  @ApiPublic({ type: CategoryRes, statusCode: HttpStatus.OK })
+  findAll(@Query() query: GetCategoriesQuery): Promise<CategoryRes[]> {
+    return this.categoryService.findAll(query);
   }
 
   @Get(':slug/instructors')

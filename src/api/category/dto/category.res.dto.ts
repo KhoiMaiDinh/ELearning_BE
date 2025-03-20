@@ -20,7 +20,7 @@ export class CategoryTranslationRes {
 @Exclude()
 export class CategoryRes {
   @Expose()
-  @ClassField(() => CategoryTranslationRes)
+  @ClassField(() => CategoryTranslationRes, { each: true })
   translations: CategoryTranslationRes[];
 
   @Expose()
