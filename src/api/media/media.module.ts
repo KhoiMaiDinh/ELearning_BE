@@ -1,11 +1,14 @@
+import { MediaController, MediaService } from '@/api/media';
+import { MediaEntity } from '@/api/media/entities/media.entity';
+import { MediaRepository } from '@/api/media/media.repository';
 import { MinioClientModule } from '@/libs/minio';
 import { Module } from '@nestjs/common';
-import { MediaController } from './media.controller';
-import { MediaService } from './media.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [MinioClientModule],
+  imports: [MinioClientModule, TypeOrmModule.forFeature([MediaEntity])],
   controllers: [MediaController],
-  providers: [MediaService],
+  providers: [MediaService, MediaRepository],
+  exports: [MediaRepository],
 })
 export class MediaModule {}
