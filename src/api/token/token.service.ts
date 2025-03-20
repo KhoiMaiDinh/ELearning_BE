@@ -43,7 +43,7 @@ export class TokenService {
 
     // Force logout if the session is in the blacklist
     const isSessionBlacklisted = await this.cacheManager.store.get<boolean>(
-      createCacheKey(CacheKey.SESSION_BLACKLIST, payload.sessionId),
+      createCacheKey(CacheKey.SESSION_BLACKLIST, payload.session_id),
     );
 
     if (isSessionBlacklisted) {

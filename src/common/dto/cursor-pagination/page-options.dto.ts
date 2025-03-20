@@ -4,7 +4,7 @@ import {
   StringFieldOptional,
 } from '../../../decorators/field.decorators';
 
-export class PageOptionsDto {
+export class PageCursorOptionsDto {
   @StringFieldOptional()
   afterCursor?: string;
 

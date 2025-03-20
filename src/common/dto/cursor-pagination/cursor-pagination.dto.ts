@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { DEFAULT_PAGE_LIMIT } from '../../../constants';
-import { PageOptionsDto } from './page-options.dto';
+import { PageCursorOptionsDto } from './page-options.dto';
 
 export class CursorPaginationDto {
   @ApiProperty()
@@ -24,7 +24,7 @@ export class CursorPaginationDto {
     totalRecords: number,
     afterCursor: string,
     beforeCursor: string,
-    pageOptions: PageOptionsDto,
+    pageOptions: PageCursorOptionsDto,
   ) {
     this.limit = pageOptions.limit ?? DEFAULT_PAGE_LIMIT;
     this.afterCursor = afterCursor;
