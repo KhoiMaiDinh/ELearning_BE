@@ -1,13 +1,9 @@
 import { TokenService } from '@/api/token/token.service';
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ErrorCode, IS_AUTH_OPTIONAL, IS_PUBLIC } from '@/constants';
+import { UnauthorizedException } from '@/exceptions';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { IS_AUTH_OPTIONAL, IS_PUBLIC } from '../constants';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -36,7 +32,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     if (!accessToken) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(ErrorCode.E024);
     }
 
     request['user'] = await this.tokenService.verifyAccessToken(accessToken);
