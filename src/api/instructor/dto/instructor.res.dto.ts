@@ -1,13 +1,17 @@
-import { CategoryRes } from '@/api/category';
-import { UserRes } from '@/api/user/dto';
+import { CategoryRes } from '@/api/category/dto/category.res.dto';
+import { MediaRes } from '@/api/media/dto/media.res.dto';
+import { UserRes } from '@/api/user/dto/user.res.dto';
+import { WrapperType } from '@/common';
 import {
+  BooleanField,
+  ClassField,
   ClassFieldOptional,
   ObjectField,
-  RestoreStorageUrl,
   StringField,
   StringFieldOptional,
 } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
+import { CertificateRes } from './certificate.res.dto';
 
 @Exclude()
 export class InstructorRes {
@@ -20,9 +24,12 @@ export class InstructorRes {
   headline: string;
 
   @Expose()
-  @StringField()
-  @RestoreStorageUrl()
-  resume_url: string;
+  @ClassField(() => MediaRes)
+  resume: MediaRes;
+
+  @Expose()
+  @ClassField(() => CertificateRes, { each: true })
+  certificates?: WrapperType<CertificateRes[]>;
 
   @Expose()
   @StringFieldOptional()
@@ -36,13 +43,13 @@ export class InstructorRes {
   @StringFieldOptional()
   linkedin_url?: string;
 
-  @Exclude()
-  @StringField()
+  @Expose()
+  @BooleanField()
   is_approved: boolean;
 
   @Expose()
   @ClassFieldOptional(() => UserRes)
-  user?: UserRes;
+  user?: WrapperType<UserRes>;
 
   @Expose()
   @ClassFieldOptional(() => CategoryRes)

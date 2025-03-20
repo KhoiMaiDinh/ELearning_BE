@@ -1,6 +1,9 @@
 import { CategoryEntity } from '@/api/category/entities/category.entity';
+
+import { MediaEntity } from '@/api/media/entities/media.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
+import { Entity as E } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -11,8 +14,9 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
+import { CertificateEntity } from './certificate.entity';
 
-@Entity('instructor')
+@Entity(E.INSTRUCTOR)
 export class InstructorEntity extends AbstractEntity {
   constructor(data?: Partial<InstructorEntity>) {
     super();
@@ -29,8 +33,8 @@ export class InstructorEntity extends AbstractEntity {
   user!: Relation<UserEntity>;
 
   // bios
-  @Column({ type: 'jsonb' })
-  biography!: object;
+  @Column({ type: 'text' })
+  biography!: string;
 
   @Column({ type: 'varchar', length: 60 })
   headline!: string;
@@ -51,15 +55,16 @@ export class InstructorEntity extends AbstractEntity {
   linkedin_url?: string;
 
   // resume and certificates
-  @Column({ type: 'varchar', length: 255 })
-  resume_url?: string;
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  first_certificate_url?: string;
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  second_certificate_url?: string;
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  third_certificate_url?: string;
+  @Column({ type: 'uuid', nullable: true })
+  resume_id?: Uuid;
+  @OneToOne(() => MediaEntity, { eager: true })
+  @JoinColumn({ referencedColumnName: 'media_id', name: 'resume_id' })
+  resume?: Relation<MediaEntity>;
 
+  @OneToMany(() => CertificateEntity, (certificate) => certificate.instructor)
+  certificates: Relation<CertificateEntity[]>;
+
+  // relations
   @ManyToOne(() => CategoryEntity, (category) => category.instructors)
   @JoinColumn({ name: 'category_id' })
   category: Relation<CategoryEntity>;

@@ -1,3 +1,4 @@
+import { Nanoid } from '@/common';
 import { ErrorCode } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
@@ -16,6 +17,21 @@ export class InstructorRepository extends Repository<InstructorEntity> {
   ): Promise<InstructorEntity> {
     const instructor = await this.findOne({
       where: { user: { username } },
+      relations: ['user', ...load_entities],
+    });
+
+    if (!instructor) {
+      throw new NotFoundException(ErrorCode.E012);
+    }
+    return instructor;
+  }
+
+  async findOneByUserPublicId(
+    id: Nanoid,
+    load_entities: string[] = [],
+  ): Promise<InstructorEntity> {
+    const instructor = await this.findOne({
+      where: { user: { id } },
       relations: ['user', ...load_entities],
     });
 
