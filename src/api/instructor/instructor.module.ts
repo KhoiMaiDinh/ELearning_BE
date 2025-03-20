@@ -1,8 +1,10 @@
-import { CategoryModule } from '@/api/category';
+import { CategoryModule } from '@/api/category/category.module';
+import { MediaModule } from '@/api/media/media.module';
+import { UserModule } from '@/api/user/user.module';
 import { MinioClientModule } from '@/libs/minio/minio-client.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from '../user/user.module';
+import { CertificateEntity } from './entities/certificate.entity';
 import { InstructorEntity } from './entities/instructor.entity';
 import { InstructorController } from './instructor.controller';
 import { InstructorRepository } from './instructor.repository';
@@ -12,8 +14,9 @@ import { InstructorService } from './instructor.service';
   imports: [
     forwardRef(() => CategoryModule),
     forwardRef(() => UserModule),
+    MediaModule,
     MinioClientModule,
-    TypeOrmModule.forFeature([InstructorEntity]),
+    TypeOrmModule.forFeature([InstructorEntity, CertificateEntity]),
   ],
   controllers: [InstructorController],
   providers: [InstructorService, InstructorRepository],

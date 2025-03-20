@@ -42,6 +42,7 @@ export enum ErrorCode {
   E021 = 'token.error.password_reset_too_frequent',
   E022 = 'token.error.email_verification_too_frequent',
   E023 = 'token.error.email_verification_token_not_found_or_invalid',
+  E024 = 'token.error.empty',
 
   // Role
   E006 = 'role.error.not_found',

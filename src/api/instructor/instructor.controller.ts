@@ -20,7 +20,7 @@ import {
 } from './dto';
 import { InstructorService } from './instructor.service';
 
-@Controller('instructor')
+@Controller({ path: 'instructors', version: '1' })
 export class InstructorController {
   constructor(private readonly instructorService: InstructorService) {}
 
