@@ -4,7 +4,7 @@ import { PreferenceEntity } from '@/api/preference/entities/preference.entity';
 import { RoleEntity } from '@/api/role/entities/role.entity';
 import { SessionEntity } from '@/api/user/entities/session.entity';
 import { Uuid } from '@/common';
-import { RegisterMethod } from '@/constants';
+import { Entity as E, RegisterMethod } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
 import { hashPassword as hashPass } from '@/utils';
@@ -33,7 +33,7 @@ type OptionalUserProps = Partial<UserEntity>;
 type UserProps = RequiredUserProps & OptionalUserProps;
 
 @Unique(['email', 'register_method'])
-@Entity('user')
+@Entity(E.USER)
 export class UserEntity extends AbstractEntity {
   constructor(data?: UserProps) {
     super();

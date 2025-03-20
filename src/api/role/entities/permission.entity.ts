@@ -1,10 +1,10 @@
 import { Uuid } from '@/common';
-import { Permission, PermissionGroup } from '@/constants';
+import { Entity as E, Permission, PermissionGroup } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { RoleEntity } from './role.entity';
 
-@Entity('permission')
+@Entity(E.PERMISSION)
 export class PermissionEntity extends AbstractEntity {
   constructor(data?: Partial<PermissionEntity>) {
     super();
