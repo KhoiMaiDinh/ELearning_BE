@@ -4,14 +4,14 @@ import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import slugify from 'slugify';
 
-import { InstructorRes } from '@/api/instructor';
 import {
   CategoryRes,
   CreateCategoryReq,
+  GetCategoriesQuery,
   GetCategoryQuery,
   UpdateCategoryReq,
-} from './dto';
-import { GetCategoriesQuery } from './dto/get-categories.req.dto';
+} from '@/api/category';
+import { InstructorRes } from '@/api/instructor';
 import { CategoryTranslationEntity } from './entities/category-translation.entity';
 import { CategoryEntity } from './entities/category.entity';
 import { CategoryTranslationRepository } from './repositories/category-translation.repository';
