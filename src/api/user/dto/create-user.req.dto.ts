@@ -1,10 +1,4 @@
-import {
-  EmailField,
-  PasswordField,
-  StringField,
-  StringFieldOptional,
-} from '@/decorators';
-import { TransformStorageUrl } from '@/decorators/transform-url.decorator';
+import { EmailField, PasswordField, StringField } from '@/decorators';
 import { lowerCaseTransformer } from '@/utils/transformers/lower-case.transformer';
 import { IntersectionType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -27,10 +21,6 @@ export class UserBasicInfo {
 
   @StringField()
   last_name: string;
-
-  @StringFieldOptional()
-  @TransformStorageUrl()
-  profile_image?: string;
 }
 
 export class CreateUserReqDto extends IntersectionType(
