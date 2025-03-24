@@ -5,5 +5,9 @@
   "error": {
     "internal_server_error": "Has occurred an internal server error",
     "entity_not_found": "Entity not found"
+  },
+  "forbidden": {
+    "error": "Forbidden error",
+    "resource_owner": "Access denied. Not the resource owner"
   }
 }

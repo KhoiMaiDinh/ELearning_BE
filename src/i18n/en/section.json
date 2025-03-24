@@ -1,0 +1,9 @@
+{
+  "forbidden": {
+    "author": "Only course creator can create/update sections"
+  },
+  "error": {
+    "not_found": "Section not found",
+    "cannot_delete": "Cannot delete section that still have items"
+  }
+}

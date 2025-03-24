@@ -9,9 +9,20 @@ export enum ErrorCode {
 
   // Forbidden
   F001 = 'common.forbidden.error',
+  F002 = 'common.forbidden.resource_owner',
 
   // Internal Server
   I000 = 'common.internal_server.error',
+
+  // Course
+  E025 = 'course.error.not_found',
+  E026 = 'course.error.invalid_category',
+  E027 = 'course.error.cannot_modify',
+
+  // Section
+  E029 = 'section.forbidden.author',
+  E030 = 'section.error.not_found',
+  E031 = 'section.error.cannot_delete',
 
   // Category
   E008 = 'category.error.category_not_found',
@@ -26,6 +37,9 @@ export enum ErrorCode {
   E003 = 'user.error.email_exists',
   E004 = 'user.error.password_not_match',
   E005 = 'user.error.invalid_for_non_local_user',
+
+  // Media
+  E019 = 'media.error.not_found',
 
   // Preference
   E018 = 'preference.error.not_found',

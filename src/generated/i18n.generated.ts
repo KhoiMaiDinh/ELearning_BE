@@ -25,12 +25,34 @@ export type I18nTranslations = {
             "internal_server_error": string;
             "entity_not_found": string;
         };
+        "forbidden": {
+            "error": string;
+            "resource_owner": string;
+        };
+    };
+    "course": {
+        "unique": {
+            "title_per_instructor": string;
+        };
+        "error": {
+            "not_found": string;
+            "invalid_category": string;
+        };
     };
     "instructor": {
         "error": {
             "not_found": string;
             "existed": string;
             "invalid_specialized": string;
+        };
+    };
+    "section": {
+        "forbidden": {
+            "author": string;
+        };
+        "error": {
+            "not_found": string;
+            "cannot_delete": string;
         };
     };
     "token": {
@@ -41,6 +63,7 @@ export type I18nTranslations = {
             "password_reset_too_frequent": string;
             "email_verification_too_frequent": string;
             "email_verification_token_not_found_or_invalid": string;
+            "empty": string;
         };
     };
     "user": {
