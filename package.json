@@ -33,6 +33,7 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
+    "@dalet-oss/lexorank": "^1.1.0",
     "@keyv/redis": "^4.2.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^3.1.2",
