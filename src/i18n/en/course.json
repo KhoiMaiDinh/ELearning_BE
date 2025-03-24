@@ -1,0 +1,9 @@
+{
+  "unique": {
+    "title_per_instructor": "A course with the same title already exists for this instructor"
+  },
+  "error": {
+    "not_found": "Course not found",
+    "invalid_category": "Invalid category: a valid category must not be level 0"
+  }
+}
