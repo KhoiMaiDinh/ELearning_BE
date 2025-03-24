@@ -1,8 +1,8 @@
 import { PreferenceEntity } from '@/api/preference/entities/preference.entity';
 import { RoleRepository } from '@/api/role';
 import { JwtPayloadType, TokenService } from '@/api/token';
-import { UserRepository } from '@/api/user';
 import { UserEntity } from '@/api/user/entities/user.entity';
+import { UserRepository } from '@/api/user/user.repository';
 import { IEmailJob, IVerifyEmailJob } from '@/common';
 import { AllConfigType } from '@/config';
 import * as CONST from '@/constants';

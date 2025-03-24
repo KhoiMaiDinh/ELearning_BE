@@ -1,7 +1,7 @@
 import { JwtPayloadType, TokenService } from '@/api/token';
-import { UserRepository } from '@/api/user';
 import { SessionEntity } from '@/api/user/entities/session.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
+import { UserRepository } from '@/api/user/user.repository';
 import { IEmailJob, IVerifyEmailJob } from '@/common';
 import { AllConfigType } from '@/config';
 import {
@@ -209,11 +209,11 @@ export class AuthService {
 
   async logout(userToken: JwtPayloadType): Promise<void> {
     await this.cacheManager.store.set<boolean>(
-      createCacheKey(CacheKey.SESSION_BLACKLIST, userToken.sessionId),
+      createCacheKey(CacheKey.SESSION_BLACKLIST, userToken.session_id),
       true,
       userToken.exp * 1000 - Date.now(),
     );
-    await SessionEntity.delete(userToken.sessionId);
+    await SessionEntity.delete(userToken.session_id);
   }
 
   async refreshToken(dto: DTO.RefreshReq): Promise<DTO.RefreshRes> {

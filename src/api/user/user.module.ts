@@ -1,17 +1,21 @@
-import {
-  SessionEntity,
-  UserController,
-  UserEntity,
-  UserRepository,
-  UserService,
-} from '@/api/user';
-import { Module } from '@nestjs/common';
+import { MediaModule } from '@/api/media/media.module';
+import { SessionEntity } from '@/api/user/entities/session.entity';
+import { UserEntity } from '@/api/user/entities/user.entity';
+import { UserController } from '@/api/user/user.controller';
+import { UserRepository } from '@/api/user/user.repository';
+import { UserService } from '@/api/user/user.service';
+import { MinioClientModule } from '@/libs/minio';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, SessionEntity])],
+  imports: [
+    forwardRef(() => MediaModule),
+    MinioClientModule,
+    TypeOrmModule.forFeature([UserEntity, SessionEntity]),
+  ],
+  providers: [UserRepository, UserService],
   controllers: [UserController],
-  exports: [UserService, UserRepository],
-  providers: [UserService, UserRepository],
+  exports: [UserRepository, UserService],
 })
 export class UserModule {}

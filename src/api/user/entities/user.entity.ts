@@ -1,4 +1,6 @@
+import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.entity';
 import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
+import { MediaEntity } from '@/api/media/entities/media.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
 import { PreferenceEntity } from '@/api/preference/entities/preference.entity';
 import { RoleEntity } from '@/api/role/entities/role.entity';
@@ -15,6 +17,7 @@ import {
   Column,
   Entity,
   Index,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -77,9 +80,6 @@ export class UserEntity extends AbstractEntity {
   @Column({ type: 'varchar', length: 60, nullable: false })
   last_name!: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  profile_image?: string;
-
   @Index('UQ_user_google', { where: '"deleted_at" IS NULL', unique: true })
   @Column({ type: 'varchar', nullable: true })
   google_id: string | null;
@@ -93,6 +93,12 @@ export class UserEntity extends AbstractEntity {
 
   @Column({ type: 'boolean', default: false })
   is_verified: boolean;
+
+  @Column({ type: 'uuid', nullable: true })
+  profile_image_id?: Uuid;
+  @OneToOne(() => MediaEntity, { eager: true })
+  @JoinColumn({ referencedColumnName: 'media_id', name: 'profile_image_id' })
+  profile_image?: Relation<MediaEntity>;
 
   @OneToMany(() => SessionEntity, (session) => session.user)
   sessions?: Relation<SessionEntity[]>;
@@ -109,6 +115,12 @@ export class UserEntity extends AbstractEntity {
 
   @OneToOne(() => PreferenceEntity, (preference) => preference.user)
   preference?: Relation<PreferenceEntity>;
+
+  @OneToMany(
+    () => EnrolledCourseEntity,
+    (enrolled_course) => enrolled_course.user,
+  )
+  enrolled_courses?: Relation<EnrolledCourseEntity[]>;
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -1,4 +1,4 @@
-import { UserEntity } from '@/api/user';
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { Nanoid } from '@/common';
 import { ErrorCode, RegisterMethod } from '@/constants';
 import { NotFoundException } from '@/exceptions';

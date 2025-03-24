@@ -1,26 +1,38 @@
-import { UserEntity, UserRepository } from '@/api/user';
+import { MediaRepository } from '@/api/media';
+import * as DTO from '@/api/user/dto';
+import { UserEntity } from '@/api/user/entities/user.entity';
+import { UserRepository } from '@/api/user/user.repository';
 import {
   CursorPaginatedDto,
   CursorPaginationDto,
   Nanoid,
   OffsetPaginatedDto,
 } from '@/common';
-import { ErrorCode, RegisterMethod, SYSTEM_USER_ID } from '@/constants';
+import {
+  ErrorCode,
+  Language,
+  RegisterMethod,
+  SYSTEM_USER_ID,
+} from '@/constants';
 import { ValidationException } from '@/exceptions';
+import { MinioClientService } from '@/libs/minio';
 import { buildPaginator, paginate, verifyPassword } from '@/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
-import * as DTO from './dto';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly mediaRepository: MediaRepository,
+    private readonly storageService: MinioClientService,
+  ) {}
 
   async create(dto: DTO.CreateUserReqDto): Promise<DTO.UserRes> {
-    const { username, email, password, profile_image } = dto;
+    const { username, email, password } = dto;
 
     // check uniqueness of username/email
     const user = await this.userRepository.findOne({
@@ -42,7 +54,7 @@ export class UserService {
       username,
       email,
       password,
-      profile_image,
+      // profile_image,
       first_name: dto.first_name,
       last_name: dto.last_name,
       register_method: RegisterMethod.LOCAL,
@@ -97,7 +109,28 @@ export class UserService {
 
   async findOne(id: Nanoid): Promise<DTO.UserRes> {
     assert(id, 'id is required');
-    const user = await this.userRepository.findOneByOrFail({ id });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'roles')
+      .leftJoinAndSelect('roles.permissions', 'permissions')
+      .leftJoinAndSelect('user.profile_image', 'profile_image')
+      .leftJoinAndSelect('user.instructor_profile', 'instructor_profile')
+      .leftJoinAndSelect('instructor_profile.resume', 'resume')
+      .leftJoinAndSelect('instructor_profile.certificates', 'certificates')
+      .leftJoinAndSelect('certificates.certificate_file', 'certificate_file')
+      .leftJoinAndSelect('instructor_profile.category', 'category')
+      .leftJoinAndSelect(
+        'category.translations',
+        'translations',
+        'translations.language = :language',
+        { language: Language.VI },
+      )
+      .where('user.id = :id', { id })
+      .getOne();
+
+    user.profile_image = await this.storageService.getPresignedUrl(
+      user.profile_image,
+    );
 
     return user.toDto(DTO.UserRes);
   }
@@ -107,6 +140,13 @@ export class UserService {
 
     Object.assign(user, { user, ...dto });
     user.updatedBy = SYSTEM_USER_ID;
+
+    if (dto.profile_image) {
+      const media = await this.mediaRepository.findOneByKey(
+        dto.profile_image.key,
+      );
+      user.profile_image = media;
+    }
 
     await this.userRepository.save(user);
     return user.toDto(DTO.UserRes);

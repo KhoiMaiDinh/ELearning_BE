@@ -1,15 +1,15 @@
-import { UserModule } from '@/api/user';
+import { AuthModule } from '@/api/auth/auth.module';
+import { CategoryModule } from '@/api/category/category.module';
+import { CourseModule } from '@/api/course/course.module';
+import { HealthModule } from '@/api/health/health.module';
+import { HomeModule } from '@/api/home/home.module';
+import { InstructorModule } from '@/api/instructor/instructor.module';
+import { MediaModule } from '@/api/media/media.module';
+import { PostModule } from '@/api/post/post.module';
+import { PreferenceModule } from '@/api/preference/preference.module';
+import { RoleModule } from '@/api/role/role.module';
+import { UserModule } from '@/api/user/user.module';
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { CategoryModule } from './category/category.module';
-import { CourseModule } from './course/course.module';
-import { HealthModule } from './health/health.module';
-import { HomeModule } from './home/home.module';
-import { InstructorModule } from './instructor/instructor.module';
-import { MediaModule } from './media/media.module';
-import { PostModule } from './post/post.module';
-import { PreferenceModule } from './preference/preference.module';
-import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [

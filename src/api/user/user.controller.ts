@@ -5,11 +5,12 @@ import {
   LoadMoreUsersReqDto,
   UpdateUserReqDto,
   UserRes,
-  UserService,
 } from '@/api/user';
+import { UserService } from '@/api/user/user.service';
 import { CursorPaginatedDto, Nanoid, OffsetPaginatedDto } from '@/common';
 import { Permission } from '@/constants';
 import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
+import { ParseNanoidPipe } from '@/pipes';
 import {
   Body,
   Controller,
@@ -24,7 +25,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import { ParseNanoidPipe } from '../../pipes/nanoid-parse.pipe';
 
 @ApiTags('users')
 @Controller({
