@@ -4,6 +4,8 @@
   },
   "error": {
     "not_found": "Course not found",
-    "invalid_category": "Invalid category: a valid category must not be level 0"
+    "invalid_category": "Invalid category: a valid category must not be level 0",
+    "cannot_modify": "You cannot modify this course",
+    "view_disabled": "Access Denied for disabled courses"
   }
 }
