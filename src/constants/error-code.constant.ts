@@ -18,6 +18,7 @@ export enum ErrorCode {
   E025 = 'course.error.not_found',
   E026 = 'course.error.invalid_category',
   E027 = 'course.error.cannot_modify',
+  E028 = 'course.forbidden.view_disabled',
 
   // Section
   E029 = 'section.forbidden.author',
