@@ -28,6 +28,7 @@ import {
 import { Constructor } from '../common/types/types';
 import { ToBoolean, ToLowerCase, ToUpperCase } from './transform.decorators';
 import { IsNullable } from './validators/is-nullable.decorator';
+import { IsSafeHtml } from './validators/is-safe-html.decorator';
 
 interface IFieldOptions {
   each?: boolean;
@@ -113,7 +114,8 @@ export function NumberFieldOptional(
 }
 
 export function StringField(
-  options: Omit<ApiPropertyOptions, 'type'> & IStringFieldOptions = {},
+  options: Omit<ApiPropertyOptions, 'type'> &
+    IStringFieldOptions & { isHtml?: boolean } = {},
 ): PropertyDecorator {
   const decorators = [Type(() => String), IsString({ each: options.each })];
 
@@ -121,6 +123,10 @@ export function StringField(
     decorators.push(IsNullable({ each: options.each }));
   } else {
     decorators.push(NotEquals(null, { each: options.each }));
+  }
+
+  if (options.isHtml) {
+    decorators.push(IsSafeHtml({ each: options.each }));
   }
 
   if (options.swagger !== false) {
@@ -481,6 +487,7 @@ export function ClassField<TClass extends Constructor>(
       ApiProperty({
         type: () => getClass(),
         required: !!required,
+        isArray: options.each,
         ...restOptions,
       }),
     );
