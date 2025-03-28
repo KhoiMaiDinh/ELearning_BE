@@ -11,7 +11,7 @@ import {
 
 export const VALID_EXTENSIONS: Record<UploadResource, string[]> = {
   [UploadResource.VIDEO]: ['mp4', 'mov', 'avi', 'mkv'],
-  [UploadResource.IMAGE]: ['jpg', 'jpeg', 'png', 'gif'],
+  [UploadResource.IMAGE]: ['jpg', 'jpeg', 'png', 'webp'],
   [UploadResource.PDF]: ['pdf'],
 };
 
