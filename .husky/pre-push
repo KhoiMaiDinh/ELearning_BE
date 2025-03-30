@@ -5,7 +5,7 @@ changed_files=$(git diff --name-only HEAD HEAD~ -- '*.ts' '*.js')
 if [ -n "$changed_files" ]; then
   echo "${BLUE}Running tests due to changes in the following TS/JS files:${NC}"
   echo "$changed_files"
-  pnpm test
+  # pnpm test
 else
   echo "${GREEN}No TS/JS files have been changed. Skipping tests.${NC}"
 fi

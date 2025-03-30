@@ -22,7 +22,6 @@ export class UserSeeder1722335726360 implements Seeder {
           username: 'Admin',
           email: 'admin@example.com',
           password: 'Admin@12345',
-          profile_image: 'https://example.com/avatar.png',
           register_method: RegisterMethod.LOCAL,
           first_name: 'Admin',
           last_name: 'User',
