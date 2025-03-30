@@ -1,0 +1,8 @@
+{
+  "error": {
+    "author": "Only course creator or admin can create/update course items",
+    "not_found": "Course item not found",
+    "invalid_quiz_answer_quantity": "Invalid quiz answer numbers: Must be between 2 and 4",
+    "invalid_correct_quiz_answer": "A multiple answer must have at least 2 correct answers and a single answer must have 1 correct answer"
+  }
+}
