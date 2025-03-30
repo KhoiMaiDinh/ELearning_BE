@@ -1,5 +1,6 @@
 import { CategoryEntity } from '@/api/category/entities/category.entity';
-
+import { CourseEntity } from '@/api/course/entities/course.entity';
+import { CertificateEntity } from '@/api/instructor/entities/certificate.entity';
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
@@ -10,11 +11,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
-import { CertificateEntity } from './certificate.entity';
 
 @Entity(E.INSTRUCTOR)
 export class InstructorEntity extends AbstractEntity {
@@ -68,7 +69,9 @@ export class InstructorEntity extends AbstractEntity {
   @ManyToOne(() => CategoryEntity, (category) => category.instructors)
   @JoinColumn({ name: 'category_id' })
   category: Relation<CategoryEntity>;
-
   @Column({ type: 'uuid' })
   category_id: Uuid;
+
+  @OneToMany(() => CourseEntity, (course) => course.instructor)
+  courses: Relation<CourseEntity[]>;
 }
