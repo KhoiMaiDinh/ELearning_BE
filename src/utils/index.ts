@@ -6,6 +6,7 @@ export * from './modules-set';
 export * from './offset-pagination';
 export * from './password.util';
 export * from './setup-swagger';
+export * from './transformers/array.transformer';
 export * from './transformers/lower-case.transformer';
 export * from './typeorm-custom-logger';
 export * from './validate-config';

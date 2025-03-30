@@ -1,8 +1,8 @@
+import { MediaEntity } from '@/api/media/entities/media.entity';
 import { ErrorCode, UploadStatus } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
 import { DataSource, In, Repository, UpdateResult } from 'typeorm';
-import { MediaEntity } from './entities/media.entity';
 
 @Injectable()
 export class MediaRepository extends Repository<MediaEntity> {

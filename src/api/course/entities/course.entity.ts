@@ -1,12 +1,13 @@
 import { CategoryEntity } from '@/api/category/entities/category.entity';
+import { CourseLevel, CourseStatus } from '@/api/course';
 import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.entity';
 import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
+import { MediaEntity } from '@/api/media/entities/media.entity';
 import { SectionEntity } from '@/api/section/entities/section.entity';
 import { Uuid } from '@/common';
 import { Entity as E, Language } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
-import { StorageImage, StorageVideo } from '@/libs/minio/';
 import {
   Column,
   Entity,
@@ -14,10 +15,10 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
-import { CourseLevel } from '../enums/course-level.enum';
 
 @Index('UQ_course_title_per_instructor', ['title', 'instructor_id'], {
   unique: true,
@@ -54,10 +55,11 @@ export class CourseEntity extends AbstractEntity {
   subtitle!: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  thumbnail!: StorageImage;
+  thumbnail_id: Uuid;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  preview!: StorageVideo;
+  @OneToOne(() => MediaEntity)
+  @JoinColumn({ name: 'thumbnail_id', referencedColumnName: 'media_id' })
+  thumbnail!: MediaEntity;
 
   @Column({ type: 'boolean', default: false })
   is_approved!: boolean;
@@ -84,12 +86,6 @@ export class CourseEntity extends AbstractEntity {
   level: CourseLevel | null;
 
   @Column({
-    type: 'timestamptz',
-    nullable: true,
-  })
-  published_at: Date;
-
-  @Column({
     type: 'varchar',
     array: true,
     length: 160,
@@ -108,6 +104,8 @@ export class CourseEntity extends AbstractEntity {
   @Column({ type: 'boolean', default: false })
   is_disabled: boolean;
 
+  @Column({ type: 'enum', enum: CourseStatus, default: CourseStatus.DRAFT })
+  status: CourseStatus;
   // relations
 
   @ManyToOne(() => InstructorEntity, (instructor) => instructor.courses)
@@ -122,14 +120,14 @@ export class CourseEntity extends AbstractEntity {
   @Column({ type: 'uuid' })
   category_id: Uuid;
 
+  @OneToMany(() => SectionEntity, (section) => section.course)
+  sections?: Relation<SectionEntity[]>;
+
   @OneToMany(
     () => EnrolledCourseEntity,
     (enrolled_course) => enrolled_course.course,
   )
   enrolled_users?: Relation<EnrolledCourseEntity[]>;
-
-  @OneToMany(() => SectionEntity, (section) => section.course)
-  sections?: Relation<SectionEntity[]>;
 
   // TODO: price tier
 }

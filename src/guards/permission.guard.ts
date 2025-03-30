@@ -14,12 +14,11 @@ export class PermissionGuard implements CanActivate {
     const userPermissions = req?.user?.permissions;
     const requiredPermissions: Permission[] =
       this.reflector.get(PERMISSIONS_KEY, context.getHandler()) || [];
-
-    const hasAllPermissions = requiredPermissions.every((permission) =>
+    const hasOneOfPermissions = requiredPermissions.some((permission) =>
       userPermissions.includes(permission),
     );
 
-    if (requiredPermissions.length && !hasAllPermissions) {
+    if (requiredPermissions.length && !hasOneOfPermissions) {
       throw new ForbiddenException(
         ErrorCode.F001,
         'User does not have the permission to access this resource',

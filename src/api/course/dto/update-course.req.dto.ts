@@ -1,43 +1,31 @@
 import { CourseLevel } from '@/api/course/enums/course-level.enum';
+import { MediaReq } from '@/api/media';
 import { Language } from '@/constants';
-import {
-  EnumField,
-  EnumFieldOptional,
-  ObjectField,
-  StringField,
-  StringFieldOptional,
-  TransformStorageUrl,
-} from '@/decorators';
-import { StorageImage, StorageVideo } from '@/libs/minio';
+import { ClassField, EnumField, StringField } from '@/decorators';
 import { CreateCourseReq } from './create-course.req.dto';
 
 export class UpdateCourseReq extends CreateCourseReq {
-  @StringFieldOptional({ maxLength: 120 })
+  @StringField({ nullable: true, maxLength: 120 })
   subtitle?: string;
 
-  @StringFieldOptional()
-  @TransformStorageUrl()
-  thumbnail?: StorageImage;
-
-  @StringFieldOptional()
-  @TransformStorageUrl()
-  preview?: StorageVideo;
+  @ClassField(() => MediaReq, { nullable: true })
+  thumbnail?: MediaReq;
 
   @EnumField(() => Language)
   language: Language;
 
-  @EnumFieldOptional(() => CourseLevel)
+  @EnumField(() => CourseLevel, { nullable: true })
   level?: CourseLevel;
 
-  @ObjectField({ nullable: true })
-  description?: object;
+  @StringField({ isHtml: true, nullable: true })
+  description?: string;
 
-  @StringFieldOptional()
+  @StringField()
   slug?: string;
 
   @StringField({ nullable: true, each: true, maxLength: 160 })
-  requirements: string[] | null;
+  requirements?: string[];
 
   @StringField({ nullable: true, each: true, maxLength: 160 })
-  outcomes: string[] | null;
+  outcomes: string[];
 }
