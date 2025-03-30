@@ -35,6 +35,6 @@ export class EnrolledCourseEntity extends AbstractEntity {
   @Column({ type: 'text', nullable: true })
   rating_comment: string | null;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz', nullable: true })
   last_viewed_at: Date;
 }
