@@ -14,6 +14,9 @@ export enum ErrorCode {
   // Internal Server
   I000 = 'common.internal_server.error',
 
+  // Enrolled Course
+  E038 = 'enrolled_course.error.not_found',
+
   // Course
   E025 = 'course.error.not_found',
   E026 = 'course.error.invalid_category',
@@ -24,6 +27,16 @@ export enum ErrorCode {
   E029 = 'section.forbidden.author',
   E030 = 'section.error.not_found',
   E031 = 'section.error.cannot_delete',
+
+  // Course Item
+  E032 = 'course_item.error.author',
+  E033 = 'course_item.error.not_found',
+  E035 = 'course_item.error.position_not_found',
+  E036 = 'course_item.error.invalid_quiz_answer_quantity',
+  E037 = 'course_item.error.invalid_correct_quiz_answer',
+
+  // Quiz Attempt
+  E039 = 'quiz_attempt.error.invalid_question_list',
 
   // Category
   E008 = 'category.error.category_not_found',
@@ -41,6 +54,7 @@ export enum ErrorCode {
 
   // Media
   E019 = 'media.error.not_found',
+  E034 = 'media.error.invalid_type',
 
   // Preference
   E018 = 'preference.error.not_found',

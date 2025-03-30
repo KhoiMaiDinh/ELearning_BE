@@ -1,6 +1,14 @@
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { Bucket, Entity as EntityEnum, UploadStatus } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Relation,
+} from 'typeorm';
 
 @Entity(EntityEnum.MEDIA)
 export class MediaEntity extends AbstractEntity {
@@ -32,4 +40,11 @@ export class MediaEntity extends AbstractEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   expires_at?: Date;
+
+  @Column({ type: 'uuid', nullable: true })
+  user_id: string;
+
+  @ManyToOne(() => UserEntity)
+  @JoinColumn({ name: 'user_id' })
+  user: Relation<UserEntity>;
 }

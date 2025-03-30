@@ -1,3 +1,3 @@
-import { PageOptionsDto } from '@/common/index';
+import { PageCursorOptionsDto } from '@/common/index';
 
-export class ListPostReqDto extends PageOptionsDto {}
+export class ListPostReqDto extends PageCursorOptionsDto {}

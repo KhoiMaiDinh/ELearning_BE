@@ -49,6 +49,7 @@ interface IStringFieldOptions extends IFieldOptions {
   maxLength?: number;
   toLowerCase?: boolean;
   toUpperCase?: boolean;
+  isHtml?: boolean;
 }
 
 interface IURLFieldOptions extends IFieldOptions {
@@ -114,8 +115,7 @@ export function NumberFieldOptional(
 }
 
 export function StringField(
-  options: Omit<ApiPropertyOptions, 'type'> &
-    IStringFieldOptions & { isHtml?: boolean } = {},
+  options: Omit<ApiPropertyOptions, 'type'> & IStringFieldOptions = {},
 ): PropertyDecorator {
   const decorators = [Type(() => String), IsString({ each: options.each })];
 

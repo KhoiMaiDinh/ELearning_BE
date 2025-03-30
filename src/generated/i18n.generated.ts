@@ -37,6 +37,21 @@ export type I18nTranslations = {
         "error": {
             "not_found": string;
             "invalid_category": string;
+            "cannot_modify": string;
+            "view_disabled": string;
+        };
+    };
+    "course_item": {
+        "error": {
+            "author": string;
+            "not_found": string;
+            "invalid_quiz_answer_quantity": string;
+            "invalid_correct_quiz_answer": string;
+        };
+    };
+    "enrolled_course": {
+        "error": {
+            "not_found": string;
         };
     };
     "instructor": {
@@ -44,6 +59,17 @@ export type I18nTranslations = {
             "not_found": string;
             "existed": string;
             "invalid_specialized": string;
+        };
+    };
+    "media": {
+        "error": {
+            "not_found": string;
+            "invalid_type": string;
+        };
+    };
+    "quiz_attempt": {
+        "error": {
+            "invalid_question_list": string;
         };
     };
     "section": {
