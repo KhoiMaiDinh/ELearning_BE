@@ -1,6 +1,6 @@
-import { CategoryRepository } from '@/api/category';
+import { CategoryRepository } from '@/api/category/repositories/category.repository';
 import { MediaRepository } from '@/api/media';
-import { UserRepository } from '@/api/user';
+import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid, OffsetPaginatedDto } from '@/common';
 import { ErrorCode } from '@/constants';
 import { ValidationException } from '@/exceptions';
