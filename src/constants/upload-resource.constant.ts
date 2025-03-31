@@ -24,7 +24,7 @@ export enum UploadStatus {
 export enum UploadEntityProperty {
   PROFILE_IMAGE = 'profile_image',
   COURSE_THUMBNAIL = 'course_thumbnail',
-  LESSON_VIDEO = 'lesson_video',
+  VIDEO = 'video',
   LESSON_PDF = 'lesson_pdf',
   RESUME = 'resume',
   CERTIFICATES = 'certificates',
@@ -37,7 +37,7 @@ export const VALID_UPLOAD_TYPES: Record<Entity, UploadEntityProperty[]> = {
   ],
   instructor: [UploadEntityProperty.RESUME, UploadEntityProperty.CERTIFICATES],
   course: [UploadEntityProperty.COURSE_THUMBNAIL],
-  lesson: [UploadEntityProperty.LESSON_VIDEO, UploadEntityProperty.LESSON_PDF],
+  lecture: [UploadEntityProperty.VIDEO, UploadEntityProperty.LESSON_PDF],
   category: [],
   post: [],
   media: [],
@@ -54,7 +54,7 @@ export const UPLOAD_TYPE_RESOURCE: Record<
 > = {
   [UploadEntityProperty.PROFILE_IMAGE]: UploadResource.IMAGE,
   [UploadEntityProperty.COURSE_THUMBNAIL]: UploadResource.IMAGE,
-  [UploadEntityProperty.LESSON_VIDEO]: UploadResource.VIDEO,
+  [UploadEntityProperty.VIDEO]: UploadResource.VIDEO,
   [UploadEntityProperty.LESSON_PDF]: UploadResource.PDF,
   [UploadEntityProperty.RESUME]: UploadResource.PDF,
   [UploadEntityProperty.CERTIFICATES]: UploadResource.PDF,

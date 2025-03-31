@@ -1,7 +1,7 @@
 import { CourseLevel } from '@/api/course/enums/course-level.enum';
 import { MediaReq } from '@/api/media';
 import { Language } from '@/constants';
-import { ClassField, EnumField, StringField } from '@/decorators';
+import { ClassField, EnumField, NumberField, StringField } from '@/decorators';
 import { CreateCourseReq } from './create-course.req.dto';
 
 export class UpdateCourseReq extends CreateCourseReq {
@@ -28,4 +28,10 @@ export class UpdateCourseReq extends CreateCourseReq {
 
   @StringField({ nullable: true, each: true, maxLength: 160 })
   outcomes: string[];
+
+  @NumberField({ nullable: true })
+  price?: number;
+
+  @EnumField(() => ['VND'], { nullable: true })
+  currency?: string;
 }

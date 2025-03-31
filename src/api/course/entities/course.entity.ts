@@ -54,7 +54,7 @@ export class CourseEntity extends AbstractEntity {
   @Column({ type: 'varchar', length: 120, nullable: true })
   subtitle!: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   thumbnail_id: Uuid;
 
   @OneToOne(() => MediaEntity)
@@ -129,5 +129,12 @@ export class CourseEntity extends AbstractEntity {
   )
   enrolled_users?: Relation<EnrolledCourseEntity[]>;
 
-  // TODO: price tier
+  @Column({ type: 'uuid', nullable: true })
+  price_tier_id?: Uuid;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+  price: number;
+
+  @Column({ type: 'varchar', length: 3, default: 'VND' })
+  currency: string;
 }
