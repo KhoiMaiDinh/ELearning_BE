@@ -38,8 +38,11 @@ export class IsValidMediaFileConstraint
 
   defaultMessage(args: ValidationArguments) {
     const uploadType = args.object[args.constraints[0]] as UploadEntityProperty;
-    console.log(uploadType);
     const resource = UPLOAD_TYPE_RESOURCE[uploadType];
+
+    if (!resource) {
+      return `Invalid upload type: ${uploadType}`;
+    }
 
     return `Invalid file type for ${uploadType}. Expected ${resource.toLowerCase()} formats: ${VALID_EXTENSIONS[resource].join(', ')}.`;
   }

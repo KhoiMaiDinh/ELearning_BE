@@ -21,8 +21,10 @@ export class MediaService {
   ): Promise<PresignedUrlRes> {
     const { entity, entity_property, filename } = dto;
     let bucket: Bucket = Bucket.IMAGE;
+    let file_size: number = 5 * 1024 * 1024; // 5MB limit
     if (UPLOAD_TYPE_RESOURCE[entity_property] === UploadResource.VIDEO) {
-      bucket = Bucket.VIDEO;
+      bucket = Bucket.TEMP_VIDEO;
+      file_size = 1024 * 1024 * 1024 * 10; // 10GB limit
     }
     if (UPLOAD_TYPE_RESOURCE[entity_property] === UploadResource.PDF) {
       bucket = Bucket.DOCUMENT;
@@ -32,6 +34,7 @@ export class MediaService {
       entity,
       filename,
       bucket,
+      file_size,
     );
     const {
       expires_at,
