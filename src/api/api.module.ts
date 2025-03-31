@@ -8,6 +8,7 @@ import { InstructorModule } from '@/api/instructor/instructor.module';
 import { MediaModule } from '@/api/media/media.module';
 import { PostModule } from '@/api/post/post.module';
 import { PreferenceModule } from '@/api/preference/preference.module';
+import { PriceModule } from '@/api/price/price.module';
 import { RoleModule } from '@/api/role/role.module';
 import { SectionModule } from '@/api/section/section.module';
 import { UserModule } from '@/api/user/user.module';
@@ -28,6 +29,7 @@ import { Module } from '@nestjs/common';
     CourseModule,
     CourseItemModule,
     SectionModule,
+    PriceModule,
   ],
 })
 export class ApiModule {}

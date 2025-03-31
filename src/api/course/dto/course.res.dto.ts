@@ -3,7 +3,7 @@ import { CourseLevel } from '@/api/course';
 import { InstructorRes } from '@/api/instructor';
 import { Nanoid } from '@/common';
 import { Language } from '@/constants';
-import { ClassField, StringField } from '@/decorators';
+import { ClassField, NumberField, StringField } from '@/decorators';
 import { StorageImage, StorageVideo } from '@/libs/minio';
 import { Exclude, Expose } from 'class-transformer';
 
@@ -59,4 +59,8 @@ export class CourseRes {
   @Expose()
   @StringField({ nullable: true, each: true })
   outcomes: string[] | null;
+
+  @Expose()
+  @NumberField({ nullable: true })
+  price: number | null;
 }

@@ -10,6 +10,7 @@ import {
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseRepository } from '@/api/course/repositories/course.repository';
 import { InstructorRepository } from '@/api/instructor';
+import { PriceHistoryRepository } from '@/api/price/price-history.repository';
 import { JwtPayloadType } from '@/api/token';
 import { CursorPaginatedDto, CursorPaginationDto, Nanoid } from '@/common';
 import { ErrorCode, Permission } from '@/constants';
@@ -25,6 +26,7 @@ export class CourseService {
     private readonly courseRepository: CourseRepository,
     private readonly categoryRepository: CategoryRepository,
     private readonly instructorRepository: InstructorRepository,
+    private readonly priceHistoryRepository: PriceHistoryRepository,
     // private readonly sectionRepository: SectionRepository,
   ) {}
   async create(public_user_id: Nanoid, dto: CreateCourseReq) {
@@ -132,10 +134,7 @@ export class CourseService {
     user: JwtPayloadType,
     dto: UpdateCourseReq,
   ) {
-    const {
-      category: { slug: category_slug },
-      ...rest
-    } = dto;
+    const { category: category_dto, price, ...rest } = dto;
     const course = await this.courseRepository.findOneByPublicIdOrSlug(id, {
       category: true,
       instructor: { user: true },
@@ -147,11 +146,25 @@ export class CourseService {
     )
       throw new ValidationException(ErrorCode.F002);
 
-    if (course.category.slug !== category_slug) {
-      const category =
-        await this.categoryRepository.findOneBySlug(category_slug);
+    if (
+      category_dto != undefined &&
+      course.category.slug !== category_dto.slug
+    ) {
+      const category = await this.categoryRepository.findOneBySlug(
+        category_dto.slug,
+      );
       if (!category.parent) throw new ForbiddenException(ErrorCode.E017);
       course.category = category;
+    }
+
+    if (price !== undefined && price != course.price) {
+      const course_price_history = this.priceHistoryRepository.create({
+        course,
+        new_price: price,
+        old_price: course.price,
+      });
+      await this.priceHistoryRepository.insert(course_price_history);
+      course.price = price;
     }
 
     Object.assign(course, rest);

@@ -1,4 +1,4 @@
-import { UserRes } from '@/api/user';
+import { UserRes } from '@/api/user/dto/user.res.dto';
 import { WrapperType } from '@/common';
 import {
   ClassField,

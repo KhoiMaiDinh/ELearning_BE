@@ -7,8 +7,8 @@ export enum Entity {
   USER = 'user',
   INSTRUCTOR = 'instructor',
   COURSE = 'course',
-  LESSON = 'lesson',
   ENROLLED_COURSE = 'enrolled-course',
   CATEGORY = 'category',
   CATEGORY_TRANSLATION = 'category-translation',
+  LECTURE = 'lecture',
 }
