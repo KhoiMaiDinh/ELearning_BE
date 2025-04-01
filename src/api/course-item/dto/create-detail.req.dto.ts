@@ -5,7 +5,6 @@ import {
   ClassField,
   ClassFieldOptional,
   EnumField,
-  NumberField,
   StringField,
   StringFieldOptional,
 } from '@/decorators';
@@ -31,8 +30,6 @@ export class CreateLectureReq extends CreateCourseItemReq {
   video: MediaReq;
   @StringFieldOptional({ maxLength: 300 })
   description: string;
-  @NumberField()
-  video_duration: number;
   @ClassFieldOptional(() => ResourceReq, { each: true })
   resources: ResourceReq[];
 }

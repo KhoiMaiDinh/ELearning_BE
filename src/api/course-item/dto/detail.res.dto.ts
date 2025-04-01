@@ -1,4 +1,3 @@
-import { MediaRes } from '@/api/media';
 import { SectionRes } from '@/api/section';
 import { Nanoid } from '@/common';
 import {
@@ -13,9 +12,14 @@ import {
 import { IntersectionType } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { QuizQuestionType } from '../course-item.enum';
+import { LectureResourceRes, LectureVideoRes } from './lecture-detail.res.dto';
 
 @Exclude()
 export class CourseItemRes {
+  @Expose()
+  @StringField()
+  id: string;
+
   @Expose()
   @StringField()
   title: string;
@@ -36,8 +40,8 @@ export class CourseItemRes {
 @Exclude()
 export class LectureRes extends CourseItemRes {
   @Expose()
-  @ClassField(() => MediaRes)
-  video: MediaRes;
+  @ClassField(() => LectureVideoRes)
+  video: LectureVideoRes;
 
   @Expose()
   @StringFieldOptional()
@@ -48,8 +52,8 @@ export class LectureRes extends CourseItemRes {
   video_duration: number;
 
   @Expose()
-  @ClassFieldOptional(() => MediaRes)
-  resource: MediaRes;
+  @ClassFieldOptional(() => LectureResourceRes, { each: true })
+  resource: LectureResourceRes;
 }
 
 @Exclude()
