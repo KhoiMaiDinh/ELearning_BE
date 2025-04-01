@@ -2,7 +2,10 @@ import { ArticleController } from '@/api/course-item/article/article.controller'
 import { ArticleEntity } from '@/api/course-item/article/article.entity';
 import { ArticleService } from '@/api/course-item/article/article.service';
 import { LectureController } from '@/api/course-item/lecture/lecture.controller';
-import { LectureEntity } from '@/api/course-item/lecture/lecture.entity';
+import {
+  LectureEntity,
+  ResourceEntity,
+} from '@/api/course-item/lecture/lecture.entity';
 import { LectureService } from '@/api/course-item/lecture/lecture.service';
 import { QuizAnswerEntity } from '@/api/course-item/quiz/entities/quiz-answer.entity';
 import {
@@ -28,6 +31,7 @@ import { EnrolledCourseEntity } from '../course/entities/enrolled-course.entity'
       EnrolledCourseEntity,
       ArticleEntity,
       QuizEntity,
+      ResourceEntity,
       LectureEntity,
       QuizQuestionEntity,
       QuizAnswerEntity,

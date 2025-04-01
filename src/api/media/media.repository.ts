@@ -1,4 +1,5 @@
 import { MediaEntity } from '@/api/media/entities/media.entity';
+import { Nanoid } from '@/common';
 import { ErrorCode, UploadStatus } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
@@ -16,6 +17,12 @@ export class MediaRepository extends Repository<MediaEntity> {
 
     if (!media) throw new NotFoundException(ErrorCode.E019);
 
+    return media;
+  }
+
+  async findOneById(id: Nanoid): Promise<MediaEntity> {
+    const media = await this.findOneBy({ id });
+    if (!media) throw new NotFoundException(ErrorCode.E019);
     return media;
   }
 

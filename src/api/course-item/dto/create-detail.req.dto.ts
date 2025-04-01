@@ -10,6 +10,7 @@ import {
   StringFieldOptional,
 } from '@/decorators';
 import { QuizQuestionType } from '../course-item.enum';
+import { ResourceReq } from './resource.req.dto';
 
 export class CreateCourseItemReq {
   @StringField()
@@ -32,8 +33,8 @@ export class CreateLectureReq extends CreateCourseItemReq {
   description: string;
   @NumberField()
   video_duration: number;
-  @ClassFieldOptional(() => MediaReq)
-  resource: MediaReq;
+  @ClassFieldOptional(() => ResourceReq, { each: true })
+  resources: ResourceReq[];
 }
 
 export class CreateArticleReq extends CreateCourseItemReq {
