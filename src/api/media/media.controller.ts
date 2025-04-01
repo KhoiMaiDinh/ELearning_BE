@@ -1,4 +1,4 @@
-import { ApiPublic, CurrentUser } from '@/decorators';
+import { ApiAuth, CurrentUser } from '@/decorators';
 import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtPayloadType } from '../token';
@@ -11,7 +11,7 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post()
-  @ApiPublic({
+  @ApiAuth({
     summary: 'Create Presigned URL',
     type: PresignedUrlRes,
     statusCode: HttpStatus.CREATED,

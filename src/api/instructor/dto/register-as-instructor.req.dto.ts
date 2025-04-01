@@ -1,9 +1,10 @@
 import { CategoryReq } from '@/api/category';
+import { MediaReq } from '@/api/media';
 import {
   ClassField,
+  ClassFieldOptional,
   StringField,
   StringFieldOptional,
-  TransformStorageUrl,
 } from '@/decorators';
 
 export class RegisterAsInstructorReq {
@@ -16,9 +17,8 @@ export class RegisterAsInstructorReq {
   @StringField({ maxLength: 60 })
   headline: string;
 
-  @StringField()
-  @TransformStorageUrl()
-  resume: string;
+  @ClassField(() => MediaReq)
+  resume: MediaReq;
 
   @StringField()
   website_url?: string;
@@ -29,6 +29,6 @@ export class RegisterAsInstructorReq {
   @StringFieldOptional()
   linkedin_url?: string;
 
-  @StringFieldOptional({ each: true })
-  certificates?: string[];
+  @ClassFieldOptional(() => MediaReq, { each: true })
+  certificates?: MediaReq[];
 }

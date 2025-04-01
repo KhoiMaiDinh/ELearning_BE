@@ -11,4 +11,5 @@ export enum Entity {
   CATEGORY = 'category',
   CATEGORY_TRANSLATION = 'category-translation',
   LECTURE = 'lecture',
+  CERTIFICATES = 'certificate',
 }

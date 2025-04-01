@@ -55,6 +55,7 @@ export enum ErrorCode {
   // Media
   E019 = 'media.error.not_found',
   E034 = 'media.error.invalid_type',
+  E042 = 'media.error.not_uploaded',
 
   // Preference
   E018 = 'preference.error.not_found',
@@ -63,6 +64,7 @@ export enum ErrorCode {
   E011 = 'instructor.error.existed',
   E012 = 'instructor.error.not_found',
   E017 = 'instructor.error.invalid_specialized',
+  E041 = 'instructor.error.invalid_resume',
 
   // Token
   E009 = 'token.error.invalid_secret',
