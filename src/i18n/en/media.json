@@ -1,6 +1,7 @@
 {
   "error": {
     "not_found": "Media not found",
-    "invalid_type": "Invalid media type"
+    "invalid_type": "Invalid media type",
+    "not_uploaded": "Media not uploaded"
   }
 }

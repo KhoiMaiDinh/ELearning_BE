@@ -26,6 +26,12 @@ export class MediaRepository extends Repository<MediaEntity> {
     return media;
   }
 
+  async findManyByIds(ids: Nanoid[]): Promise<MediaEntity[]> {
+    const result = await this.findAndCountBy({ id: In(ids) });
+    if (result[1] !== ids.length) throw new NotFoundException(ErrorCode.E019);
+    return result[0];
+  }
+
   async findManyByKeys(keys: string[]): Promise<MediaEntity[]> {
     const result = await this.findAndCountBy({ key: In(keys) });
     if (result[1] !== keys.length) throw new NotFoundException(ErrorCode.E019);

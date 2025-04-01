@@ -27,7 +27,7 @@ export class CertificateEntity extends AbstractEntity {
   @OneToOne(() => MediaEntity, { eager: true })
   @JoinColumn({
     referencedColumnName: 'media_id',
-    name: 'certificate_image_id',
+    name: 'certificate_file_id',
   })
   certificate_file?: Relation<MediaEntity>;
 

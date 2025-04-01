@@ -142,8 +142,8 @@ export class UserService {
     user.updatedBy = SYSTEM_USER_ID;
 
     if (dto.profile_image) {
-      const media = await this.mediaRepository.findOneByKey(
-        dto.profile_image.key,
+      const media = await this.mediaRepository.findOneById(
+        dto.profile_image.id,
       );
       user.profile_image = media;
     }
