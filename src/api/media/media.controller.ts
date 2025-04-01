@@ -1,6 +1,7 @@
-import { ApiPublic } from '@/decorators';
+import { ApiPublic, CurrentUser } from '@/decorators';
 import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { JwtPayloadType } from '../token';
 import { CreatePresignedUrlReq, PresignedUrlRes } from './dto';
 import { MediaService } from './media.service';
 
@@ -16,8 +17,9 @@ export class MediaController {
     statusCode: HttpStatus.CREATED,
   })
   async createPresignedUrl(
+    @CurrentUser() user: JwtPayloadType,
     @Body() dto: CreatePresignedUrlReq,
   ): Promise<PresignedUrlRes> {
-    return await this.mediaService.createPresignedUrl(dto);
+    return await this.mediaService.createPresignedUrl(user, dto);
   }
 }

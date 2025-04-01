@@ -1,9 +1,12 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
+import { Nanoid, Uuid } from '@/common';
 import { Bucket, Entity as EntityEnum, UploadStatus } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
+import { AutoNanoId } from '@/decorators';
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -17,8 +20,13 @@ export class MediaEntity extends AbstractEntity {
     Object.assign(this, data);
   }
 
-  @PrimaryGeneratedColumn()
-  media_id: number;
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_media_id' })
+  media_id: Uuid;
+
+  @Index('EK_media_id', { unique: true })
+  @Column({ type: 'varchar', length: 13 })
+  @AutoNanoId(13)
+  id: Nanoid;
 
   @Column({ type: 'enum', enum: Bucket })
   bucket: Bucket;

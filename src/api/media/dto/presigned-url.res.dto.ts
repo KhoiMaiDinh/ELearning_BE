@@ -21,4 +21,7 @@ export class PresignedUrlRes {
   @DateField()
   @Expose()
   expires_at: Date;
+
+  @Expose()
+  id: string;
 }

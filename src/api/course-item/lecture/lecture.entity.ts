@@ -9,6 +9,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   Relation,
@@ -63,7 +64,33 @@ export class LectureEntity extends AbstractEntity {
 
   @Column({ type: 'uuid', nullable: true })
   resource_id: Uuid;
-  @OneToOne(() => MediaEntity)
-  @JoinColumn({ name: 'resource_id', referencedColumnName: 'media_id' })
-  resource?: Relation<MediaEntity>;
+  @OneToMany(() => ResourceEntity, (resource) => resource.lecture, {
+    cascade: true,
+  })
+  resources?: Relation<ResourceEntity[]>;
+}
+
+@Entity('resource')
+export class ResourceEntity extends AbstractEntity {
+  constructor(partial?: Partial<ResourceEntity>) {
+    super();
+    Object.assign(this, partial);
+  }
+  @PrimaryGeneratedColumn('uuid', {
+    primaryKeyConstraintName: 'PK_resource_id',
+  })
+  resource_id: Uuid;
+
+  @Column({ type: 'uuid' })
+  resource_file_id?: Uuid;
+  @OneToOne(() => MediaEntity, { eager: true })
+  @JoinColumn({
+    referencedColumnName: 'media_id',
+    name: 'resource_file_id',
+  })
+  resource_file?: Relation<MediaEntity>;
+
+  @ManyToOne(() => LectureEntity, (lecture) => lecture.resources)
+  @JoinColumn({ name: 'lecture_id' })
+  lecture: Relation<LectureEntity>;
 }

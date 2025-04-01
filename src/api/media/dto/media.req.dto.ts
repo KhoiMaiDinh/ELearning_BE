@@ -1,7 +1,7 @@
-import { StringField, TransformStorageUrl } from '@/decorators';
+import { Nanoid } from '@/common';
+import { StringField } from '@/decorators';
 
 export class MediaReq {
   @StringField()
-  @TransformStorageUrl()
-  key: string;
+  id: Nanoid;
 }
