@@ -12,4 +12,5 @@ export enum Entity {
   CATEGORY_TRANSLATION = 'category-translation',
   LECTURE = 'lecture',
   CERTIFICATES = 'certificate',
+  LECTURE_VIDEO = 'lecture-video',
 }

@@ -1,8 +1,9 @@
-import { CreateLectureReq } from '@/api/course-item';
+import { CreateLectureReq, LectureRes } from '@/api/course-item';
 import { LectureService } from '@/api/course-item/lecture/lecture.service';
 import { JwtPayloadType } from '@/api/token';
+import { Nanoid } from '@/common';
 import { ApiAuth, CurrentUser } from '@/decorators';
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post } from '@nestjs/common';
 
 @Controller({ path: 'lectures', version: '1' })
 export class LectureController {
@@ -18,5 +19,15 @@ export class LectureController {
     @Body() dto: CreateLectureReq,
   ) {
     return await this.lectureService.create(user, dto);
+  }
+
+  @ApiAuth({
+    summary: 'View course item: Lecture',
+    statusCode: HttpStatus.CREATED,
+    type: LectureRes,
+  })
+  @Get(':id')
+  async find(@Param('id') id: Nanoid, @CurrentUser() user: JwtPayloadType) {
+    return await this.lectureService.findOne(user, id);
   }
 }

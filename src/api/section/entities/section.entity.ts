@@ -58,4 +58,12 @@ export class SectionEntity extends AbstractEntity {
     onDelete: 'CASCADE',
   })
   articles: Relation<ArticleEntity[]>;
+
+  get items() {
+    return [
+      ...(this.lectures ?? []),
+      ...(this.quizzes ?? []),
+      ...(this.articles ?? []),
+    ].sort((a, b) => a.position.localeCompare(b.position));
+  }
 }

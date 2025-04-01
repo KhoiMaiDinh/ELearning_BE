@@ -50,14 +50,10 @@ export class LectureEntity extends AbstractEntity {
   section: Relation<SectionEntity>;
 
   // unique props
-  @Column({ type: 'uuid' })
-  video_id: Uuid;
-  @OneToOne(() => MediaEntity)
-  @JoinColumn({ name: 'video_id', referencedColumnName: 'media_id' })
-  video?: Relation<MediaEntity>;
-
-  @Column({ type: 'int' })
-  video_duration: number; // milliseconds
+  @OneToMany(() => LectureVideoEntity, (video) => video.lecture, {
+    cascade: true,
+  })
+  videos?: Relation<LectureVideoEntity[]>;
 
   @Column({ type: 'varchar', length: 300, nullable: true })
   description: string;
@@ -68,6 +64,41 @@ export class LectureEntity extends AbstractEntity {
     cascade: true,
   })
   resources?: Relation<ResourceEntity[]>;
+
+  get video() {
+    return this.videos?.sort((a, b) => b.version - a.version)[0] ?? null;
+  }
+}
+
+@Entity('lecture-video')
+@Index(['lecture_id', 'version'], { unique: true })
+export class LectureVideoEntity extends AbstractEntity {
+  constructor(partial?: Partial<LectureVideoEntity>) {
+    super();
+    Object.assign(this, partial);
+  }
+  @PrimaryGeneratedColumn('uuid', {
+    primaryKeyConstraintName: 'PK_lecture_video_id',
+  })
+  lecture_video_id: Uuid;
+
+  @Column({ type: 'uuid' })
+  video_id?: Uuid;
+  @OneToOne(() => MediaEntity, { eager: true })
+  @JoinColumn({
+    referencedColumnName: 'media_id',
+    name: 'video_id',
+  })
+  video?: Relation<MediaEntity>;
+
+  @Column({ type: 'int', default: 0 })
+  version: number;
+
+  @Column({ type: 'uuid' })
+  lecture_id: Uuid;
+  @ManyToOne(() => LectureEntity, (lecture) => lecture.videos)
+  @JoinColumn({ name: 'lecture_id' })
+  lecture: Relation<LectureEntity>;
 }
 
 @Entity('resource')

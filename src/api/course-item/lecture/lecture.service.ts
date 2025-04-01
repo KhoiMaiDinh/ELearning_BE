@@ -7,6 +7,7 @@ import { ArticleEntity } from '@/api/course-item/article/article.entity';
 import { CourseItemService } from '@/api/course-item/course-item.service';
 import {
   LectureEntity,
+  LectureVideoEntity,
   ResourceEntity,
 } from '@/api/course-item/lecture/lecture.entity';
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
@@ -14,8 +15,9 @@ import { MediaRepository } from '@/api/media';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
-import { Bucket, ErrorCode, Permission } from '@/constants';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Bucket, ErrorCode, Permission, UploadStatus } from '@/constants';
+import { NotFoundException, ValidationException } from '@/exceptions';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ResourceReq } from '../dto/resource.req.dto';
@@ -30,6 +32,8 @@ export class LectureService extends CourseItemService {
     mediaRepository: MediaRepository,
     @InjectRepository(ResourceEntity)
     private readonly resourceRepository: Repository<ResourceEntity>,
+    @InjectRepository(LectureVideoEntity)
+    private readonly videoRepository: Repository<LectureVideoEntity>,
   ) {
     super(
       sectionRepository,
@@ -44,12 +48,15 @@ export class LectureService extends CourseItemService {
     if (user.permissions.includes(Permission.READ_COURSE_ITEM))
       return (await this.findOneById(id)).toDto(LectureRes);
     const lecture = await this.lectureRepository.findOne({
-      where: {
-        id,
-        section: { course: { enrolled_users: { user: { id: user.id } } } },
-      },
+      where: [
+        {
+          id,
+          section: { course: { enrolled_users: { user: { id: user.id } } } },
+        },
+        { id, is_preview: true },
+      ],
       relations: {
-        video: true,
+        videos: true,
         resources: true,
         section: { course: { enrolled_users: { user: true } } },
       },
@@ -66,9 +73,12 @@ export class LectureService extends CourseItemService {
     const lecture = await this.lectureRepository.findOne({
       where: { id },
       relations: {
-        video: true,
+        videos: true,
         resources: { resource_file: true },
         section: true,
+      },
+      order: {
+        videos: { version: 'DESC' },
       },
     });
     if (!lecture)
@@ -77,6 +87,7 @@ export class LectureService extends CourseItemService {
   }
 
   async create(user: JwtPayloadType, dto: CreateLectureReq) {
+    const { video: video_dto, ...lecture_dto } = dto;
     // get section
     const section = await this.sectionRepository.findOne({
       where: { id: dto.section.id },
@@ -91,16 +102,19 @@ export class LectureService extends CourseItemService {
     );
 
     // get medias
-    const video = await this.mediaRepository.findOneById(dto.video.id);
-    if (video.bucket !== Bucket.VIDEO && video.bucket !== Bucket.TEMP_VIDEO)
-      throw new NotFoundException(ErrorCode.E034);
+    const media = await this.mediaRepository.findOneById(video_dto.id);
+    const video = this.videoRepository.create({
+      video: media,
+    });
+
+    this.isValidVideo(video);
 
     const resources = await this.handleResources([], dto.resources);
 
     const lecture = this.lectureRepository.create({
-      ...dto,
+      ...lecture_dto,
       position,
-      video,
+      videos: [video],
       resources,
       section,
     });
@@ -141,10 +155,16 @@ export class LectureService extends CourseItemService {
   async update(user: JwtPayloadType, id: Nanoid, dto: UpdateLectureReq) {
     const lecture = await this.findOneById(id);
 
-    const { section, previous_position, video, resources, ...rest } = dto;
+    const {
+      section: section_dto,
+      previous_position,
+      video: video_dto,
+      resources: resources_dto,
+      ...rest
+    } = dto;
 
     // get section
-    if (section?.id != undefined && section?.id !== lecture.section.id) {
+    if (section_dto != undefined && section_dto.id !== lecture.section.id) {
       const section = await this.sectionRepository.findOne({
         where: { id: dto.section.id },
         relations: { course: { instructor: { user: true } } },
@@ -163,21 +183,37 @@ export class LectureService extends CourseItemService {
     }
 
     // get medias
-    if (video?.id !== undefined && video?.id !== lecture.video.id) {
-      const video = await this.mediaRepository.findOneByKey(dto.video.id);
-      if (video.bucket !== Bucket.VIDEO)
-        throw new NotFoundException(ErrorCode.E034);
-      lecture.video = video;
+    if (video_dto && video_dto?.id !== lecture.videos[0].video.id) {
+      const media = await this.mediaRepository.findOneByKey(dto.video.id);
+      const video = this.videoRepository.create({
+        video: media,
+        version: lecture.videos[0].version + 1,
+      });
+      this.isValidVideo(video);
+      lecture.videos = [...lecture.videos, video];
     }
 
     // get resource
     lecture.resources = await this.handleResources(
       lecture.resources,
-      resources,
+      resources_dto,
     );
     Object.assign(lecture, rest);
 
     await this.lectureRepository.save(lecture);
     return lecture.toDto(LectureRes);
+  }
+
+  private isValidVideo(video: LectureVideoEntity) {
+    if (
+      video.video.bucket !== Bucket.VIDEO &&
+      video.video.bucket !== Bucket.TEMP_VIDEO
+    )
+      throw new ValidationException(ErrorCode.E034);
+    if (
+      video.video.status !== UploadStatus.UPLOADED &&
+      video.video.status !== UploadStatus.VALIDATED
+    )
+      throw new ValidationException(ErrorCode.E042);
   }
 }
