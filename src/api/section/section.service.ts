@@ -1,4 +1,4 @@
-import { CourseRepository } from '@/api/course';
+import { CourseRepository, CourseStatus } from '@/api/course';
 import { CreateSectionReq, SectionRes, UpdateSectionReq } from '@/api/section';
 import { SectionEntity } from '@/api/section/entities/section.entity';
 import { SectionRepository } from '@/api/section/section.repository';
@@ -50,6 +50,7 @@ export class SectionService {
       title: dto.title,
       position,
       course_id,
+      status: CourseStatus.DRAFT,
       createdBy,
     });
 

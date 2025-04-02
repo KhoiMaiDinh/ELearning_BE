@@ -1,3 +1,4 @@
+import { CourseStatus } from '@/api/course';
 import { ArticleEntity } from '@/api/course-item/article/article.entity';
 import { LectureEntity } from '@/api/course-item/lecture/lecture.entity';
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
@@ -37,6 +38,9 @@ export class SectionEntity extends AbstractEntity {
   @Column({ type: 'varchar' })
   position: string;
 
+  @Column({ type: 'enum', enum: CourseStatus, default: CourseStatus.DRAFT })
+  status: CourseStatus;
+
   // relations
   @Column({ type: 'uuid' })
   course_id: Uuid;
@@ -46,6 +50,7 @@ export class SectionEntity extends AbstractEntity {
 
   @OneToMany(() => LectureEntity, (item) => item.section, {
     onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   lectures: Relation<LectureEntity[]>;
 

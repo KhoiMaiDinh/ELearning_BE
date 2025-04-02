@@ -1,3 +1,4 @@
+import { CourseStatus } from '@/api/course/enums/course-status.enum';
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { SectionEntity } from '@/api/section/entities/section.entity';
 import { Nanoid, Uuid } from '@/common';
@@ -48,6 +49,13 @@ export class LectureEntity extends AbstractEntity {
   @ManyToOne(() => SectionEntity, (section) => section.lectures)
   @JoinColumn({ name: 'section_id' })
   section: Relation<SectionEntity>;
+
+  @Column({
+    type: 'enum',
+    enum: CourseStatus,
+    default: CourseStatus.DRAFT,
+  })
+  status: CourseStatus;
 
   // unique props
   @OneToMany(() => LectureVideoEntity, (video) => video.lecture, {

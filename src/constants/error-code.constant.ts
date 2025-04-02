@@ -22,6 +22,7 @@ export enum ErrorCode {
   E026 = 'course.error.invalid_category',
   E027 = 'course.error.cannot_modify',
   E028 = 'course.forbidden.view_disabled',
+  E043 = 'course.error.invalid_publication',
 
   // Section
   E029 = 'section.forbidden.author',

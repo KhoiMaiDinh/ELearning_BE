@@ -11,12 +11,14 @@ import {
   ResourceEntity,
 } from '@/api/course-item/lecture/lecture.entity';
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
+import { CourseStatus } from '@/api/course/enums/course-status.enum';
 import { MediaRepository } from '@/api/media';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
 import { Bucket, ErrorCode, Permission, UploadStatus } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
+import { MinioClientService } from '@/libs/minio';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -34,6 +36,7 @@ export class LectureService extends CourseItemService {
     private readonly resourceRepository: Repository<ResourceEntity>,
     @InjectRepository(LectureVideoEntity)
     private readonly videoRepository: Repository<LectureVideoEntity>,
+    private readonly storageService: MinioClientService,
   ) {
     super(
       sectionRepository,
@@ -83,6 +86,9 @@ export class LectureService extends CourseItemService {
     });
     if (!lecture)
       throw new NotFoundException(ErrorCode.E033, 'Lecture not found');
+    lecture.video.video = await this.storageService.getPresignedUrl(
+      lecture.video.video,
+    );
     return lecture;
   }
 
@@ -117,6 +123,7 @@ export class LectureService extends CourseItemService {
       videos: [video],
       resources,
       section,
+      status: CourseStatus.DRAFT,
     });
     await this.lectureRepository.save(lecture);
     return lecture.toDto(LectureRes);
