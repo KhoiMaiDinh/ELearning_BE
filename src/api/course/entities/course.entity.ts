@@ -101,9 +101,6 @@ export class CourseEntity extends AbstractEntity {
   })
   outcomes: string[] | null;
 
-  @Column({ type: 'boolean', default: false })
-  is_disabled: boolean;
-
   @Column({ type: 'enum', enum: CourseStatus, default: CourseStatus.DRAFT })
   status: CourseStatus;
   // relations
