@@ -3,6 +3,7 @@ import {
   CourseRes,
   CoursesQuery,
   CreateCourseReq,
+  PublicCourseReq,
   UpdateCourseReq,
 } from '@/api/course';
 import { JwtPayloadType } from '@/api/token';
@@ -84,12 +85,13 @@ export class CourseController {
     return await this.courseService.update(id, user, updateCourseDto);
   }
 
-  @Patch(':id')
-  async changeDisableStatus(
+  @Patch(':id/status')
+  async changeCourseStatus(
+    @Body() dto: PublicCourseReq,
     @CurrentUser() user: JwtPayloadType,
     @Param('id') id: Nanoid | string,
   ) {
-    return await this.courseService.changeDisableStatus(id, user);
+    return await this.courseService.changeStatus(id, user, dto);
   }
 
   @Get(':id/curriculums')

@@ -3,17 +3,20 @@ import {
   CourseQuery,
   CourseRes,
   CoursesQuery,
+  CourseStatus,
   CreateCourseReq,
   CurriculumRes,
+  PublicCourseReq,
   UpdateCourseReq,
 } from '@/api/course';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseRepository } from '@/api/course/repositories/course.repository';
 import { InstructorRepository } from '@/api/instructor';
 import { PriceHistoryRepository } from '@/api/price/price-history.repository';
+import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { CursorPaginatedDto, CursorPaginationDto, Nanoid } from '@/common';
-import { ErrorCode, Permission } from '@/constants';
+import { ErrorCode, Permission, UploadStatus } from '@/constants';
 import { ForbiddenException, ValidationException } from '@/exceptions';
 import { buildPaginator } from '@/utils';
 import { Injectable } from '@nestjs/common';
@@ -27,7 +30,7 @@ export class CourseService {
     private readonly categoryRepository: CategoryRepository,
     private readonly instructorRepository: InstructorRepository,
     private readonly priceHistoryRepository: PriceHistoryRepository,
-    // private readonly sectionRepository: SectionRepository,
+    private readonly sectionRepository: SectionRepository,
   ) {}
   async create(public_user_id: Nanoid, dto: CreateCourseReq) {
     const {
@@ -173,17 +176,22 @@ export class CourseService {
     return course.toDto(CourseRes);
   }
 
-  async changeDisableStatus(id_or_slug: Nanoid | string, user: JwtPayloadType) {
+  async changeStatus(
+    id_or_slug: Nanoid | string,
+    user: JwtPayloadType,
+    dto: PublicCourseReq,
+  ) {
     const course = await this.courseRepository.findOneByPublicIdOrSlug(
       id_or_slug,
       {
         instructor: { user: true },
+        sections: { lectures: true, quizzes: true, articles: true },
       },
     );
 
     // ✅ If user has WRITE_COURSE permission (admin), allow
     if (user.permissions.includes(Permission.WRITE_COURSE)) {
-      course.is_disabled = !course.is_disabled;
+      course.status = dto.status;
       await course.save();
       return;
     }
@@ -195,12 +203,51 @@ export class CourseService {
       throw new ForbiddenException(ErrorCode.F002); // ❌ User is not the owner
     }
 
-    if (course.updatedBy !== user.id && course.is_disabled) {
+    if (course.status === CourseStatus.BANNED) {
       throw new ForbiddenException(ErrorCode.E027); // ❌ Course was disabled by admin
     }
 
+    if (dto.status === CourseStatus.BANNED) {
+      throw new ForbiddenException(
+        ErrorCode.E027,
+        'Instructor cannot disable a course',
+      );
+    }
+
+    if (dto.status === CourseStatus.PUBLISHED) {
+      // check course quality
+      if (!course.sections.length) {
+        throw new ForbiddenException(
+          ErrorCode.E043,
+          'Invalid Publication: Empty Course Content',
+        );
+      }
+      course.sections.forEach((section) => {
+        if (section.items.length === 0) {
+          throw new ForbiddenException(
+            ErrorCode.E043,
+            'Invalid Publication: Empty Section Content',
+          );
+        }
+        section.lectures.forEach((lecture) => {
+          if (
+            lecture.videos.length === 0 ||
+            lecture.video.video.status !== UploadStatus.VALIDATED
+          ) {
+            throw new ForbiddenException(
+              ErrorCode.E043,
+              `Invalid Publication: Lecture's video is not ready`,
+            );
+          }
+          lecture.status = dto.status;
+        });
+        section.status = dto.status;
+      });
+    }
+
     // ✅ Toggle disable status
-    course.is_disabled = !course.is_disabled;
+    await this.sectionRepository.save(course.sections);
+    course.status = dto.status;
     await course.save();
   }
 

@@ -20,6 +20,7 @@ import { QuizController } from '@/api/course-item/quiz/quiz.controller';
 import { QuizService } from '@/api/course-item/quiz/quiz.service';
 import { MediaModule } from '@/api/media';
 import { SectionModule } from '@/api/section/section.module';
+import { MinioClientModule } from '@/libs/minio';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EnrolledCourseEntity } from '../course/entities/enrolled-course.entity';
@@ -28,6 +29,7 @@ import { EnrolledCourseEntity } from '../course/entities/enrolled-course.entity'
   imports: [
     SectionModule,
     MediaModule,
+    MinioClientModule,
     TypeOrmModule.forFeature([
       EnrolledCourseEntity,
       ArticleEntity,
