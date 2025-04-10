@@ -10,6 +10,7 @@ export enum Permission {
   WRITE_SECTION = 'write:section',
   WRITE_COURSE_ITEM = 'write:course_item',
   READ_COURSE_ITEM = 'read:course_item',
+  READ_ORDER = 'read:order',
 }
 
 export enum PermissionGroup {

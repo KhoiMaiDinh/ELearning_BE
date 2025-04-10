@@ -13,4 +13,5 @@ export enum Entity {
   LECTURE = 'lecture',
   CERTIFICATES = 'certificate',
   LECTURE_VIDEO = 'lecture-video',
+  LECTURE_RESOURCE = 'resource',
 }
