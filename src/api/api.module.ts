@@ -6,6 +6,8 @@ import { HealthModule } from '@/api/health/health.module';
 import { HomeModule } from '@/api/home/home.module';
 import { InstructorModule } from '@/api/instructor/instructor.module';
 import { MediaModule } from '@/api/media/media.module';
+import { OrderModule } from '@/api/order/order.module';
+import { PaymentModule } from '@/api/payment/payment.module';
 import { PostModule } from '@/api/post/post.module';
 import { PreferenceModule } from '@/api/preference/preference.module';
 import { PriceModule } from '@/api/price/price.module';
@@ -30,6 +32,8 @@ import { Module } from '@nestjs/common';
     CourseItemModule,
     SectionModule,
     PriceModule,
+    PaymentModule,
+    OrderModule,
   ],
 })
 export class ApiModule {}
