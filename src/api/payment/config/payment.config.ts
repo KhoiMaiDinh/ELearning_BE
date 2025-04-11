@@ -6,19 +6,11 @@ import { PaymentConfig } from './payment-config.type';
 class EnvironmentVariablesValidator {
   @IsString()
   @IsNotEmpty()
-  PAYMENT_VNP_TMN_CODE: string;
+  PAYMENT_STRIPE_SECRET_KEY: string;
 
   @IsString()
   @IsNotEmpty()
-  PAYMENT_VNP_HASH_SECRET: string;
-
-  @IsString()
-  @IsNotEmpty()
-  PAYMENT_VNP_URL: string;
-
-  @IsString()
-  @IsNotEmpty()
-  PAYMENT_VNP_RETURN_URL: string;
+  PAYMENT_STRIPE_RETURN_URL: string;
 }
 
 export default registerAs<PaymentConfig>('payment', () => {
@@ -26,9 +18,7 @@ export default registerAs<PaymentConfig>('payment', () => {
   validateConfig(process.env, EnvironmentVariablesValidator);
 
   return {
-    vnpay_vnp_tmn_code: process.env.PAYMENT_VNP_TMN_CODE,
-    vnpay_vnp_hash_secret: process.env.PAYMENT_VNP_HASH_SECRET,
-    vnpay_vnp_url: process.env.PAYMENT_VNP_URL,
-    vnpay_vnp_return_url: process.env.PAYMENT_VNP_RETURN_URL,
+    stripe_api_key: process.env.PAYMENT_STRIPE_SECRET_KEY,
+    stripe_return_url: process.env.PAYMENT_STRIPE_RETURN_URL,
   };
 });

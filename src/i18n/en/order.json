@@ -1,0 +1,6 @@
+{
+  "error": {
+    "unpublish_course": "You cannot purchase an unpublish course.",
+    "not_found": "Order not found."
+  }
+}

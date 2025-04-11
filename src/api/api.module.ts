@@ -32,7 +32,7 @@ import { Module } from '@nestjs/common';
     CourseItemModule,
     SectionModule,
     PriceModule,
-    PaymentModule,
+    PaymentModule.forRootAsync(),
     OrderModule,
   ],
 })

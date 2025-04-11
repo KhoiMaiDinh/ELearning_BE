@@ -1,4 +1,5 @@
 import { AuthConfig } from '@/api/auth/config/auth-config.type';
+import { PaymentConfig } from '@/api/payment/config/payment-config.type';
 import { DatabaseConfig } from '@/database/config/database-config.type';
 import { KafkaConfig } from '@/kafka';
 import { MinioConfig } from '@/libs/minio/config/minio-config.type';
@@ -14,4 +15,5 @@ export type AllConfigType = {
   mail: MailConfig;
   storage: MinioConfig;
   kafka: KafkaConfig;
+  payment: PaymentConfig;
 };

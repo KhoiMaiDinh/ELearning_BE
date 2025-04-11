@@ -1,5 +1,22 @@
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { In, Repository } from 'typeorm';
+
+import {
+  CursorPaginatedDto,
+  CursorPaginationDto,
+  Nanoid,
+  Uuid,
+} from '@/common';
+import { ErrorCode as EC, Permission } from '@/constants';
+import { NotFoundException, ValidationException } from '@/exceptions';
+import { buildPaginator } from '@/utils';
+
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseStatus } from '@/api/course/enums/course-status.enum';
+import { EnrollCourseService } from '@/api/course/services/enroll-course.service';
+import { CreateOrderRes, LoadOrderReq, OrderRes } from '@/api/order/dto';
 import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
 import { OrderEntity } from '@/api/order/entities/order.entity';
 import { PaymentProvider } from '@/api/payment/enums/payment-provider.enum';
@@ -7,17 +24,6 @@ import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { PaymentService } from '@/api/payment/payment.service';
 import { JwtPayloadType } from '@/api/token';
 import { UserEntity } from '@/api/user/entities/user.entity';
-import { CursorPaginatedDto, CursorPaginationDto, Nanoid } from '@/common';
-import { ErrorCode as EC, Permission } from '@/constants';
-import { NotFoundException, ValidationException } from '@/exceptions';
-import { buildPaginator } from '@/utils';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
-import { In, Repository } from 'typeorm';
-import { CreateOrderRes } from '../dto/create-order.res.dto';
-import { LoadOrderReq } from '../dto/load-order.req.dto';
-import { OrderRes } from '../dto/order.res.dto';
 
 @Injectable()
 export class OrderService {
@@ -36,6 +42,8 @@ export class OrderService {
 
     @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: PaymentService,
+
+    private readonly enrollCourseService: EnrollCourseService,
   ) {}
 
   async order(
@@ -48,8 +56,9 @@ export class OrderService {
 
     const courses = await this.courseRepo.find({
       where: { id: In(ex_course_ids) },
+      relations: ['thumbnail'],
     });
-    this.validateCourses(courses);
+    await this.validateCourses(user.user_id, courses);
 
     const { total_amount, details } = this.prepareOrderDetails(courses);
 
@@ -64,10 +73,10 @@ export class OrderService {
 
     await this.orderRepo.save(order);
 
-    const payment_url = this.paymentService.initPaymentRequest(
+    const payment_url = await this.paymentService.initPaymentRequest(
+      courses,
       order.id,
-      total_amount,
-      client_ip,
+      user.email,
     );
     return plainToInstance(CreateOrderRes, {
       order,
@@ -81,6 +90,15 @@ export class OrderService {
       relations: ['details', 'user'],
     });
     if (!order) throw new NotFoundException(EC.E045);
+
+    await Promise.all(
+      order.details.map(async (detail) =>
+        this.enrollCourseService.enrollCourse(
+          detail.course_id,
+          order.user.user_id,
+        ),
+      ),
+    );
 
     order.status = PaymentStatus.SUCCESS;
     order.payment_completed_at = new Date();
@@ -144,14 +162,28 @@ export class OrderService {
     return new CursorPaginatedDto(plainToInstance(OrderRes, data), metaDto);
   }
 
-  private validateCourses(courses: CourseEntity[]): void {
+  private async validateCourses(
+    user_id: Uuid,
+    courses: CourseEntity[],
+  ): Promise<void> {
     if (!courses.length)
       throw new NotFoundException(EC.E025, 'One of courses not found');
 
-    courses.forEach((course) => {
-      if (course.status != CourseStatus.PUBLISHED)
-        throw new NotFoundException(EC.E044);
-    });
+    await Promise.all(
+      courses.map(async (course) => {
+        if (course.status !== CourseStatus.PUBLISHED)
+          throw new NotFoundException(EC.E044);
+        const is_enrolled = await this.enrollCourseService.isEnrolled(
+          course.course_id,
+          user_id,
+        );
+        if (is_enrolled)
+          throw new ValidationException(
+            EC.E047,
+            `User already enrolled in course ${course.id}`,
+          );
+      }),
+    );
   }
 
   private prepareOrderDetails(courses: CourseEntity[]): {

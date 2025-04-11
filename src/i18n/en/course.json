@@ -7,7 +7,8 @@
     "invalid_category": "Invalid category: a valid category must not be level 0",
     "cannot_modify": "You cannot modify this course",
     "view_disabled": "Access Denied for disabled courses",
-    "invalid_publication": "Invalid publication"
+    "invalid_publication": "Invalid publication",
+    "enroll_not_found": "Enrollment not found"
   },
   "forbidden": {
     "view_disabled": "Access Denied for disabled courses",

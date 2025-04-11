@@ -23,6 +23,12 @@ export enum ErrorCode {
   E027 = 'course.error.cannot_modify',
   E028 = 'course.forbidden.view_disabled',
   E043 = 'course.error.invalid_publication',
+  E046 = 'course.error.enroll_not_found',
+  E047 = 'course.error.enroll_already_exists',
+
+  // Order
+  E044 = 'order.error.unpublish_course',
+  E045 = 'order.error.not_found',
 
   // Section
   E029 = 'section.forbidden.author',
@@ -66,6 +72,9 @@ export enum ErrorCode {
   E012 = 'instructor.error.not_found',
   E017 = 'instructor.error.invalid_specialized',
   E041 = 'instructor.error.invalid_resume',
+
+  // Account
+  E048 = 'account.error.for_only_instructor',
 
   // Token
   E009 = 'token.error.invalid_secret',

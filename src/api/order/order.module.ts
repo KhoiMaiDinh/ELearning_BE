@@ -1,6 +1,7 @@
 import { PaymentModule } from '@/api/payment/payment.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CourseModule } from '../course/course.module';
 import { CourseEntity } from '../course/entities/course.entity';
 import { OrderController } from '../order/order.controller';
 import { UserEntity } from '../user/entities/user.entity';
@@ -16,7 +17,8 @@ import { OrderService } from './services/order.service';
       CourseEntity,
       UserEntity,
     ]),
-    forwardRef(() => PaymentModule),
+    forwardRef(() => PaymentModule.forRootAsync()),
+    CourseModule,
   ],
   controllers: [OrderController],
   providers: [OrderService],
