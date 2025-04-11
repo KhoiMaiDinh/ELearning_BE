@@ -32,6 +32,10 @@ class EnvironmentVariablesValidator {
   @IsNotEmpty()
   @IsMs()
   STORAGE_URL_EXPIRES_IN: string;
+
+  @IsString()
+  @IsNotEmpty()
+  STORAGE_PATH: string;
 }
 
 export default registerAs<MinioConfig>('storage', () => {
@@ -49,5 +53,6 @@ export default registerAs<MinioConfig>('storage', () => {
     port,
     bucket: process.env.STORAGE_BUCKET,
     presigned_url_expires: process.env.STORAGE_URL_EXPIRES_IN,
+    path: process.env.STORAGE_PATH,
   };
 });
