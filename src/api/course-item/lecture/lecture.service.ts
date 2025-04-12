@@ -126,10 +126,11 @@ export class LectureService extends CourseItemService {
       status: CourseStatus.DRAFT,
     });
     await this.lectureRepository.save(lecture);
+    lecture.resources = await this.getResourceAccess(lecture.resources);
     return lecture.toDto(LectureRes);
   }
 
-  async handleResources(
+  private async handleResources(
     resources: ResourceEntity[],
     resources_dto: ResourceReq[],
   ) {
@@ -208,6 +209,8 @@ export class LectureService extends CourseItemService {
     Object.assign(lecture, rest);
 
     await this.lectureRepository.save(lecture);
+
+    lecture.resources = await this.getResourceAccess(lecture.resources);
     return lecture.toDto(LectureRes);
   }
 
@@ -222,5 +225,16 @@ export class LectureService extends CourseItemService {
       video.video.status !== UploadStatus.VALIDATED
     )
       throw new ValidationException(ErrorCode.E042);
+  }
+
+  private async getResourceAccess(resources: ResourceEntity[]) {
+    return Promise.all(
+      resources?.map(async (r) => {
+        r.resource_file = await this.storageService.getPresignedUrl(
+          r.resource_file,
+        );
+        return r;
+      }),
+    );
   }
 }

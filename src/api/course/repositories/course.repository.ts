@@ -1,6 +1,4 @@
-import { CategoryEntity } from '@/api/category/entities/category.entity';
 import { CourseEntity } from '@/api/course/entities/course.entity';
-import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { Nanoid } from '@/common';
 import { ErrorCode } from '@/constants';
 import { NotFoundException } from '@/exceptions';
@@ -27,21 +25,5 @@ export class CourseRepository extends Repository<CourseEntity> {
       throw new NotFoundException(ErrorCode.E025);
     }
     return course;
-  }
-
-  async createCourse({
-    title,
-    category,
-    instructor,
-  }: {
-    title: string;
-    category: CategoryEntity;
-    instructor: InstructorEntity;
-  }) {
-    const course = new CourseEntity();
-    course.title = title;
-    course.category = category;
-    course.instructor = instructor;
-    return await this.save(course);
   }
 }

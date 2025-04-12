@@ -16,12 +16,21 @@ import { PriceHistoryRepository } from '@/api/price/price-history.repository';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { CursorPaginatedDto, CursorPaginationDto, Nanoid } from '@/common';
-import { ErrorCode, Permission, UploadStatus } from '@/constants';
+import {
+  Entity,
+  ErrorCode,
+  Permission,
+  UploadEntityProperty,
+  UploadStatus,
+} from '@/constants';
 import { ForbiddenException, ValidationException } from '@/exceptions';
+import { MinioClientService } from '@/libs/minio';
 import { buildPaginator } from '@/utils';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { FindOptionsRelations } from 'typeorm';
+import { MediaRepository } from '../../media';
+import { MediaEntity } from '../../media/entities/media.entity';
 
 @Injectable()
 export class CourseService {
@@ -31,22 +40,30 @@ export class CourseService {
     private readonly instructorRepository: InstructorRepository,
     private readonly priceHistoryRepository: PriceHistoryRepository,
     private readonly sectionRepository: SectionRepository,
+    private readonly mediaRepository: MediaRepository,
+    private readonly storageService: MinioClientService,
   ) {}
   async create(public_user_id: Nanoid, dto: CreateCourseReq) {
     const {
-      title,
       category: { slug },
+      thumbnail: thumbnail_dto,
+      ...rest
     } = dto;
     const category = await this.categoryRepository.findOneBySlug(slug);
     if (!category.parent) throw new ForbiddenException(ErrorCode.E026);
     const instructor =
       await this.instructorRepository.findOneByUserPublicId(public_user_id);
 
-    const course = await this.courseRepository.createCourse({
-      title,
+    const thumbnail = await this.mediaRepository.findOneById(thumbnail_dto.id);
+    this.isValidThumbnail(thumbnail);
+
+    const course = this.courseRepository.create({
+      ...rest,
       category,
       instructor,
+      thumbnail,
     });
+    await this.courseRepository.save(course);
 
     return course.toDto(CourseRes);
   }
@@ -68,11 +85,11 @@ export class CourseService {
 
     // if Not provide include_disabled -> return only enabled course. If provide and has permission -> return all
     if (!query.include_disabled)
-      queryBuilder.andWhere('course.is_disabled = :is_disabled', {
-        is_disabled: false,
+      queryBuilder.andWhere('course.status = :status', {
+        status: CourseStatus.PUBLISHED,
       });
     else if (!user?.permissions.includes(Permission.WRITE_COURSE))
-      throw new ForbiddenException(ErrorCode.E027);
+      throw new ForbiddenException(ErrorCode.E028);
 
     // **Level Filtering**
     if (query.level) {
@@ -255,12 +272,47 @@ export class CourseService {
     const course = await this.courseRepository.findOneByPublicIdOrSlug(
       id_or_slug,
       {
-        sections: { lectures: true, quizzes: true, articles: true },
+        sections: {
+          lectures: {
+            videos: { video: true },
+            resources: { resource_file: true },
+          },
+          quizzes: true,
+          articles: true,
+        },
+        category: true,
       },
       true,
     );
 
+    course.sections.forEach((section) => {
+      section.lectures.forEach(async (item) => {
+        item.videos.forEach(async (video) => {
+          video.video = await this.storageService.getPresignedUrl(video.video);
+        });
+        item.resources.forEach(async (resource) => {
+          resource.resource_file = await this.storageService.getPresignedUrl(
+            resource.resource_file,
+          );
+        });
+      });
+    });
+
     return course.toDto(CurriculumRes);
+  }
+
+  private isValidThumbnail(thumbnail: MediaEntity) {
+    if (!thumbnail) throw new NotFoundException(ErrorCode.E019);
+    if (
+      thumbnail.status != UploadStatus.VALIDATED &&
+      thumbnail.status != UploadStatus.UPLOADED
+    )
+      throw new ValidationException(ErrorCode.E042);
+    if (
+      thumbnail.entity != Entity.COURSE &&
+      thumbnail.entity_property != UploadEntityProperty.THUMBNAIL
+    )
+      throw new ValidationException(ErrorCode.E034);
   }
 
   // async upsertCurriculum(

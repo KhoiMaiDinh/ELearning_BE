@@ -42,7 +42,7 @@ export class OrderDetailEntity extends AbstractEntity {
   @JoinColumn({ name: 'order_id' })
   order: Relation<OrderEntity>;
 
-  @ManyToOne(() => CourseEntity, (course) => course.order_details)
+  @ManyToOne(() => CourseEntity)
   @JoinColumn({ name: 'course_id' })
   course: Relation<CourseEntity>;
 }
