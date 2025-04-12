@@ -20,11 +20,15 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { CourseService } from './course.service';
+import { CourseService } from './services/course.service';
+import { EnrollCourseService } from './services/enroll-course.service';
 
 @Controller({ path: 'courses', version: '1' })
 export class CourseController {
-  constructor(private readonly courseService: CourseService) {}
+  constructor(
+    private readonly courseService: CourseService,
+    private readonly enrollCourseService: EnrollCourseService,
+  ) {}
 
   @Post()
   @ApiAuth({
@@ -86,6 +90,11 @@ export class CourseController {
   }
 
   @Patch(':id/status')
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    summary: 'Change course status',
+    type: CourseRes,
+  })
   async changeCourseStatus(
     @Body() dto: PublicCourseReq,
     @CurrentUser() user: JwtPayloadType,
@@ -95,8 +104,23 @@ export class CourseController {
   }
 
   @Get(':id/curriculums')
+  @ApiPublic({
+    statusCode: HttpStatus.OK,
+    summary: 'Get course curriculums',
+    type: CourseRes,
+  })
   async findCurriculums(@Param('id') id: Nanoid | string) {
     return await this.courseService.findCurriculums(id);
+  }
+
+  @Get('enrolled/me')
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    summary: 'Get my enrolled courses',
+    type: CourseRes,
+  })
+  async getEnrolledCourses(@CurrentUser('id') user_id: Nanoid) {
+    return await this.enrollCourseService.getEnrolledCourses(user_id);
   }
 
   // @Put(':id/curriculums')
