@@ -6,6 +6,7 @@ import {
   BooleanField,
   ClassField,
   ClassFieldOptional,
+  NumberFieldOptional,
   ObjectField,
   StringField,
   StringFieldOptional,
@@ -54,4 +55,8 @@ export class InstructorRes {
   @Expose()
   @ClassFieldOptional(() => CategoryRes)
   category?: CategoryRes;
+
+  @Expose()
+  @NumberFieldOptional()
+  total_courses?: number;
 }

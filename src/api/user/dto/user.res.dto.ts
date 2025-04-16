@@ -1,6 +1,9 @@
+import { InstructorRes } from '@/api/instructor';
+import { MediaRes } from '@/api/media';
 import { PostResDto } from '@/api/post/dto/post.res.dto';
+import { RoleRes } from '@/api/role';
 import { WrapperType } from '@/common';
-import { ClassField, StringField, URLField } from '@/decorators';
+import { ClassField, StringField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
@@ -25,11 +28,19 @@ export class UserRes {
   @Expose()
   last_name: string;
 
-  @URLField()
+  @ClassField(() => MediaRes)
   @Expose()
-  profile_image: string;
+  profile_image: MediaRes;
 
   @ClassField(() => PostResDto)
   @Expose()
   posts?: WrapperType<PostResDto[]>;
+
+  @ClassField(() => RoleRes)
+  @Expose()
+  roles?: WrapperType<RoleRes[]>;
+
+  @ClassField(() => InstructorRes)
+  @Expose()
+  instructor_profile?: WrapperType<InstructorRes>;
 }
