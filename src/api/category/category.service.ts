@@ -141,7 +141,7 @@ export class CategoryService {
     return unique_slug;
   }
 
-  private filterTranslations(
+  filterTranslations(
     category: CategoryEntity,
     language: Language = Language.VI,
   ): void {
