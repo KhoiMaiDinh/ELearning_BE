@@ -6,4 +6,5 @@ export type MinioConfig = {
   bucket: string;
   presigned_url_expires: string;
   path: string;
+  use_ssl: boolean;
 };

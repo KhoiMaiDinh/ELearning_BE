@@ -19,7 +19,11 @@ export class VideoProcessConsumer {
     media.status = message.status;
     if (status == UploadStatus.REJECTED)
       media.rejection_reason = rejection_reason;
-    if (status == UploadStatus.VALIDATED) media.bucket = Bucket.VIDEO;
+    if (status == UploadStatus.VALIDATED) {
+      media.bucket = Bucket.VIDEO;
+      media.key = key.replace(/\.mp3|\.mov$/, '/master.m3u8');
+    }
+
     await this.mediaRepository.save(media);
   }
 }

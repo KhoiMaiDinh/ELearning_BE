@@ -2,7 +2,14 @@ import { Environment } from '@/constants';
 import { IsMs } from '@/decorators';
 import validateConfig from '@/utils/validate-config';
 import { registerAs } from '@nestjs/config';
-import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import process from 'node:process';
 import { MinioConfig } from './minio-config.type';
 class EnvironmentVariablesValidator {
@@ -36,6 +43,10 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsNotEmpty()
   STORAGE_PATH: string;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  STORAGE_USE_SSL: boolean;
 }
 
 export default registerAs<MinioConfig>('storage', () => {
@@ -54,5 +65,6 @@ export default registerAs<MinioConfig>('storage', () => {
     bucket: process.env.STORAGE_BUCKET,
     presigned_url_expires: process.env.STORAGE_URL_EXPIRES_IN,
     path: process.env.STORAGE_PATH,
+    use_ssl: process.env.STORAGE_USE_SSL === 'true',
   };
 });
