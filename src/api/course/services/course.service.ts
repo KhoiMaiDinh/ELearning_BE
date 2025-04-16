@@ -1,3 +1,4 @@
+import { CategoryService } from '@/api/category/category.service';
 import { CategoryRepository } from '@/api/category/repositories/category.repository';
 import {
   CourseQuery,
@@ -15,17 +16,18 @@ import { InstructorRepository } from '@/api/instructor';
 import { PriceHistoryRepository } from '@/api/price/price-history.repository';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
-import { CursorPaginatedDto, CursorPaginationDto, Nanoid } from '@/common';
+import { Nanoid, OffsetPaginatedDto } from '@/common';
 import {
   Entity,
   ErrorCode,
+  Language,
   Permission,
   UploadEntityProperty,
   UploadStatus,
 } from '@/constants';
 import { ForbiddenException, ValidationException } from '@/exceptions';
 import { MinioClientService } from '@/libs/minio';
-import { buildPaginator } from '@/utils';
+import { paginate } from '@/utils';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { FindOptionsRelations } from 'typeorm';
@@ -42,6 +44,7 @@ export class CourseService {
     private readonly sectionRepository: SectionRepository,
     private readonly mediaRepository: MediaRepository,
     private readonly storageService: MinioClientService,
+    private readonly categoryService: CategoryService,
   ) {}
   async create(public_user_id: Nanoid, dto: CreateCourseReq) {
     const {
@@ -69,23 +72,29 @@ export class CourseService {
   }
 
   async findMany(query: CoursesQuery, user?: JwtPayloadType) {
-    const queryBuilder = this.courseRepository.createQueryBuilder('course');
+    const query_builder = this.courseRepository
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.thumbnail', 'thumbnail');
 
     if (query.with_category)
-      queryBuilder.leftJoinAndSelect('course.category', 'category');
+      query_builder.leftJoinAndSelect('course.category', 'category');
     if (query.with_instructor)
-      queryBuilder.leftJoinAndSelect('course.instructor', 'instructor');
+      query_builder
+        .leftJoinAndSelect('course.instructor', 'instructor')
+        .leftJoinAndSelect('instructor.user', 'user')
+        .leftJoinAndSelect('user.profile_image', 'profile_image')
+        .addSelect('user.username', 'username');
 
     // **Category Filtering**
     if (query.category_slug) {
-      queryBuilder.andWhere('category.slug = :category_slug', {
+      query_builder.andWhere('category.slug = :category_slug', {
         category_slug: query.category_slug,
       });
     }
 
     // if Not provide include_disabled -> return only enabled course. If provide and has permission -> return all
     if (!query.include_disabled)
-      queryBuilder.andWhere('course.status = :status', {
+      query_builder.andWhere('course.status = :status', {
         status: CourseStatus.PUBLISHED,
       });
     else if (!user?.permissions.includes(Permission.WRITE_COURSE))
@@ -93,40 +102,29 @@ export class CourseService {
 
     // **Level Filtering**
     if (query.level) {
-      queryBuilder.andWhere('course.level = :level', { level: query.level });
+      query_builder.andWhere('course.level = :level', { level: query.level });
     }
 
     if (query.instructor_username) {
-      queryBuilder
+      query_builder
         .leftJoinAndSelect('course.instructor', 'instructor')
         .leftJoinAndSelect('instructor.user', 'user')
         .andWhere('user.username = :username', {
           username: query.instructor_username,
-        });
+        })
+        .leftJoinAndSelect('user.profile_image', 'profile_image');
     }
 
-    const paginator = buildPaginator({
-      entity: CourseEntity,
-      alias: 'course',
-      paginationKeys: ['createdAt'],
-      query: {
-        limit: query.limit,
-        order: 'DESC',
-        afterCursor: query.afterCursor,
-        beforeCursor: query.beforeCursor,
-      },
-    });
-
-    const { data, cursor } = await paginator.paginate(queryBuilder);
-
-    const metaDto = new CursorPaginationDto(
-      data.length,
-      cursor.afterCursor,
-      cursor.beforeCursor,
+    const [courses, metaDto] = await paginate<CourseEntity>(
+      query_builder,
       query,
+      {
+        skipCount: false,
+        takeAll: false,
+      },
     );
 
-    return new CursorPaginatedDto(plainToInstance(CourseRes, data), metaDto);
+    return new OffsetPaginatedDto(plainToInstance(CourseRes, courses), metaDto);
   }
 
   async findFromUser(user: JwtPayloadType) {
@@ -142,6 +140,7 @@ export class CourseService {
     const load_entities: FindOptionsRelations<CourseEntity> = {};
     if (query.with_instructor) load_entities.instructor = { user: true };
     if (query.with_category) load_entities.category = true;
+    load_entities.thumbnail = true;
     const course = await this.courseRepository.findOneByPublicIdOrSlug(
       id,
       load_entities,
@@ -272,6 +271,7 @@ export class CourseService {
     const course = await this.courseRepository.findOneByPublicIdOrSlug(
       id_or_slug,
       {
+        thumbnail: true,
         sections: {
           lectures: {
             videos: { video: true },
@@ -280,14 +280,26 @@ export class CourseService {
           quizzes: true,
           articles: true,
         },
-        category: true,
+        category: {
+          translations: true,
+          parent: { translations: true },
+        },
       },
       true,
     );
 
+    // get thumbnail access
+    course.thumbnail = await this.storageService.getPresignedUrl(
+      course.thumbnail,
+    );
+
+    // get selected language for category
+    this.categoryService.filterTranslations(course.category, Language.VI);
+
     course.sections.forEach((section) => {
       section.lectures.forEach(async (item) => {
         item.videos.forEach(async (video) => {
+          this.addVideoExtension(video.video);
           video.video = await this.storageService.getPresignedUrl(video.video);
         });
         item.resources.forEach(async (resource) => {
@@ -313,6 +325,12 @@ export class CourseService {
       thumbnail.entity_property != UploadEntityProperty.THUMBNAIL
     )
       throw new ValidationException(ErrorCode.E034);
+  }
+
+  private addVideoExtension(video: MediaEntity) {
+    if (video.status != UploadStatus.VALIDATED) return video;
+    video.key += '/master.m3u8';
+    return video;
   }
 
   // async upsertCurriculum(
