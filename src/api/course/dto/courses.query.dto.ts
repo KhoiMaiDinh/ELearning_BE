@@ -1,4 +1,4 @@
-import { PageCursorOptionsDto } from '@/common';
+import { PageOffsetOptionsDto } from '@/common';
 import {
   BooleanFieldOptional,
   EnumFieldOptional,
@@ -8,7 +8,7 @@ import {
 import { CourseLevel } from '../enums/course-level.enum';
 import { CourseQuery } from './course.query.dto';
 
-export class CoursesQuery extends PageCursorOptionsDto implements CourseQuery {
+export class CoursesQuery extends PageOffsetOptionsDto implements CourseQuery {
   @StringFieldOptional()
   category_slug?: string;
 

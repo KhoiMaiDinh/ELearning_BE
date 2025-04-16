@@ -1,6 +1,7 @@
 import { CategoryRes } from '@/api/category';
 import { CourseLevel } from '@/api/course';
 import { InstructorRes } from '@/api/instructor';
+import { MediaRes } from '@/api/media';
 import { Nanoid } from '@/common';
 import { Language } from '@/constants';
 import { ClassField, NumberField, StringField } from '@/decorators';
@@ -33,7 +34,7 @@ export class CourseRes {
   subtitle: string | null;
 
   @Expose()
-  @StringField({ nullable: true })
+  @ClassField(() => MediaRes)
   thumbnail: StorageImage | null;
 
   @Expose()

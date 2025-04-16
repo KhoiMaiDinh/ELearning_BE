@@ -45,7 +45,7 @@ export class CourseController {
   @Get()
   @ApiPublic({
     statusCode: HttpStatus.OK,
-    summary: 'Get courses by cursor pagination',
+    summary: 'Get courses by offset pagination',
     type: CourseRes,
   })
   async findMany(@Query() query: CoursesQuery) {
