@@ -14,7 +14,7 @@ import { MinioClientService } from './minio-client.service';
         port: config.get('storage.port', { infer: true }),
         accessKey: config.get('storage.access_key', { infer: true }),
         secretKey: config.get('storage.secret_key', { infer: true }),
-        useSSL: false,
+        useSSL: config.get('storage.use_ssl', { infer: true }),
       }),
     }),
   ],
