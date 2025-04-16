@@ -21,9 +21,9 @@ import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
 import { OrderEntity } from '@/api/order/entities/order.entity';
 import { PaymentProvider } from '@/api/payment/enums/payment-provider.enum';
 import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
-import { PaymentService } from '@/api/payment/payment.service';
+import { PaymentService } from '@/api/payment/services/payment.service';
 import { JwtPayloadType } from '@/api/token';
-import { UserEntity } from '@/api/user/entities/user.entity';
+import { UserRepository } from '@/api/user/user.repository';
 
 @Injectable()
 export class OrderService {
@@ -37,8 +37,7 @@ export class OrderService {
     @InjectRepository(CourseEntity)
     private readonly courseRepo: Repository<CourseEntity>,
 
-    @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>,
+    private readonly userRepo: UserRepository,
 
     @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: PaymentService,
