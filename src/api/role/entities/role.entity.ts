@@ -1,3 +1,4 @@
+import { PermissionEntity } from '@/api/role/entities/permission.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
 import { Entity as E } from '@/constants';
@@ -10,7 +11,6 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
-import { PermissionEntity } from './permission.entity';
 
 @Entity(E.ROLE)
 export class RoleEntity extends AbstractEntity {

@@ -1,5 +1,6 @@
-import { ErrorCode } from '@/constants/error-code.constant';
-import { NotFoundException } from '@/exceptions/not-found.exception';
+import { RoleRepository } from '@/api/role/entities/role.repository';
+import { ErrorCode } from '@/constants';
+import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -7,7 +8,6 @@ import { In, Repository } from 'typeorm';
 import { CreateRoleReq, RoleRes, UpdateRoleReq } from './dto';
 import { PermissionEntity } from './entities/permission.entity';
 import { RoleEntity } from './entities/role.entity';
-import { RoleRepository } from './entities/role.repository';
 
 @Injectable()
 export class RoleService {

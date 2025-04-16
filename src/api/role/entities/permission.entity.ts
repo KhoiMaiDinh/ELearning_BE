@@ -1,8 +1,14 @@
+import { RoleEntity } from '@/api/role/entities/role.entity';
 import { Uuid } from '@/common';
 import { Entity as E, Permission, PermissionGroup } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { RoleEntity } from './role.entity';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  Relation,
+} from 'typeorm';
 
 @Entity(E.PERMISSION)
 export class PermissionEntity extends AbstractEntity {
@@ -31,5 +37,5 @@ export class PermissionEntity extends AbstractEntity {
   permission_group!: PermissionGroup;
 
   @ManyToMany(() => RoleEntity, (role) => role.permissions)
-  roles: RoleEntity[];
+  roles: Relation<RoleEntity[]>;
 }
