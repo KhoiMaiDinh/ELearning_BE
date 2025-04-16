@@ -1,5 +1,5 @@
 import { Nanoid } from '@/common';
-import { ApiAuth, CurrentUser } from '@/decorators';
+import { ApiAuth, ApiPublic, CurrentUser, Public } from '@/decorators';
 import {
   Body,
   Controller,
@@ -36,16 +36,23 @@ export class InstructorController {
   }
 
   @Get()
-  @ApiAuth({
+  @Public()
+  @ApiPublic({
     type: InstructorRes,
     summary: 'List instructor',
     isPaginated: true,
   })
-  load(@Query() dto: ListInstructorQuery) {
+  loadByOffset(@Query() dto: ListInstructorQuery) {
     return this.instructorService.load(dto);
   }
 
   @Get(':username')
+  @Public()
+  @ApiPublic({
+    type: InstructorRes,
+    summary: 'List instructor',
+    isPaginated: true,
+  })
   findOne(@Param('username') username: string) {
     return this.instructorService.findOneByUsername(username);
   }

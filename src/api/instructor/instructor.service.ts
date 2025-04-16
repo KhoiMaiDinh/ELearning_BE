@@ -5,10 +5,12 @@ import { Nanoid, OffsetPaginatedDto } from '@/common';
 import {
   Entity,
   ErrorCode,
+  Language,
   UploadEntityProperty,
   UploadStatus,
 } from '@/constants';
 import { ValidationException } from '@/exceptions';
+import { MinioClientService } from '@/libs/minio';
 import { paginate } from '@/utils';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -35,6 +37,7 @@ export class InstructorService {
     private readonly certificateRepository: Repository<CertificateEntity>,
     private readonly categoryRepository: CategoryRepository,
     private readonly mediaRepository: MediaRepository,
+    private readonly storageService: MinioClientService,
   ) {}
   async create(
     username: Nanoid,
@@ -87,14 +90,20 @@ export class InstructorService {
     const { is_approved, specialty } = dto;
     const query = InstructorEntity.createQueryBuilder('instructor')
       .where(is_approved ? 'instructor.is_approved = :is_approved' : '1=1', {
-        is_approved: is_approved,
+        is_approved,
       })
       .leftJoinAndSelect('instructor.category', 'category')
       .andWhere(specialty ? 'category.slug = :slug' : '1=1', {
         slug: specialty,
       })
-      .orderBy('instructor.createdAt', 'DESC')
-      .leftJoinAndSelect('instructor.user', 'user');
+      .leftJoinAndSelect('category.translations', 'category_translations')
+      .andWhere('category_translations.language = :language', {
+        language: Language.VI,
+      })
+      .leftJoinAndSelect('instructor.user', 'user')
+      .leftJoinAndSelect('user.profile_image', 'profile_image')
+      .loadRelationCountAndMap('instructor.total_courses', 'instructor.courses')
+      .orderBy('instructor.createdAt', 'DESC');
 
     const [instructors, metaDto] = await paginate<InstructorEntity>(
       query,
@@ -105,6 +114,8 @@ export class InstructorService {
       },
     );
 
+    console.log('instructors', instructors);
+
     return new OffsetPaginatedDto(
       plainToInstance(InstructorRes, instructors),
       metaDto,
@@ -112,10 +123,23 @@ export class InstructorService {
   }
 
   async findOneByUsername(username: string) {
-    const instructor = await this.instructorRepository.findOneByUsername(
-      username,
-      ['category', 'category.translations'],
-    );
+    const instructor = await this.instructorRepository
+      .createQueryBuilder('instructor')
+      .leftJoinAndSelect('instructor.category', 'category')
+      .leftJoinAndSelect(
+        'category.translations',
+        'category_translations',
+        'category_translations.language = :language',
+        {
+          language: Language.VI,
+        },
+      )
+      .leftJoinAndSelect('instructor.certificates', 'certificates')
+      .loadRelationCountAndMap('instructor.total_courses', 'instructor.courses')
+      .leftJoinAndSelect('instructor.user', 'user')
+      .where('user.username = :username', { username })
+      .leftJoinAndSelect('user.profile_image', 'profile_image')
+      .getOne();
 
     return instructor.toDto(InstructorRes);
   }
@@ -178,6 +202,7 @@ export class InstructorService {
     }
     Object.assign(instructor, rest_dto);
     Object.assign(instructor.user, { ...instructor.user, ...user_dto });
+    delete instructor.user.password;
 
     await instructor.save();
     await instructor.user.save();
