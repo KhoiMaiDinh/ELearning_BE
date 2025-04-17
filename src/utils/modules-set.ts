@@ -1,5 +1,6 @@
 import { ApiModule } from '@/api/api.module';
 import authConfig from '@/api/auth/config/auth.config';
+import paymentConfig from '@/api/payment/config/payment.config';
 import { BackgroundModule } from '@/background/background.module';
 import appConfig from '@/config/app.config';
 import { AllConfigType } from '@/config/config.type';
@@ -42,6 +43,7 @@ function generateModulesSet(): ModuleMetadata['imports'] {
         mailConfig,
         minioConfig,
         kafkaConfig,
+        paymentConfig,
       ],
       envFilePath: ['.env'],
     }),
