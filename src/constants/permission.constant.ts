@@ -11,6 +11,8 @@ export enum Permission {
   WRITE_COURSE_ITEM = 'write:course_item',
   READ_COURSE_ITEM = 'read:course_item',
   READ_ORDER = 'read:order',
+  WRITE_ACCOUNT = 'write:account',
+  READ_ACCOUNT = 'read:account',
 }
 
 export enum PermissionGroup {
@@ -20,4 +22,5 @@ export enum PermissionGroup {
   COURSE = 'course',
   SECTION = 'section',
   COURSE_ITEM = 'course_item',
+  ACCOUNT = 'account',
 }

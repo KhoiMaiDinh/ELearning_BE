@@ -1,13 +1,15 @@
+import { CourseModule } from '@/api/course/course.module';
 import { OrderModule } from '@/api/order/order.module';
+import { PaymentController } from '@/api/payment/payment.controller';
 import { AllConfigType } from '@/config';
 import { DynamicModule, forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '../user/entities/user.entity';
+import { UserModule } from '../user';
 import { AccountEntity } from './entities/account.entity';
-import { PaymentController } from './payment.controller';
-import { PaymentService } from './payment.service';
-import { VnpIpnHandler } from './vpn-ipn.handler';
+import { AccountService } from './services/account.service';
+import { PaymentService } from './services/payment.service';
+import { VnpIpnHandler } from './services/vpn-ipn.handler';
 
 @Module({})
 export class PaymentModule {
@@ -17,10 +19,13 @@ export class PaymentModule {
       imports: [
         ConfigModule.forRoot(),
         forwardRef(() => OrderModule),
-        TypeOrmModule.forFeature([AccountEntity, UserEntity]),
+        TypeOrmModule.forFeature([AccountEntity]),
+        UserModule,
+        CourseModule,
       ],
       controllers: [PaymentController],
       providers: [
+        AccountService,
         VnpIpnHandler,
         PaymentService,
         {
@@ -32,7 +37,7 @@ export class PaymentModule {
           inject: [ConfigService],
         },
       ],
-      exports: [PaymentService],
+      exports: [PaymentService, AccountService],
     };
   }
 }

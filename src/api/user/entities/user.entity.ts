@@ -2,6 +2,7 @@ import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.enti
 import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { OrderEntity } from '@/api/order/entities/order.entity';
+import { AccountEntity } from '@/api/payment/entities/account.entity';
 import { PostEntity } from '@/api/post/entities/post.entity';
 import { PreferenceEntity } from '@/api/preference/entities/preference.entity';
 import { RoleEntity } from '@/api/role/entities/role.entity';
@@ -116,6 +117,9 @@ export class UserEntity extends AbstractEntity {
 
   @OneToOne(() => PreferenceEntity, (preference) => preference.user)
   preference?: Relation<PreferenceEntity>;
+
+  @OneToMany(() => AccountEntity, (account) => account.user)
+  accounts?: Relation<AccountEntity[]>;
 
   @OneToMany(
     () => EnrolledCourseEntity,

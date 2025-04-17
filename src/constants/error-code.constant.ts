@@ -75,6 +75,10 @@ export enum ErrorCode {
 
   // Account
   E048 = 'account.error.for_only_instructor',
+  E049 = 'account.error.not_found',
+  E050 = 'account.error.modify_default',
+  E051 = 'account.error.account_onboarded',
+  E052 = 'account.error.account_unavailable',
 
   // Token
   E009 = 'token.error.invalid_secret',
