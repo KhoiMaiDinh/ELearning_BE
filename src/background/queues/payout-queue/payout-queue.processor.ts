@@ -3,9 +3,9 @@ import { JobName, QueueName } from '@/constants/job.constant';
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { StripeQueueService } from './stripe-queue.service';
+import { PayoutQueueService } from './payout-queue.service';
 
-@Processor(QueueName.STRIPE, {
+@Processor(QueueName.PAYOUT, {
   concurrency: 5,
   drainDelay: 300,
   stalledInterval: 300000,
@@ -18,9 +18,9 @@ import { StripeQueueService } from './stripe-queue.service';
     duration: 150,
   },
 })
-export class StripeProcessor extends WorkerHost {
-  private readonly logger = new Logger(StripeProcessor.name);
-  constructor(private readonly stripeQueueService: StripeQueueService) {
+export class PayoutProcessor extends WorkerHost {
+  private readonly logger = new Logger(PayoutProcessor.name);
+  constructor(private readonly stripeQueueService: PayoutQueueService) {
     super();
   }
   async process(

@@ -3,8 +3,8 @@ import { IPayoutJob } from '@/common/interfaces/job.interface';
 import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
-export class StripeQueueService {
-  private readonly logger = new Logger(StripeQueueService.name);
+export class PayoutQueueService {
+  private readonly logger = new Logger(PayoutQueueService.name);
 
   constructor(private readonly payoutService: PayoutService) {}
 

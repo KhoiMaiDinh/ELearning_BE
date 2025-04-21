@@ -13,7 +13,7 @@ export class TaskService {
 
   constructor(
     private readonly orderDetailService: OrderDetailService,
-    @InjectQueue(QueueName.STRIPE)
+    @InjectQueue(QueueName.PAYOUT)
     private readonly stripeQueue: Queue<IPayoutJob, any, string>,
   ) {}
 

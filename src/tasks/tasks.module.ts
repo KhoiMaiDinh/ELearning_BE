@@ -14,7 +14,7 @@ import { TaskService } from './task.service';
     OrderModule,
     ScheduleModule.forRoot(),
     BullModule.registerQueue({
-      name: QueueName.STRIPE,
+      name: QueueName.PAYOUT,
       prefix: QueuePrefix.PAYOUT,
       streams: {
         events: {
