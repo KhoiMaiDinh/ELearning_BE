@@ -26,11 +26,7 @@ export class OrderController {
       req.headers['x-forwarded-for']?.toString().split(',')[0] ||
       req.socket.remoteAddress;
 
-    const result = await this.orderService.order(
-      user.id,
-      dto.course_ids,
-      client_ip,
-    );
+    const result = await this.orderService.order(user.id, client_ip, dto);
 
     return result;
   }
