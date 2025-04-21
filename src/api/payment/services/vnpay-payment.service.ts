@@ -21,7 +21,12 @@ export class VnpayPaymentService {
     private readonly configService: ConfigService<AllConfigType>,
   ) {}
 
-  initRequest(order_id: string, amount: number, client_ip: string): string {
+  initRequest(
+    order_id: string,
+    amount: number,
+    client_ip: string,
+    expired_at: Date,
+  ): string {
     const return_url = this.configService.get('payment.vnp_return_url', {
       infer: true,
     });
@@ -36,6 +41,7 @@ export class VnpayPaymentService {
       vnp_OrderType: ProductCode.Pay,
       vnp_ReturnUrl: return_url,
       vnp_TxnRef: order_id,
+      vnp_ExpireDate: dateFormat(expired_at, 'yyyyMMddHHmmss'),
     };
 
     const vnpay_url = this.vnpayService.buildPaymentUrl(data);

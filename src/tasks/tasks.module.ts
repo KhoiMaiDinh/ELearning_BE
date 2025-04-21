@@ -1,6 +1,6 @@
 import { OrderModule } from '@/api/order/order.module';
 import { AllConfigType } from '@/config';
-import { QueueName, QueuePrefix } from '@/constants';
+import { QueueName } from '@/constants';
 import { RedlockModule } from '@anchan828/nest-redlock';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
@@ -15,7 +15,6 @@ import { TaskService } from './task.service';
     ScheduleModule.forRoot(),
     BullModule.registerQueue({
       name: QueueName.PAYOUT,
-      prefix: QueuePrefix.PAYOUT,
       streams: {
         events: {
           maxLen: 1000,
