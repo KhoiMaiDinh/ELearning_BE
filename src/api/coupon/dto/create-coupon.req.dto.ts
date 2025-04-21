@@ -11,7 +11,7 @@ export class CreateCouponReq {
   @EnumField(() => CouponType)
   type: CouponType;
 
-  @NumberField()
+  @NumberField({ min: 1, max: 100, int: true })
   value: number;
 
   @DateField()

@@ -1,13 +1,3 @@
-import { CouponQuery, CreateCouponReq } from '@/api/coupon/dto';
-import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
-import { JwtPayloadType } from '@/api/token';
-import { Uuid } from '@/common';
-import { ErrorCode, Permission } from '@/constants';
-import {
-  ForbiddenException,
-  NotFoundException,
-  ValidationException,
-} from '@/exceptions';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -17,17 +7,28 @@ import {
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
-import { CourseService } from '../course/services/course.service';
-import { OrderDetailEntity } from '../order/entities/order-detail.entity';
-import { PaymentStatus } from '../payment/enums/payment-status.enum';
+
+import { CourseService } from '@/api/course/services/course.service';
+import { OrderDetailRepository } from '@/api/order/repositories/order-detail.repository';
+import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
+import { JwtPayloadType } from '@/api/token';
+import { Uuid } from '@/common';
+import { ErrorCode, Permission } from '@/constants';
+import {
+  ForbiddenException,
+  NotFoundException,
+  ValidationException,
+} from '@/exceptions';
+
+import { CouponQuery, CreateCouponReq } from '@/api/coupon/dto';
+import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
 
 @Injectable()
 export class CouponService {
   constructor(
     @InjectRepository(CouponEntity)
     private readonly couponRepo: Repository<CouponEntity>,
-    @InjectRepository(OrderDetailEntity)
-    private readonly orderDetailRepo: Repository<OrderDetailEntity>,
+    private readonly orderDetailRepo: OrderDetailRepository,
     private readonly courseService: CourseService,
   ) {}
 

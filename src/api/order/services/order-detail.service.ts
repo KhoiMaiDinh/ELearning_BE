@@ -1,15 +1,13 @@
 import { Uuid } from '@/common';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, LessThanOrEqual, Repository } from 'typeorm';
+import { LessThan, LessThanOrEqual } from 'typeorm';
+
 import { OrderDetailEntity } from '../entities/order-detail.entity';
+import { OrderDetailRepository } from '../repositories/order-detail.repository';
 
 @Injectable()
 export class OrderDetailService {
-  constructor(
-    @InjectRepository(OrderDetailEntity)
-    private readonly orderDetailRepo: Repository<OrderDetailEntity>,
-  ) {}
+  constructor(private readonly orderDetailRepo: OrderDetailRepository) {}
 
   findDueForPayoutItems() {
     const now = new Date();

@@ -18,7 +18,12 @@ import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseStatus } from '@/api/course/enums/course-status.enum';
 import { EnrollCourseService } from '@/api/course/services/enroll-course.service';
-import { CreateOrderRes, LoadOrderReq, OrderRes } from '@/api/order/dto';
+import {
+  CreateOrderReq,
+  CreateOrderRes,
+  LoadOrderReq,
+  OrderRes,
+} from '@/api/order/dto';
 import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
 import { OrderEntity } from '@/api/order/entities/order.entity';
 import { PaymentProvider } from '@/api/payment/enums/payment-provider.enum';
@@ -56,21 +61,20 @@ export class OrderService {
   ) {}
 
   async order(
-    ex_user_id: Nanoid,
-    ex_course_ids: Nanoid[],
+    user_id: Nanoid,
     client_ip: string,
-    coupon_code: string,
+    dto: CreateOrderReq,
   ): Promise<CreateOrderRes> {
-    const user = await this.userRepo.findOne({ where: { id: ex_user_id } });
+    const user = await this.userRepo.findOne({ where: { id: user_id } });
     if (!user) throw new NotFoundException(EC.E002);
 
     const courses = await this.courseRepo.find({
-      where: { id: In(ex_course_ids) },
+      where: { id: In(dto.course_ids) },
       relations: ['thumbnail'],
     });
     await this.validateCourses(user.user_id, courses);
 
-    const coupon = await this.couponService.findByCode(coupon_code, {
+    const coupon = await this.couponService.findByCode(dto.coupon_code, {
       check_usability: true,
     });
 
