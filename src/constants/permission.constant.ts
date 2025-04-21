@@ -13,6 +13,8 @@ export enum Permission {
   READ_ORDER = 'read:order',
   WRITE_ACCOUNT = 'write:account',
   READ_ACCOUNT = 'read:account',
+  READ_PAYOUT = 'read:payout',
+  WRITE_PAYOUT = 'write:payout',
 }
 
 export enum PermissionGroup {
@@ -23,4 +25,5 @@ export enum PermissionGroup {
   SECTION = 'section',
   COURSE_ITEM = 'course_item',
   ACCOUNT = 'account',
+  PAYOUT = 'payout',
 }

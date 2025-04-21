@@ -12,25 +12,47 @@ export class RoleSeeder1739599861794 implements Seeder {
     const roleRepo = dataSource.getRepository(RoleEntity);
     const permissionRepo = dataSource.getRepository(PermissionEntity);
 
-    const defaultRoles = [
+    const default_roles = [
       DefaultRole.ADMIN,
       DefaultRole.STUDENT,
       DefaultRole.TEACHER,
     ];
 
-    for (const role of defaultRoles) {
-      const existingRole = await roleRepo.findOne({
+    for (const role of default_roles) {
+      const existing_role = await roleRepo.findOne({
         where: { role_name: role },
       });
       let permissions: PermissionEntity[] = [];
       if (role === DefaultRole.ADMIN) {
         permissions = await permissionRepo.find({
           where: {
-            permission_key: In([Permission.WRITE_ROLE, Permission.READ_ROLE]),
+            permission_key: In([
+              Permission.WRITE_ROLE,
+              Permission.READ_ROLE,
+              Permission.WRITE_USER,
+              Permission.CREATE_USER,
+              Permission.WRITE_COURSE_ITEM,
+              Permission.WRITE_SECTION,
+              Permission.WRITE_CATEGORY,
+              Permission.READ_COURSE_ITEM,
+              Permission.READ_ORDER,
+            ]),
+          },
+        });
+      } else if (role === DefaultRole.STUDENT) {
+        permissions = await permissionRepo.find({
+          where: {
+            permission_key: In([Permission.HOME]),
+          },
+        });
+      } else if (role === DefaultRole.TEACHER) {
+        permissions = await permissionRepo.find({
+          where: {
+            permission_key: In([Permission.HOME]),
           },
         });
       }
-      if (!existingRole) {
+      if (!existing_role) {
         await roleRepo.insert(
           new RoleEntity({
             role_name: role,
@@ -38,8 +60,8 @@ export class RoleSeeder1739599861794 implements Seeder {
           }),
         );
       } else {
-        existingRole.permissions = permissions;
-        await roleRepo.save(existingRole);
+        existing_role.permissions = permissions;
+        await roleRepo.save(existing_role);
       }
     }
   }
