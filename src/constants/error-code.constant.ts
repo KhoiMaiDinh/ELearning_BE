@@ -102,12 +102,13 @@ export enum ErrorCode {
   // Coupon
   E062 = 'coupon.error.coupon_course_required',
   E063 = 'coupon.error.creation_limit',
-  E064 = 'coupon.error.invalid_usage_limit',
+  E064 = 'coupon.error.usage_limit_exceeded',
   E065 = 'coupon.error.not_found',
   E066 = 'coupon.error.not_active',
   E067 = 'coupon.error.expired',
   E068 = 'coupon.error.not_valid_yet',
   E069 = 'coupon.error.cannot_modify',
+  E070 = 'coupon.error.unapplicable',
 
   // Auth
   E055 = 'auth.error.facebook_token_expired',
