@@ -76,9 +76,10 @@ export enum ErrorCode {
   // Account
   E048 = 'account.error.for_only_instructor',
   E049 = 'account.error.not_found',
-  E050 = 'account.error.modify_default',
+  E050 = 'account.error.init_new',
   E051 = 'account.error.account_onboarded',
   E052 = 'account.error.account_unavailable',
+  E053 = 'account.error.invalid_bank_code',
 
   // Token
   E009 = 'token.error.invalid_secret',
@@ -88,6 +89,9 @@ export enum ErrorCode {
   E022 = 'token.error.email_verification_too_frequent',
   E023 = 'token.error.email_verification_token_not_found_or_invalid',
   E024 = 'token.error.empty',
+
+  // Payout
+  E054 = 'payout.error.not_found',
 
   // Role
   E006 = 'role.error.not_found',

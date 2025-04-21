@@ -14,4 +14,7 @@ export class CreateSectionReq {
 
   @ClassField(() => IdCourseReq)
   course: IdCourseReq;
+
+  @StringField({ nullable: true })
+  description: string;
 }

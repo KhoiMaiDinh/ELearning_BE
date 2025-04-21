@@ -51,6 +51,7 @@ export class SectionService {
       position,
       course_id,
       status: CourseStatus.DRAFT,
+      description: dto.description,
       createdBy,
     });
 
@@ -87,15 +88,17 @@ export class SectionService {
     )
       throw new ForbiddenException(ErrorCode.E029);
 
-    const position = await this.getPosition(
-      dto.previous_section_id,
-      course_id,
-      section_id,
-    );
+    if (dto.previous_section_id != undefined) {
+      const position = await this.getPosition(
+        dto.previous_section_id,
+        course_id,
+        section_id,
+      );
+      section.position = position;
+    }
     const updateBy = user.id;
 
     const update_section = Object.assign(section, dto, {
-      position,
       updateBy,
     });
     await update_section.save();

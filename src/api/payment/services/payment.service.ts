@@ -1,12 +1,14 @@
 import { CourseEntity } from '@/api/course/entities/course.entity';
+import { Nanoid } from '@/common';
 import { AllConfigType } from '@/config';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 
 @Injectable()
 export class PaymentService {
   private stripe: Stripe;
+  private readonly logger = new Logger(PaymentService.name);
   constructor(
     @Inject('STRIPE_API_KEY') private readonly apiKey: string,
     private readonly configService: ConfigService<AllConfigType>,
@@ -16,9 +18,9 @@ export class PaymentService {
     });
   }
 
-  async initPaymentRequest(
+  async initRequest(
     courses: CourseEntity[],
-    order_id: string,
+    order_id: Nanoid,
     customer_email: string,
   ): Promise<string> {
     const return_url = this.configService.get('payment.stripe_return_url', {
@@ -30,6 +32,7 @@ export class PaymentService {
     const storage_url = this.configService.get('storage.path', {
       infer: true,
     });
+
     const session = await this.stripe.checkout.sessions.create({
       mode: 'payment',
       success_url: `${success_url}?order_id=${order_id}`,

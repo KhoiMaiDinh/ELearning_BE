@@ -12,7 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     forwardRef(() => MediaModule),
     MinioClientModule,
-    TypeOrmModule.forFeature([UserEntity, SessionEntity]),
+    forwardRef(() => TypeOrmModule.forFeature([UserEntity, SessionEntity])),
   ],
   providers: [UserRepository, UserService],
   controllers: [UserController],

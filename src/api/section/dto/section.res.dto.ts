@@ -15,10 +15,14 @@ export class SectionRes {
   title: string;
 
   @Expose()
+  description: string;
+
+  @Expose()
   @ClassField(() => CourseItemRes, { each: true })
   items?: CourseItemRes[];
 }
 
+@Exclude()
 export class SectionDetailRes {
   @Expose()
   id: Nanoid;
@@ -28,6 +32,9 @@ export class SectionDetailRes {
 
   @Expose()
   title: string;
+
+  @Expose()
+  description: string;
 
   @Expose()
   @ClassField(() => CourseItemDetailRes, { each: true })

@@ -1,5 +1,16 @@
+import { Uuid } from '../types/common.type';
+
 export interface IEmailJob {
   email: string;
+}
+
+export interface IStripeEventJob {
+  event: string;
+  data: any;
+}
+
+export interface IPayoutJob {
+  instructor_id: Uuid;
 }
 
 export interface IVerifyEmailJob extends IEmailJob {

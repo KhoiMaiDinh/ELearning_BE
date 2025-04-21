@@ -35,6 +35,9 @@ export class SectionEntity extends AbstractEntity {
   @Column({ type: 'varchar', length: 60 })
   title: string;
 
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
   @Column({ type: 'varchar' })
   position: string;
 

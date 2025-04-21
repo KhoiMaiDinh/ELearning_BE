@@ -20,6 +20,7 @@ import { buildPaginator, paginate, verifyPassword } from '@/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import assert from 'assert';
 import { plainToInstance } from 'class-transformer';
+import { MediaEntity } from '../media/entities/media.entity';
 
 @Injectable()
 export class UserService {
@@ -128,11 +129,27 @@ export class UserService {
       .where('user.id = :id', { id })
       .getOne();
 
-    user.profile_image = await this.storageService.getPresignedUrl(
-      user.profile_image,
-    );
+    user.profile_image = await this.getProfileImageAccess(user.profile_image);
+    if (user?.instructor_profile?.resume)
+      user.instructor_profile.resume = await this.getProfileImageAccess(
+        user?.instructor_profile?.resume,
+      );
+    if (user?.instructor_profile?.certificates) {
+      await Promise.all(
+        user.instructor_profile.certificates.map(async (certificate) => {
+          certificate.certificate_file = await this.getProfileImageAccess(
+            certificate.certificate_file,
+          );
+        }),
+      );
+    }
 
     return user.toDto(DTO.UserRes);
+  }
+
+  private async getProfileImageAccess(profile_image: MediaEntity) {
+    if (!profile_image) return null;
+    return await this.storageService.getPresignedUrl(profile_image);
   }
 
   async update(id: Nanoid, dto: DTO.UpdateUserReqDto): Promise<DTO.UserRes> {
@@ -147,6 +164,8 @@ export class UserService {
       );
       user.profile_image = media;
     }
+
+    delete user.password;
 
     await this.userRepository.save(user);
     return user.toDto(DTO.UserRes);
