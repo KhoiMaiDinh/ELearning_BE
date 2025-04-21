@@ -10,48 +10,34 @@ export class PermissionSeeder1739636388516 implements Seeder {
   public async run(dataSource: DataSource): Promise<any> {
     const permissionRepository = dataSource.getRepository(PermissionEntity);
 
-    const permissions = [
-      {
-        permission_key: Permission.CREATE_USER,
-        description: 'Can create user',
-        permission_group: PermissionGroup.USER,
-      },
-      {
-        permission_key: Permission.WRITE_USER,
-        description: 'Can write user',
-        permission_group: PermissionGroup.USER,
-      },
-      {
-        permission_key: Permission.WRITE_ROLE,
-        description: `Can write roles`,
-        permission_group: PermissionGroup.ROLE,
-      },
-      {
-        permission_key: Permission.READ_ROLE,
-        description: `Can read roles`,
-        permission_group: PermissionGroup.ROLE,
-      },
-    ];
+    const permissionGroupMap: Record<Permission, PermissionGroup> = {
+      [Permission.CREATE_USER]: PermissionGroup.USER,
+      [Permission.WRITE_USER]: PermissionGroup.USER,
+      [Permission.WRITE_ROLE]: PermissionGroup.ROLE,
+      [Permission.READ_ROLE]: PermissionGroup.ROLE,
+      [Permission.WRITE_CATEGORY]: PermissionGroup.CATEGORY,
+      [Permission.DELETE_CATEGORY]: PermissionGroup.CATEGORY,
+      [Permission.WRITE_COURSE]: PermissionGroup.COURSE,
+      [Permission.READ_COURSE_ITEM]: PermissionGroup.COURSE,
+      [Permission.WRITE_COURSE_ITEM]: PermissionGroup.COURSE,
+      [Permission.WRITE_SECTION]: PermissionGroup.COURSE,
+      [Permission.READ_ORDER]: PermissionGroup.USER,
+      [Permission.HOME]: PermissionGroup.USER,
+      [Permission.WRITE_ACCOUNT]: PermissionGroup.ACCOUNT,
+      [Permission.READ_ACCOUNT]: PermissionGroup.ACCOUNT,
+      [Permission.READ_PAYOUT]: PermissionGroup.PAYOUT,
+      [Permission.WRITE_PAYOUT]: PermissionGroup.PAYOUT,
+    };
 
-    for (const {
+    const permissions = Object.values(Permission).map((permission_key) => ({
       permission_key,
-      permission_group,
-      description,
-    } of permissions) {
-      const existingPermission = await permissionRepository.findOne({
-        where: { permission_key },
-      });
-      if (!existingPermission) {
-        await permissionRepository.insert(
-          new PermissionEntity({
-            permission_group,
-            permission_key,
-            description,
-            createdBy: SYSTEM_USER_ID,
-            updatedBy: SYSTEM_USER_ID,
-          }),
-        );
-      }
-    }
+      permission_group: permissionGroupMap[permission_key],
+      description: permission_key.replace(':', ' ').replace('_', ' '),
+      createdBy: SYSTEM_USER_ID,
+      updatedBy: SYSTEM_USER_ID,
+    }));
+
+    const entities = permissionRepository.create(permissions);
+    await permissionRepository.upsert(entities, ['permission_key']);
   }
 }

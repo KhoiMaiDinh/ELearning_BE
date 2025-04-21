@@ -1,4 +1,4 @@
-import { RoleEntity } from '@/api/role';
+import { RoleEntity } from '@/api/role/entities/role.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { DefaultRole, RegisterMethod } from '@/constants';
 import { DataSource } from 'typeorm';
@@ -14,9 +14,9 @@ export class UserSeeder1722335726360 implements Seeder {
     const repository = dataSource.getRepository(UserEntity);
     const role = dataSource.getRepository(RoleEntity);
 
-    const adminUser = await repository.findOneBy({ username: 'Admin' });
-    const adminRole = await role.findOneBy({ role_name: DefaultRole.ADMIN });
-    if (!adminUser) {
+    const admin_user = await repository.findOneBy({ username: 'Admin' });
+    const admin_role = await role.findOneBy({ role_name: DefaultRole.ADMIN });
+    if (!admin_user) {
       await repository.insert(
         new UserEntity({
           username: 'Admin',
@@ -25,7 +25,7 @@ export class UserSeeder1722335726360 implements Seeder {
           register_method: RegisterMethod.LOCAL,
           first_name: 'Admin',
           last_name: 'User',
-          roles: [adminRole],
+          roles: [admin_role],
         }),
       );
     }

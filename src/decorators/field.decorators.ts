@@ -28,7 +28,6 @@ import {
 import { Constructor } from '../common/types/types';
 import { ToBoolean, ToLowerCase, ToUpperCase } from './transform.decorators';
 import { IsNullable } from './validators/is-nullable.decorator';
-import { IsSafeHtml } from './validators/is-safe-html.decorator';
 
 interface IFieldOptions {
   each?: boolean;
@@ -126,7 +125,7 @@ export function StringField(
   }
 
   if (options.isHtml) {
-    decorators.push(IsSafeHtml({ each: options.each }));
+    // decorators.push(IsSafeHtml({ each: options.each }));
   }
 
   if (options.swagger !== false) {
