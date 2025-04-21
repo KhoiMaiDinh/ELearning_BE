@@ -16,7 +16,7 @@ import { InstructorRepository } from '@/api/instructor';
 import { PriceHistoryRepository } from '@/api/price/price-history.repository';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
-import { Nanoid, OffsetPaginatedDto } from '@/common';
+import { Nanoid, OffsetPaginatedDto, Uuid } from '@/common';
 import {
   Entity,
   ErrorCode,
@@ -130,7 +130,11 @@ export class CourseService {
   async findFromUser(user: JwtPayloadType) {
     const courses = await this.courseRepository.find({
       where: { instructor: { user: { id: user.id } } },
-      relations: { category: true, instructor: { user: true } },
+      relations: {
+        category: true,
+        instructor: { user: true },
+        thumbnail: true,
+      },
     });
 
     return plainToInstance(CourseRes, courses);
@@ -138,7 +142,7 @@ export class CourseService {
 
   async findOne(id: Nanoid | string, query: CourseQuery): Promise<CourseRes> {
     const load_entities: FindOptionsRelations<CourseEntity> = {};
-    if (query.with_instructor) load_entities.instructor = { user: true };
+    load_entities.instructor = { user: true };
     if (query.with_category) load_entities.category = true;
     load_entities.thumbnail = true;
     const course = await this.courseRepository.findOneByPublicIdOrSlug(
@@ -201,7 +205,11 @@ export class CourseService {
       id_or_slug,
       {
         instructor: { user: true },
-        sections: { lectures: true, quizzes: true, articles: true },
+        sections: {
+          lectures: { videos: { video: true } },
+          quizzes: true,
+          articles: true,
+        },
       },
     );
 
@@ -247,7 +255,7 @@ export class CourseService {
         }
         section.lectures.forEach((lecture) => {
           if (
-            lecture.videos.length === 0 ||
+            lecture.videos?.length === 0 ||
             lecture.video.video.status !== UploadStatus.VALIDATED
           ) {
             throw new ForbiddenException(
@@ -265,6 +273,7 @@ export class CourseService {
     await this.sectionRepository.save(course.sections);
     course.status = dto.status;
     await course.save();
+    return course.toDto(CourseRes);
   }
 
   async findCurriculums(id_or_slug: Nanoid | string) {
@@ -272,6 +281,7 @@ export class CourseService {
       id_or_slug,
       {
         thumbnail: true,
+        instructor: { user: true },
         sections: {
           lectures: {
             videos: { video: true },
@@ -296,19 +306,31 @@ export class CourseService {
     // get selected language for category
     this.categoryService.filterTranslations(course.category, Language.VI);
 
-    course.sections.forEach((section) => {
-      section.lectures.forEach(async (item) => {
-        item.videos.forEach(async (video) => {
-          this.addVideoExtension(video.video);
-          video.video = await this.storageService.getPresignedUrl(video.video);
-        });
-        item.resources.forEach(async (resource) => {
-          resource.resource_file = await this.storageService.getPresignedUrl(
-            resource.resource_file,
-          );
-        });
-      });
-    });
+    await Promise.all(
+      course.sections.map(async (section) => {
+        await Promise.all(
+          section.lectures.map(async (lecture) => {
+            await Promise.all(
+              lecture.videos.map(async (video) => {
+                this.addVideoExtension(video.video);
+                video.video = await this.storageService.getPresignedUrl(
+                  video.video,
+                );
+              }),
+            );
+
+            await Promise.all(
+              lecture.resources.map(async (resource) => {
+                resource.resource_file =
+                  await this.storageService.getPresignedUrl(
+                    resource.resource_file,
+                  );
+              }),
+            );
+          }),
+        );
+      }),
+    );
 
     return course.toDto(CurriculumRes);
   }
@@ -333,132 +355,22 @@ export class CourseService {
     return video;
   }
 
-  // async upsertCurriculum(
-  //   user_id: Nanoid,
-  //   id_or_slug: Nanoid | string,
-  //   dto: UpsertCurriculumReq,
-  // ) {
-  //   const course = await this.courseRepository.findOneByPublicIdOrSlug(
-  //     id_or_slug,
-  //     ['instructor', 'instructor.user'],
-  //   );
-  //   if (course.instructor.user.id !== user_id)
-  //     throw new ForbiddenException(ErrorCode.E029);
-
-  //   const sections = await this.sectionRepository.find({
-  //     where: { course_id: course.course_id },
-  //     order: { position: 'ASC' },
-  //     relations: { items: true },
-  //   });
-
-  //   const db_sections_map = new Map(sections.map((s, i) => [s.id, s]));
-
-  //   const min = LexoRank.min();
-  //   const max = LexoRank.max();
-  //   const positions = min
-  //     .multipleBetween(max, sections.length)
-  //     .map((p) => p.toString());
-
-  //   const save_sections: SectionEntity[] = [];
-  //   const delete_sections: SectionEntity[] = [];
-  //   const delete_items: CourseItemEntity[] = [];
-
-  //   dto.sections.forEach((section, i) => {
-  //     const db_section = db_sections_map.get(section.id);
-  //     if (db_section) {
-  //       const { save_items, delete_items: partial } = this.handleItems(
-  //         section.items,
-  //         db_section.items,
-  //       );
-  //       const update_section = new SectionEntity({
-  //         ...db_section,
-  //         items: save_items,
-  //         position: positions[i],
-  //         title: section.title,
-  //       });
-  //       save_sections.push(update_section);
-  //       delete_items.push(...partial);
-  //     } else {
-  //       const new_items = this.handleNewItems(section.items);
-  //       const new_section = new SectionEntity({
-  //         title: section.title,
-  //         position: positions[i],
-  //         course_id: course.course_id,
-  //         items: new_items,
-  //       });
-  //       save_sections.push(new_section);
-  //     }
-  //     db_sections_map.delete(section.id);
-  //   });
-
-  //   await this.sectionRepository.save(save_sections);
-
-  //   db_sections_map.forEach((section) => {
-  //     if (section.items.length) throw new ValidationException(ErrorCode.E031);
-  //     delete_sections.push(section);
-  //   });
-
-  //   await this.sectionRepository.softRemove(delete_sections);
-
-  //   return plainToInstance(CurriculumRes, {
-  //     id: course.id,
-  //     sections: save_sections,
-  //   });
-  // }
-
-  // private handleItems(
-  //   input_items: CreateCourseItemReq[],
-  //   db_items: CourseItemEntity[],
-  // ) {
-  //   const db_items_map = new Map(db_items.map((item) => [item.id, item]));
-  //   const section_id = db_items[0].section_id;
-
-  //   const min = LexoRank.min();
-  //   const max = LexoRank.max();
-  //   const positions = min
-  //     .multipleBetween(max, db_items.length)
-  //     .map((p) => p.toString());
-
-  //   const save_items: CourseItemEntity[] = [];
-  //   const delete_items: CourseItemEntity[] = [];
-
-  //   input_items.forEach((item, i) => {
-  //     const db_item = db_items_map.get(item.id);
-  //     if (db_item) {
-  //       db_item.title = item.title;
-  //       db_item.position = positions[i];
-  //       save_items.push(db_item);
-  //     } else {
-  //       const new_item = new CourseItemEntity({
-  //         title: item.title,
-  //         position: positions[i],
-  //         section_id: section_id,
-  //       });
-  //       save_items.push(new_item);
-  //     }
-  //     db_items_map.delete(item.id);
-  //   });
-
-  //   db_items_map.forEach((item) => {
-  //     delete_items.push(item);
-  //   });
-
-  //   return { save_items, delete_items };
-  // }
-
-  // private handleNewItems(
-  //   input_items: CreateCourseItemReq[],
-  // ): CourseItemEntity[] {
-  //   const min = LexoRank.min();
-  //   const max = LexoRank.max();
-  //   const positions = min
-  //     .multipleBetween(max, input_items.length)
-  //     .map((p) => p.toString());
-  //   return input_items.map((item, i) => {
-  //     return new CourseItemEntity({
-  //       ...item,
-  //       position: positions[i],
-  //     });
-  //   });
-  // }
+  async republishManyByInstructor(user_id: Uuid) {
+    await this.courseRepository.update(
+      {
+        instructor: { user: { user_id: user_id } },
+        status: CourseStatus.ARCHIVED,
+      },
+      { status: CourseStatus.PUBLISHED },
+    );
+  }
+  async unpublishManyByInstructor(user_id: Uuid) {
+    await this.courseRepository.update(
+      {
+        instructor: { user: { user_id: user_id } },
+        status: CourseStatus.PUBLISHED,
+      },
+      { status: CourseStatus.ARCHIVED },
+    );
+  }
 }
