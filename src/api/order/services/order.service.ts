@@ -22,6 +22,7 @@ import { OrderEntity } from '@/api/order/entities/order.entity';
 import { PaymentProvider } from '@/api/payment/enums/payment-provider.enum';
 import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { PaymentService } from '@/api/payment/services/payment.service';
+import { VnpayPaymentService } from '@/api/payment/services/vnpay-payment.service';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
 
@@ -40,7 +41,7 @@ export class OrderService {
     private readonly userRepo: UserRepository,
 
     @Inject(forwardRef(() => PaymentService))
-    private readonly paymentService: PaymentService,
+    private readonly paymentService: VnpayPaymentService,
 
     private readonly enrollCourseService: EnrollCourseService,
   ) {}
@@ -63,23 +64,23 @@ export class OrderService {
 
     const order = this.orderRepo.create({
       user,
-      status: PaymentStatus.PENDING,
+      payment_status: PaymentStatus.PENDING,
       provider: PaymentProvider.VNPAY,
-      amount: total_amount,
+      total_amount: total_amount,
       currency: 'vnd',
       details,
     });
 
     await this.orderRepo.save(order);
 
-    const payment_url = await this.paymentService.initPaymentRequest(
-      courses,
+    const payment_url = this.paymentService.initRequest(
       order.id,
-      user.email,
+      total_amount,
+      client_ip,
     );
     return plainToInstance(CreateOrderRes, {
       order,
-      payment: { vnp_url: payment_url },
+      payment: { payment_url },
     });
   }
 
@@ -99,8 +100,11 @@ export class OrderService {
       ),
     );
 
-    order.status = PaymentStatus.SUCCESS;
-    order.payment_completed_at = new Date();
+    const payout_due_at = new Date();
+    order.payment_status = PaymentStatus.SUCCESS;
+    order.details.forEach((detail) => {
+      detail.payout_due_at = payout_due_at;
+    });
     await this.orderRepo.save(order);
   }
 
@@ -195,6 +199,7 @@ export class OrderService {
       const price = course.price;
       const discount = 0;
       const final_price = price - discount;
+      const platform_fee = Math.round(final_price * 0.1);
 
       total_amount += final_price;
 
@@ -203,9 +208,25 @@ export class OrderService {
         price,
         discount,
         final_price,
+        platform_fee,
+        // payout_status: PaymentStatus.PENDING,
       });
     });
 
     return { total_amount: total_amount, details };
+  }
+
+  async updatePaymentStatus(
+    order_id: Nanoid,
+    payment_status: PaymentStatus,
+  ): Promise<void> {
+    const order = await this.orderRepo.findOne({
+      where: { id: order_id },
+      relations: ['details'],
+    });
+    if (!order) throw new NotFoundException(EC.E045);
+
+    order.payment_status = payment_status;
+    await this.orderRepo.save(order);
   }
 }

@@ -1,5 +1,6 @@
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { OrderEntity } from '@/api/order/entities/order.entity';
+import { PayoutEntity } from '@/api/payment/entities/payout.entity';
 import { Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
@@ -29,6 +30,7 @@ export class OrderDetailEntity extends AbstractEntity {
   @Column({ type: 'uuid' })
   course_id: Uuid;
 
+  // details
   @Column({ type: 'decimal', precision: 15, scale: 2 })
   price: number;
 
@@ -38,6 +40,16 @@ export class OrderDetailEntity extends AbstractEntity {
   @Column({ type: 'decimal', precision: 15, scale: 2 })
   final_price: number;
 
+  @Column({ type: 'decimal', precision: 15, scale: 2 })
+  platform_fee: number;
+
+  // payment infos
+  // @Column({ type: 'enum', enum: PayoutStatus, default: PayoutStatus.PENDING })
+  // payout_status: string;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  payout_due_at: Date | null;
+
   @ManyToOne(() => OrderEntity, (order) => order.details)
   @JoinColumn({ name: 'order_id' })
   order: Relation<OrderEntity>;
@@ -45,4 +57,13 @@ export class OrderDetailEntity extends AbstractEntity {
   @ManyToOne(() => CourseEntity)
   @JoinColumn({ name: 'course_id' })
   course: Relation<CourseEntity>;
+
+  @ManyToOne(() => PayoutEntity, (payout) => payout.details, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'payout_id' })
+  payout: Relation<PayoutEntity>;
+
+  @Column({ nullable: true })
+  payout_id: string;
 }

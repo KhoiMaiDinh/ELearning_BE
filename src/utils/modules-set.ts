@@ -28,6 +28,7 @@ import {
 import { LoggerModule } from 'nestjs-pino';
 import path from 'path';
 import { ConsumerModule } from 'src/consumers';
+import { TasksModule } from 'src/tasks/tasks.module';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import loggerFactory from './logger-factory';
 
@@ -153,6 +154,7 @@ function generateModulesSet(): ModuleMetadata['imports'] {
         MailModule,
         KafkaModule,
         ConsumerModule,
+        TasksModule,
       ];
       break;
     case 'api':

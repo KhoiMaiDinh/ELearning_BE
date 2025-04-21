@@ -7,6 +7,7 @@ import { CourseEntity } from '../course/entities/course.entity';
 import { OrderController } from '../order/order.controller';
 import { OrderDetailEntity } from './entities/order-detail.entity';
 import { OrderEntity } from './entities/order.entity';
+import { OrderDetailService } from './services/order-detail.service';
 import { OrderService } from './services/order.service';
 
 @Module({
@@ -17,7 +18,7 @@ import { OrderService } from './services/order.service';
     CourseModule,
   ],
   controllers: [OrderController],
-  providers: [OrderService],
-  exports: [OrderService],
+  providers: [OrderService, OrderDetailService],
+  exports: [OrderService, OrderDetailService],
 })
 export class OrderModule {}

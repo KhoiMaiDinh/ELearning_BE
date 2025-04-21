@@ -37,20 +37,20 @@ export class OrderEntity extends AbstractEntity {
   @Column({ type: 'varchar', length: 15, nullable: true })
   transaction_id?: string | number; // transaction id from payment provider
 
+  @Column({ type: 'varchar', nullable: true })
+  payment_intent_id?: string;
+
   @Column('decimal', { precision: 15, scale: 2 })
-  amount: number;
+  total_amount: number;
 
   @Column({ type: 'enum', enum: PaymentCurrency })
   currency: string;
 
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
-  status: string;
+  payment_status: string;
 
   @Column({ type: 'enum', enum: PaymentProvider })
   provider: PaymentProvider;
-
-  @Column({ type: 'timestamptz', nullable: true })
-  payment_completed_at?: Date;
 
   // relations
   @ManyToOne(() => UserEntity, (user) => user.orders)
