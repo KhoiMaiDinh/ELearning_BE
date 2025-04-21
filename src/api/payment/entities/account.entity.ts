@@ -4,7 +4,7 @@ import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Entity,
   JoinColumn,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
@@ -18,25 +18,16 @@ export class AccountEntity extends AbstractEntity {
 
   @Column('uuid')
   user_id: Uuid;
-  @ManyToOne(() => UserEntity, (user) => user.accounts)
+  @OneToOne(() => UserEntity, (user) => user.account)
   @JoinColumn({ name: 'user_id' })
   user?: Relation<UserEntity>;
 
   @Column({ type: 'varchar' })
-  stripe_account_id: string; // Stripe account ID
-
-  @Column({ type: 'boolean', default: false })
-  charges_enabled: boolean;
-
-  @Column({ type: 'boolean', default: false })
-  payouts_enabled: boolean;
-
-  @Column({ type: 'boolean', default: false })
-  details_submitted: boolean;
-
-  @Column({ type: 'boolean', default: false })
-  is_default: boolean;
+  name: string;
 
   @Column({ type: 'varchar' })
-  label: string;
+  bank_account_number: string;
+
+  @Column({ type: 'varchar' })
+  bank_code: string;
 }

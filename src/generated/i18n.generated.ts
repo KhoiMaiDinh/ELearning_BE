@@ -4,6 +4,11 @@
 import { Path } from "nestjs-i18n";
 /* prettier-ignore */
 export type I18nTranslations = {
+    "account": {
+        "error": {
+            "for_only_instructor": string;
+        };
+    };
     "category": {
         "unique": {
             "slug": string;
@@ -39,6 +44,12 @@ export type I18nTranslations = {
             "invalid_category": string;
             "cannot_modify": string;
             "view_disabled": string;
+            "invalid_publication": string;
+            "enroll_not_found": string;
+        };
+        "forbidden": {
+            "view_disabled": string;
+            "draft_existed": string;
         };
     };
     "course_item": {
@@ -65,6 +76,13 @@ export type I18nTranslations = {
         "error": {
             "not_found": string;
             "invalid_type": string;
+            "not_uploaded": string;
+        };
+    };
+    "order": {
+        "error": {
+            "unpublish_course": string;
+            "not_found": string;
         };
     };
     "quiz_attempt": {

@@ -114,8 +114,6 @@ export class InstructorService {
       },
     );
 
-    console.log('instructors', instructors);
-
     return new OffsetPaginatedDto(
       plainToInstance(InstructorRes, instructors),
       metaDto,

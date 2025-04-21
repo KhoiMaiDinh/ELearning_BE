@@ -1,3 +1,4 @@
+import { OrderModule } from '@/api/order/order.module';
 import { PaymentModule } from '@/api/payment/payment.module';
 import { AllConfigType } from '@/config';
 import { DynamicModule, Module } from '@nestjs/common';
@@ -12,7 +13,11 @@ export class WebhookModule {
   static forRootAsync(): DynamicModule {
     return {
       module: WebhookModule,
-      imports: [ConfigModule.forRoot(), PaymentModule.forRootAsync()],
+      imports: [
+        ConfigModule.forRoot(),
+        PaymentModule.forRootAsync(),
+        OrderModule,
+      ],
       controllers: [WebhookController],
       providers: [
         WebhookService,

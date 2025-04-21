@@ -33,6 +33,7 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
+    "@anchan828/nest-redlock": "^0.3.11",
     "@dalet-oss/lexorank": "^1.1.0",
     "@keyv/redis": "^4.2.0",
     "@khoimd/nestjs-vnpay": "^1.0.3",
@@ -47,6 +48,7 @@
     "@nestjs/mapped-types": "^2.0.6",
     "@nestjs/microservices": "^11.0.11",
     "@nestjs/platform-express": "^10.4.7",
+    "@nestjs/schedule": "^6.0.0",
     "@nestjs/swagger": "^8.1.1",
     "@nestjs/terminus": "^10.2.3",
     "@nestjs/typeorm": "^10.0.2",
