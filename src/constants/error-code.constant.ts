@@ -89,6 +89,7 @@ export enum ErrorCode {
   E022 = 'token.error.email_verification_too_frequent',
   E023 = 'token.error.email_verification_token_not_found_or_invalid',
   E024 = 'token.error.empty',
+  E071 = 'token.error.blacklisted',
 
   // Payout
   E054 = 'payout.error.not_found',
