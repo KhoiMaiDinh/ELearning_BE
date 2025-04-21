@@ -65,7 +65,7 @@ export abstract class CourseItemService {
       order: { position: Order.ASC },
     });
 
-    const quiz_positions = await this.lectureRepository.find({
+    const quiz_positions = await this.quizRepository.find({
       select: ['position'],
       where: { section_id },
       order: { position: Order.ASC },
@@ -84,8 +84,9 @@ export abstract class CourseItemService {
 
     for (let i = 0; i < positions.length; i++) {
       if (positions[i] === previous_position) {
-        if (i === positions.length - 1)
+        if (i === positions.length - 1) {
           return LexoRank.parse(positions[i]).genNext().toString();
+        }
         return LexoRank.parse(positions[i])
           .between(LexoRank.parse(positions[i + 1]))
           .toString();

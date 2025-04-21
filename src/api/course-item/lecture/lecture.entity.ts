@@ -120,6 +120,9 @@ export class ResourceEntity extends AbstractEntity {
   })
   resource_id: Uuid;
 
+  @Column({ type: 'varchar', length: 60 })
+  name: string;
+
   @Column({ type: 'uuid' })
   resource_file_id?: Uuid;
   @OneToOne(() => MediaEntity, { eager: true })

@@ -1,11 +1,11 @@
 import { CategoryRes } from '@/api/category';
-import { CourseLevel } from '@/api/course';
+import { CourseLevel, CourseStatus } from '@/api/course';
 import { InstructorRes } from '@/api/instructor';
 import { MediaRes } from '@/api/media';
 import { Nanoid } from '@/common';
 import { Language } from '@/constants';
-import { ClassField, NumberField, StringField } from '@/decorators';
-import { StorageImage, StorageVideo } from '@/libs/minio';
+import { ClassField, EnumField, NumberField, StringField } from '@/decorators';
+import { StorageVideo } from '@/libs/minio';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
@@ -35,22 +35,21 @@ export class CourseRes {
 
   @Expose()
   @ClassField(() => MediaRes)
-  thumbnail: StorageImage | null;
+  thumbnail: MediaRes | null;
 
   @Expose()
   @StringField({ nullable: true })
   preview: StorageVideo | null;
 
   @Expose()
-  // @StringField({ nullable: true })
+  @StringField({ nullable: true })
   description: string;
 
   @Expose()
-  // @EnumField(() => Language)
+  @EnumField(() => Language)
   language: Language;
 
   @Expose()
-  // @EnumField(() => CourseLevel, { nullable: true })
   level: CourseLevel | null;
 
   @Expose()
@@ -64,4 +63,7 @@ export class CourseRes {
   @Expose()
   @NumberField({ nullable: true })
   price: number | null;
+
+  @Expose()
+  status: CourseStatus;
 }

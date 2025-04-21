@@ -27,6 +27,6 @@ import { EnrollCourseService } from './services/enroll-course.service';
   ],
   controllers: [CourseController],
   providers: [CourseService, CourseRepository, EnrollCourseService],
-  exports: [CourseRepository, EnrollCourseService],
+  exports: [CourseRepository, EnrollCourseService, CourseService],
 })
 export class CourseModule {}

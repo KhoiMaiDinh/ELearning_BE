@@ -146,13 +146,14 @@ export class LectureService extends CourseItemService {
         continue;
       }
 
-      const resource_file = await this.mediaRepository.findOneByKey(
+      const resource_file = await this.mediaRepository.findOneById(
         r_dto.resource_file.id,
       );
       if (resource_file.bucket !== Bucket.DOCUMENT)
         throw new NotFoundException(ErrorCode.E034);
       const new_resource = this.resourceRepository.create({
         resource_file,
+        name: r_dto.name,
       });
       new_resources.push(new_resource);
     }
