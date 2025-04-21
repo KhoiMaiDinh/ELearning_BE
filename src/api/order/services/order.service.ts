@@ -13,6 +13,8 @@ import { ErrorCode as EC, JobName, Permission, QueueName } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { buildPaginator } from '@/utils';
 
+import { CouponService } from '@/api/coupon/coupon.service';
+import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseStatus } from '@/api/course/enums/course-status.enum';
 import { EnrollCourseService } from '@/api/course/services/enroll-course.service';
@@ -49,12 +51,15 @@ export class OrderService {
 
     @InjectQueue(QueueName.ORDER)
     private readonly orderQueue: Queue,
+
+    private readonly couponService: CouponService,
   ) {}
 
   async order(
     ex_user_id: Nanoid,
     ex_course_ids: Nanoid[],
     client_ip: string,
+    coupon_code: string,
   ): Promise<CreateOrderRes> {
     const user = await this.userRepo.findOne({ where: { id: ex_user_id } });
     if (!user) throw new NotFoundException(EC.E002);
@@ -65,7 +70,11 @@ export class OrderService {
     });
     await this.validateCourses(user.user_id, courses);
 
-    const { total_amount, details } = this.prepareOrderDetails(courses);
+    const coupon = await this.couponService.findByCode(coupon_code, {
+      check_usability: true,
+    });
+
+    const { total_amount, details } = this.prepareOrderDetails(courses, coupon);
 
     const five_min_ms = 5 * 60 * 1000;
     const expired_at_ms = Date.now() + five_min_ms;
@@ -224,15 +233,25 @@ export class OrderService {
     );
   }
 
-  private prepareOrderDetails(courses: CourseEntity[]): {
+  private prepareOrderDetails(
+    courses: CourseEntity[],
+    coupon: CouponEntity = null,
+  ): {
     total_amount: number;
     details: OrderDetailEntity[];
   } {
     let total_amount = 0;
+    let is_coupon_applied = false;
 
     const details = courses.map((course) => {
       const price = course.price;
-      const discount = 0;
+      let discount = 0;
+
+      if (coupon && coupon.course_id == course.course_id) {
+        is_coupon_applied = true;
+        discount = Math.round((price * coupon.value) / 100);
+      }
+
       const final_price = price - discount;
       const platform_fee = Math.round(final_price * 0.1);
 
@@ -247,6 +266,8 @@ export class OrderService {
         // payout_status: PaymentStatus.PENDING,
       });
     });
+
+    if (!is_coupon_applied) throw new ValidationException(EC.E070);
 
     return { total_amount: total_amount, details };
   }
