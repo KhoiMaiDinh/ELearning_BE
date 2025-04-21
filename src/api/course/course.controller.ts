@@ -72,7 +72,8 @@ export class CourseController {
     @Param('id') id: Nanoid | string,
     @Query() query: CourseQuery,
   ): Promise<CourseRes> {
-    return await this.courseService.findOne(id, query);
+    const course = await this.courseService.findOne(id, query);
+    return course.toDto(CourseRes);
   }
 
   @Put(':id')

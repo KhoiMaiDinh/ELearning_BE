@@ -15,6 +15,7 @@ import { RoleModule } from '@/api/role/role.module';
 import { SectionModule } from '@/api/section/section.module';
 import { UserModule } from '@/api/user/user.module';
 import { Module } from '@nestjs/common';
+import { CouponModule } from './coupon/coupon.module';
 import { WebhookModule } from './webhook/webhook.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { WebhookModule } from './webhook/webhook.module';
     PaymentModule.forRootAsync(),
     OrderModule,
     WebhookModule.forRootAsync(),
+    CouponModule,
   ],
 })
 export class ApiModule {}

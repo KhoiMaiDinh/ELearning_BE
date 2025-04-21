@@ -1,3 +1,4 @@
+import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { OrderEntity } from '@/api/order/entities/order.entity';
 import { PayoutEntity } from '@/api/payment/entities/payout.entity';
@@ -63,7 +64,14 @@ export class OrderDetailEntity extends AbstractEntity {
   })
   @JoinColumn({ name: 'payout_id' })
   payout: Relation<PayoutEntity>;
-
   @Column({ nullable: true })
   payout_id: string;
+
+  @ManyToOne(() => CouponEntity, (coupon) => coupon.order_details, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'coupon_id' })
+  coupon: Relation<OrderDetailEntity>;
+  @Column({ type: 'uuid', nullable: true })
+  coupon_id: Uuid;
 }

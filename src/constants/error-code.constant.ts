@@ -99,6 +99,16 @@ export enum ErrorCode {
   // Permission
   E007 = 'permission.error.not_found',
 
+  // Coupon
+  E062 = 'coupon.error.coupon_course_required',
+  E063 = 'coupon.error.creation_limit',
+  E064 = 'coupon.error.invalid_usage_limit',
+  E065 = 'coupon.error.not_found',
+  E066 = 'coupon.error.not_active',
+  E067 = 'coupon.error.expired',
+  E068 = 'coupon.error.not_valid_yet',
+  E069 = 'coupon.error.cannot_modify',
+
   // Auth
   E055 = 'auth.error.facebook_token_expired',
   E056 = 'auth.error.facebook_token_invalid',

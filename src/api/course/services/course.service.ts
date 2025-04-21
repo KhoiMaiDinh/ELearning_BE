@@ -140,16 +140,19 @@ export class CourseService {
     return plainToInstance(CourseRes, courses);
   }
 
-  async findOne(id: Nanoid | string, query: CourseQuery): Promise<CourseRes> {
+  async findOne(
+    id: Nanoid | string,
+    query: CourseQuery = {},
+  ): Promise<CourseEntity> {
     const load_entities: FindOptionsRelations<CourseEntity> = {};
     load_entities.instructor = { user: true };
-    if (query.with_category) load_entities.category = true;
-    load_entities.thumbnail = true;
+    if (query?.with_category) load_entities.category = true;
+    if (query?.with_thumbnail) load_entities.thumbnail = true;
     const course = await this.courseRepository.findOneByPublicIdOrSlug(
       id,
       load_entities,
     );
-    return course.toDto(CourseRes);
+    return course;
   }
 
   async update(
@@ -223,9 +226,7 @@ export class CourseService {
     // ✅ If instructor, they must:
     // 1. Be the owner of the course (`user.id === course.instructor.user.id`)
     // 2. The course must not be disabled by admin (`course.updatedBy !== user.id`)
-    if (user.id !== course.instructor.user.id) {
-      throw new ForbiddenException(ErrorCode.F002); // ❌ User is not the owner
-    }
+    this.ensureOwnership(course, user.id);
 
     if (course.status === CourseStatus.BANNED) {
       throw new ForbiddenException(ErrorCode.E027); // ❌ Course was disabled by admin
@@ -333,6 +334,15 @@ export class CourseService {
     );
 
     return course.toDto(CurriculumRes);
+  }
+
+  ensureOwnership(course: CourseEntity, user_id: Nanoid): void {
+    if (user_id !== course.instructor.user.id) {
+      throw new ForbiddenException(
+        ErrorCode.F002,
+        'User is not the owner of the course',
+      );
+    }
   }
 
   private isValidThumbnail(thumbnail: MediaEntity) {
