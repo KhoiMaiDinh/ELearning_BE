@@ -3,7 +3,7 @@ import { CacheKey, ErrorCode, Permission } from '@/constants';
 import { UnauthorizedException } from '@/exceptions';
 import { createCacheKey } from '@/utils/cache.util';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Cache } from 'cache-manager';
@@ -17,6 +17,7 @@ import {
 
 @Injectable()
 export class TokenService {
+  private logger = new Logger(TokenService.name);
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
     private readonly jwtService: JwtService,
@@ -39,15 +40,17 @@ export class TokenService {
       ) {
         throw new UnauthorizedException(ErrorCode.E009);
       }
+      this.logger.debug('Verify token error', error);
+      throw new UnauthorizedException(ErrorCode.V000);
     }
 
     // Force logout if the session is in the blacklist
-    const isSessionBlacklisted = await this.cacheManager.store.get<boolean>(
+    const is_session_blacklisted = await this.cacheManager.store.get<boolean>(
       createCacheKey(CacheKey.SESSION_BLACKLIST, payload.session_id),
     );
 
-    if (isSessionBlacklisted) {
-      throw new UnauthorizedException();
+    if (is_session_blacklisted) {
+      throw new UnauthorizedException(ErrorCode.E071);
     }
 
     return payload;
