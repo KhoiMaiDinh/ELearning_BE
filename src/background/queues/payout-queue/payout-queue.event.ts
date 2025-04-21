@@ -6,9 +6,9 @@ import {
 } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 
-@QueueEventsListener(QueueName.STRIPE, { blockingTimeout: 300000 })
-export class StripeQueueEvents extends QueueEventsHost {
-  private readonly logger = new Logger(StripeQueueEvents.name);
+@QueueEventsListener(QueueName.PAYOUT, { blockingTimeout: 300000 })
+export class PayoutQueueEvents extends QueueEventsHost {
+  private readonly logger = new Logger(PayoutQueueEvents.name);
 
   @OnQueueEvent('added')
   onAdded(job: { jobId: string; name: string }) {

@@ -1,6 +1,6 @@
 export enum QueueName {
   EMAIL = 'email',
-  STRIPE = 'stripe',
+  PAYOUT = 'payout',
 }
 
 export enum QueuePrefix {
