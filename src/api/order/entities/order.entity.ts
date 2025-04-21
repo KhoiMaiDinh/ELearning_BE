@@ -47,10 +47,13 @@ export class OrderEntity extends AbstractEntity {
   currency: string;
 
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
-  payment_status: string;
+  payment_status: PaymentStatus;
 
   @Column({ type: 'enum', enum: PaymentProvider })
   provider: PaymentProvider;
+
+  @Column({ type: 'timestamptz' })
+  expired_at: Date;
 
   // relations
   @ManyToOne(() => UserEntity, (user) => user.orders)

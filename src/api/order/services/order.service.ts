@@ -9,7 +9,7 @@ import {
   Nanoid,
   Uuid,
 } from '@/common';
-import { ErrorCode as EC, Permission } from '@/constants';
+import { ErrorCode as EC, JobName, Permission, QueueName } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { buildPaginator } from '@/utils';
 
@@ -25,6 +25,8 @@ import { PaymentService } from '@/api/payment/services/payment.service';
 import { VnpayPaymentService } from '@/api/payment/services/vnpay-payment.service';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class OrderService {
@@ -44,6 +46,9 @@ export class OrderService {
     private readonly paymentService: VnpayPaymentService,
 
     private readonly enrollCourseService: EnrollCourseService,
+
+    @InjectQueue(QueueName.ORDER)
+    private readonly orderQueue: Queue,
   ) {}
 
   async order(
@@ -62,6 +67,10 @@ export class OrderService {
 
     const { total_amount, details } = this.prepareOrderDetails(courses);
 
+    const five_min_ms = 5 * 60 * 1000;
+    const expired_at_ms = Date.now() + five_min_ms;
+    const expired_at = new Date(expired_at_ms);
+
     const order = this.orderRepo.create({
       user,
       payment_status: PaymentStatus.PENDING,
@@ -69,6 +78,7 @@ export class OrderService {
       total_amount: total_amount,
       currency: 'vnd',
       details,
+      expired_at,
     });
 
     await this.orderRepo.save(order);
@@ -77,7 +87,17 @@ export class OrderService {
       order.id,
       total_amount,
       client_ip,
+      expired_at,
     );
+
+    await this.orderQueue.add(
+      JobName.HANDLE_ORDER_EXPIRATION,
+      {
+        order_id: order.id,
+      },
+      { delay: five_min_ms, removeOnComplete: true },
+    );
+
     return plainToInstance(CreateOrderRes, {
       order,
       payment: { payment_url },
@@ -105,6 +125,21 @@ export class OrderService {
     order.details.forEach((detail) => {
       detail.payout_due_at = payout_due_at;
     });
+    await this.orderRepo.save(order);
+  }
+
+  async handleExpiration(id: Nanoid) {
+    const order = await this.orderRepo.findOne({
+      where: { id },
+    });
+    if (
+      !(
+        order.payment_status == PaymentStatus.SUCCESS ||
+        order.payment_status == PaymentStatus.FAILED
+      )
+    )
+      order.payment_status = PaymentStatus.EXPIRED;
+
     await this.orderRepo.save(order);
   }
 

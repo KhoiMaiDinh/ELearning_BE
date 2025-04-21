@@ -1,5 +1,7 @@
 import { PaymentModule } from '@/api/payment/payment.module';
 import { UserModule } from '@/api/user/user.module';
+import { QueueName } from '@/constants';
+import { BullModule } from '@nestjs/bullmq';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CourseModule } from '../course/course.module';
@@ -16,6 +18,14 @@ import { OrderService } from './services/order.service';
     TypeOrmModule.forFeature([OrderEntity, OrderDetailEntity, CourseEntity]),
     forwardRef(() => PaymentModule.forRootAsync()),
     CourseModule,
+    BullModule.registerQueue({
+      name: QueueName.ORDER,
+      streams: {
+        events: {
+          maxLen: 1000,
+        },
+      },
+    }),
   ],
   controllers: [OrderController],
   providers: [OrderService, OrderDetailService],

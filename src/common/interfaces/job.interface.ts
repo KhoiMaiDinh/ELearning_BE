@@ -1,4 +1,4 @@
-import { Uuid } from '../types/common.type';
+import { Nanoid, Uuid } from '../types/common.type';
 
 export interface IEmailJob {
   email: string;
@@ -11,6 +11,10 @@ export interface IStripeEventJob {
 
 export interface IPayoutJob {
   instructor_id: Uuid;
+}
+
+export interface IHandleOrderExpirationJob {
+  order_id: Nanoid;
 }
 
 export interface IVerifyEmailJob extends IEmailJob {

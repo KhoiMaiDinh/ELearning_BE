@@ -1,6 +1,7 @@
 export enum QueueName {
   EMAIL = 'email',
   PAYOUT = 'payout',
+  ORDER = 'order',
 }
 
 export enum QueuePrefix {
@@ -13,4 +14,5 @@ export enum JobName {
   EMAIL_VERIFICATION = 'email-verification',
   FORGOT_PASSWORD = 'forgot-password',
   PAYOUT_INSTRUCTOR = 'payout-instructor',
+  HANDLE_ORDER_EXPIRATION = 'handle-order-expiration',
 }
