@@ -6,4 +6,7 @@ export class CourseQuery {
 
   @BooleanFieldOptional()
   with_category?: boolean;
+
+  @BooleanFieldOptional()
+  with_thumbnail?: boolean;
 }
