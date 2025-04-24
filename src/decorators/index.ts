@@ -1,3 +1,4 @@
+export * from './after-date-field.decorator';
 export * from './auth-optional.decorator';
 export * from './cookie.decorator';
 export * from './current-user.decorator';

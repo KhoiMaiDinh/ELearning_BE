@@ -1,12 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Between,
-  In,
-  LessThanOrEqual,
-  MoreThanOrEqual,
-  Repository,
-} from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 
 import { CourseService } from '@/api/course/services/course.service';
 import { OrderDetailRepository } from '@/api/order/repositories/order-detail.repository';
@@ -114,8 +108,8 @@ export class CouponService {
       where: {
         code,
         is_active: true,
-        starts_at: LessThanOrEqual(now),
-        expires_at: MoreThanOrEqual(now),
+        // starts_at: LessThanOrEqual(now),
+        // expires_at: MoreThanOrEqual(now),
       },
     });
     if (!coupon) throw new NotFoundException(ErrorCode.E065);
