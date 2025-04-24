@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { In, Repository } from 'typeorm';
@@ -28,7 +28,6 @@ import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
 import { OrderEntity } from '@/api/order/entities/order.entity';
 import { PaymentProvider } from '@/api/payment/enums/payment-provider.enum';
 import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
-import { PaymentService } from '@/api/payment/services/payment.service';
 import { VnpayPaymentService } from '@/api/payment/services/vnpay-payment.service';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
@@ -49,7 +48,6 @@ export class OrderService {
 
     private readonly userRepo: UserRepository,
 
-    @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: VnpayPaymentService,
 
     private readonly enrollCourseService: EnrollCourseService,
@@ -74,9 +72,11 @@ export class OrderService {
     });
     await this.validateCourses(user.user_id, courses);
 
-    const coupon = await this.couponService.findByCode(dto.coupon_code, {
-      check_usability: true,
-    });
+    let coupon: CouponEntity = null;
+    if (dto.coupon_code)
+      coupon = await this.couponService.findByCode(dto.coupon_code, {
+        check_usability: true,
+      });
 
     const { total_amount, details } = this.prepareOrderDetails(courses, coupon);
 
@@ -251,7 +251,10 @@ export class OrderService {
       const price = course.price;
       let discount = 0;
 
-      if (coupon && coupon.course_id == course.course_id) {
+      if (
+        coupon &&
+        (coupon.course_id == course.course_id || coupon.course_id == null)
+      ) {
         is_coupon_applied = true;
         discount = Math.round((price * coupon.value) / 100);
       }
@@ -271,7 +274,8 @@ export class OrderService {
       });
     });
 
-    if (!is_coupon_applied) throw new ValidationException(EC.E070);
+    if (!is_coupon_applied && coupon != null)
+      throw new ValidationException(EC.E070);
 
     return { total_amount: total_amount, details };
   }

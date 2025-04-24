@@ -1,10 +1,10 @@
 import { Nanoid } from '@/common';
-import { StringField } from '@/decorators';
+import { StringField, StringFieldOptional } from '@/decorators';
 
 export class CreateOrderReq {
   @StringField({ each: true })
   course_ids: Nanoid[];
 
-  @StringField()
+  @StringFieldOptional()
   coupon_code: string;
 }

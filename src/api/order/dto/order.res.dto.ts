@@ -1,3 +1,4 @@
+import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { ClassField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 import { OrderDetailRes } from './order-detail.res.dto';
@@ -18,7 +19,7 @@ export class OrderRes {
   @Expose()
   provider: string;
   @Expose()
-  payment_completed_at: Date;
+  payment_status: PaymentStatus;
   @Expose()
   @ClassField(() => OrderDetailRes, { each: true })
   details: OrderDetailRes[];
