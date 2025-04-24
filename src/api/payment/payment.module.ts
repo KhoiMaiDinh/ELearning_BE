@@ -65,7 +65,12 @@ export class PaymentModule {
           inject: [ConfigService],
         },
       ],
-      exports: [PaymentService, StripeAccountService, PayoutService],
+      exports: [
+        PaymentService,
+        StripeAccountService,
+        PayoutService,
+        VnpayPaymentService,
+      ],
     };
   }
 }
