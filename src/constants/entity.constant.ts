@@ -15,4 +15,5 @@ export enum Entity {
   LECTURE_VIDEO = 'lecture-video',
   LECTURE_RESOURCE = 'resource',
   USER_LESSON_PROGRESS = 'user-course-progress',
+  LECTURE_COMMENT = 'lecture-comment',
 }

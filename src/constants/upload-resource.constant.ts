@@ -48,6 +48,7 @@ export const VALID_UPLOAD_TYPES: Record<Entity, UploadEntityProperty[]> = {
   'enrolled-course': [],
   'category-translation': [],
   'user-course-progress': [],
+  'lecture-comment': [],
 };
 
 export const UPLOAD_TYPE_RESOURCE: Record<

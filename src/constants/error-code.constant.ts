@@ -122,4 +122,7 @@ export enum ErrorCode {
 
   // Storage
   E061 = 'storage.error.invalid_url',
+
+  // Comments
+  E073 = 'comment.error.not_found',
 }

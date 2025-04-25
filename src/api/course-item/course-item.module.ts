@@ -30,12 +30,14 @@ import { MediaModule } from '@/api/media/media.module';
 import { SectionModule } from '@/api/section/section.module';
 import { MinioClientModule } from '@/libs/minio';
 import { CourseProgressModule } from '../course-progress/course-progress.module';
+import { LectureCommentModule } from '../lecture-comment/lecture-comment.module';
 
 @Module({
   imports: [
     SectionModule,
     MediaModule,
     MinioClientModule,
+    forwardRef(() => LectureCommentModule),
     forwardRef(() => CourseProgressModule),
     TypeOrmModule.forFeature([
       EnrolledCourseEntity,
