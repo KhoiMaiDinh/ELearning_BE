@@ -47,6 +47,7 @@ export const VALID_UPLOAD_TYPES: Record<Entity, UploadEntityProperty[]> = {
   role: [],
   'enrolled-course': [],
   'category-translation': [],
+  'user-course-progress': [],
 };
 
 export const UPLOAD_TYPE_RESOURCE: Record<

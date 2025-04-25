@@ -1,6 +1,8 @@
 import { AuthModule } from '@/api/auth/auth.module';
 import { CategoryModule } from '@/api/category/category.module';
+import { CouponModule } from '@/api/coupon/coupon.module';
 import { CourseItemModule } from '@/api/course-item/course-item.module';
+import { CourseProgressModule } from '@/api/course-progress/course-progress.module';
 import { CourseModule } from '@/api/course/course.module';
 import { HealthModule } from '@/api/health/health.module';
 import { HomeModule } from '@/api/home/home.module';
@@ -14,9 +16,8 @@ import { PriceModule } from '@/api/price/price.module';
 import { RoleModule } from '@/api/role/role.module';
 import { SectionModule } from '@/api/section/section.module';
 import { UserModule } from '@/api/user/user.module';
+import { WebhookModule } from '@/api/webhook/webhook.module';
 import { Module } from '@nestjs/common';
-import { CouponModule } from './coupon/coupon.module';
-import { WebhookModule } from './webhook/webhook.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { WebhookModule } from './webhook/webhook.module';
     OrderModule,
     WebhookModule.forRootAsync(),
     CouponModule,
+    CourseProgressModule,
   ],
 })
 export class ApiModule {}
