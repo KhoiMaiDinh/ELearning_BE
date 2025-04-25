@@ -3,12 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { In, Repository } from 'typeorm';
 
-import {
-  CursorPaginatedDto,
-  CursorPaginationDto,
-  Nanoid,
-  Uuid,
-} from '@/common';
+import { CursorPaginatedDto, CursorPaginationDto, Nanoid } from '@/common';
 import { ErrorCode as EC, JobName, Permission, QueueName } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { buildPaginator } from '@/utils';
@@ -68,9 +63,9 @@ export class OrderService {
 
     const courses = await this.courseRepo.find({
       where: { id: In(dto.course_ids) },
-      relations: ['thumbnail'],
+      relations: { thumbnail: true, instructor: { user: true } },
     });
-    await this.validateCourses(user.user_id, courses);
+    await this.validateCourses(user.id, courses);
 
     let coupon: CouponEntity = null;
     if (dto.coupon_code)
@@ -214,7 +209,7 @@ export class OrderService {
   }
 
   private async validateCourses(
-    user_id: Uuid,
+    user_id: Nanoid,
     courses: CourseEntity[],
   ): Promise<void> {
     if (!courses.length)
@@ -228,6 +223,8 @@ export class OrderService {
           course.course_id,
           user_id,
         );
+        if (user_id == course.instructor.user.id)
+          throw new ValidationException(EC.E072);
         if (is_enrolled)
           throw new ValidationException(
             EC.E047,
