@@ -2,6 +2,8 @@ import { CreateLectureReq, LectureRes } from '@/api/course-item';
 import { LectureService } from '@/api/course-item/lecture/lecture.service';
 import { ProgressRes, UpsertWatchTimeReq } from '@/api/course-progress/dto';
 import { LessonProgressService } from '@/api/course-progress/lesson-progress.service';
+import { CreateCommentReq } from '@/api/lecture-comment/dto';
+import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
 import { ApiAuth, CurrentUser } from '@/decorators';
@@ -20,6 +22,7 @@ export class LectureController {
   constructor(
     private readonly lectureService: LectureService,
     private readonly progressService: LessonProgressService,
+    private readonly commentService: LectureCommentService,
   ) {}
 
   @ApiAuth({
@@ -61,4 +64,31 @@ export class LectureController {
       dto.watch_time,
     );
   }
+
+  @ApiAuth({
+    summary: 'Comment a course item: Lecture',
+    statusCode: HttpStatus.CREATED,
+    type: LectureRes,
+  })
+  @Post(':id/comments')
+  async comment(
+    @Param('id') id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+    @Body() dto: CreateCommentReq,
+  ) {
+    return this.commentService.create(user, { ...dto, lecture_id: id });
+  }
+
+  // @ApiPublic({
+  //   summary: 'Get comments of course item: Lecture',
+  //   statusCode: HttpStatus.OK,
+  //   type: LectureCommentRes,
+  // })
+  // @Get('lectures/:id/comments')
+  // async getLectureComments(
+  //   @Param('id') lectureId: string,
+  //   @Query() query: PaginateQueryDto,
+  // ): Promise<PaginatedResult<LectureCommentRes>> {
+  //   return this.lectureCommentService.paginateLectureComments(lectureId, query);
+  // }
 }

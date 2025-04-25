@@ -18,6 +18,7 @@ import { SectionModule } from '@/api/section/section.module';
 import { UserModule } from '@/api/user/user.module';
 import { WebhookModule } from '@/api/webhook/webhook.module';
 import { Module } from '@nestjs/common';
+import { LectureCommentModule } from './lecture-comment/lecture-comment.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { Module } from '@nestjs/common';
     WebhookModule.forRootAsync(),
     CouponModule,
     CourseProgressModule,
+    LectureCommentModule,
   ],
 })
 export class ApiModule {}
