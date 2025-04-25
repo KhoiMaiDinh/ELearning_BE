@@ -1,3 +1,4 @@
+import { UserLessonProgressEntity } from '@/api/course-progress/entities/lesson-progress.entity';
 import { CourseStatus } from '@/api/course/enums/course-status.enum';
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { SectionEntity } from '@/api/section/entities/section.entity';
@@ -73,6 +74,9 @@ export class LectureEntity extends AbstractEntity {
   })
   resources?: Relation<ResourceEntity[]>;
 
+  @OneToMany(() => UserLessonProgressEntity, (progress) => progress.lecture)
+  progresses?: Relation<UserLessonProgressEntity[]>;
+
   get video() {
     return this.videos?.sort((a, b) => b.version - a.version)[0] ?? null;
   }
@@ -98,6 +102,9 @@ export class LectureVideoEntity extends AbstractEntity {
     name: 'video_id',
   })
   video?: Relation<MediaEntity>;
+
+  @Column({ type: 'int', default: 0 })
+  duration_in_seconds: number;
 
   @Column({ type: 'int', default: 0 })
   version: number;

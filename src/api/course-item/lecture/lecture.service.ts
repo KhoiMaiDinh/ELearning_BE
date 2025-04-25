@@ -111,6 +111,7 @@ export class LectureService extends CourseItemService {
     const media = await this.mediaRepository.findOneById(video_dto.id);
     const video = this.videoRepository.create({
       video: media,
+      duration_in_seconds: video_dto.duration_in_seconds,
     });
 
     this.isValidVideo(video);
@@ -193,9 +194,10 @@ export class LectureService extends CourseItemService {
 
     // get medias
     if (video_dto && video_dto?.id !== lecture.videos[0].video.id) {
-      const media = await this.mediaRepository.findOneByKey(dto.video.id);
+      const media = await this.mediaRepository.findOneByKey(video_dto?.id);
       const video = this.videoRepository.create({
         video: media,
+        duration_in_seconds: video_dto.duration_in_seconds,
         version: lecture.videos[0].version + 1,
       });
       this.isValidVideo(video);
