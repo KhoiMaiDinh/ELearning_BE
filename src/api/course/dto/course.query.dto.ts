@@ -9,4 +9,7 @@ export class CourseQuery {
 
   @BooleanFieldOptional()
   with_thumbnail?: boolean;
+
+  @BooleanFieldOptional()
+  with_sections?: boolean;
 }

@@ -10,6 +10,7 @@ import {
   PublicCourseReq,
   UpdateCourseReq,
 } from '@/api/course';
+import { LessonProgressService } from '@/api/course-progress/lesson-progress.service';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseRepository } from '@/api/course/repositories/course.repository';
 import { InstructorRepository } from '@/api/instructor';
@@ -33,6 +34,7 @@ import { plainToInstance } from 'class-transformer';
 import { FindOptionsRelations } from 'typeorm';
 import { MediaRepository } from '../../media';
 import { MediaEntity } from '../../media/entities/media.entity';
+import { EnrollCourseService } from './enroll-course.service';
 
 @Injectable()
 export class CourseService {
@@ -45,6 +47,8 @@ export class CourseService {
     private readonly mediaRepository: MediaRepository,
     private readonly storageService: MinioClientService,
     private readonly categoryService: CategoryService,
+    private readonly courseProgressService: LessonProgressService,
+    private readonly enrollCourseService: EnrollCourseService,
   ) {}
   async create(public_user_id: Nanoid, dto: CreateCourseReq) {
     const {
@@ -71,7 +75,7 @@ export class CourseService {
     return course.toDto(CourseRes);
   }
 
-  async findMany(query: CoursesQuery, user?: JwtPayloadType) {
+  async find(query: CoursesQuery, user?: JwtPayloadType) {
     const query_builder = this.courseRepository
       .createQueryBuilder('course')
       .leftJoinAndSelect('course.thumbnail', 'thumbnail');
@@ -141,17 +145,40 @@ export class CourseService {
   }
 
   async findOne(
-    id: Nanoid | string,
+    id_or_slug: Nanoid | string,
     query: CourseQuery = {},
   ): Promise<CourseEntity> {
     const load_entities: FindOptionsRelations<CourseEntity> = {};
     load_entities.instructor = { user: true };
-    if (query?.with_category) load_entities.category = true;
+    if (query?.with_sections)
+      load_entities.sections = {
+        lectures: true,
+        quizzes: true,
+        articles: true,
+      };
+    if (query?.with_category)
+      load_entities.category = {
+        translations: true,
+        parent: { translations: true },
+      };
     if (query?.with_thumbnail) load_entities.thumbnail = true;
-    const course = await this.courseRepository.findOneByPublicIdOrSlug(
-      id,
-      load_entities,
-    );
+    const course = await this.courseRepository.findOne({
+      where: [{ id: id_or_slug }, { slug: id_or_slug }],
+      relations: load_entities,
+    });
+
+    if (!course) throw new NotFoundException(ErrorCode.E025);
+
+    // get thumbnail access
+    if (query?.with_thumbnail)
+      course.thumbnail = await this.storageService.getPresignedUrl(
+        course.thumbnail,
+      );
+
+    // get selected language for category
+    if (query?.with_category)
+      this.categoryService.filterTranslations(course.category, Language.VI);
+
     return course;
   }
 
@@ -277,16 +304,21 @@ export class CourseService {
     return course.toDto(CourseRes);
   }
 
-  async findCurriculums(id_or_slug: Nanoid | string) {
-    const course = await this.courseRepository.findOneByPublicIdOrSlug(
-      id_or_slug,
-      {
+  async findCurriculums(
+    user_payload: JwtPayloadType,
+    id_or_slug: Nanoid | string,
+  ) {
+    let is_enrolled: boolean;
+    const course = await this.courseRepository.findOne({
+      where: [{ id: id_or_slug }, { slug: id_or_slug }],
+      relations: {
         thumbnail: true,
         instructor: { user: true },
         sections: {
           lectures: {
             videos: { video: true },
             resources: { resource_file: true },
+            progresses: true,
           },
           quizzes: true,
           articles: true,
@@ -296,8 +328,25 @@ export class CourseService {
           parent: { translations: true },
         },
       },
-      true,
-    );
+    });
+
+    if (!course) throw new NotFoundException(ErrorCode.E025);
+    if (
+      user_payload.id !== course.instructor.user.id &&
+      !user_payload.permissions.includes(Permission.READ_COURSE)
+    ) {
+      is_enrolled = await this.enrollCourseService.isEnrolled(
+        course.course_id,
+        user_payload.id,
+      );
+      if (!is_enrolled) throw new ValidationException(ErrorCode.F002);
+      else {
+        await this.courseProgressService.attachToLectures(
+          course,
+          user_payload.id,
+        );
+      }
+    }
 
     // get thumbnail access
     course.thumbnail = await this.storageService.getPresignedUrl(
@@ -333,7 +382,17 @@ export class CourseService {
       }),
     );
 
-    return course.toDto(CurriculumRes);
+    const res = course.toDto(CurriculumRes);
+    if (is_enrolled) {
+      const course_progress =
+        await this.courseProgressService.getCourseProgress(
+          user_payload.id,
+          course.course_id,
+        );
+      res.course_progress = course_progress;
+    }
+
+    return res;
   }
 
   ensureOwnership(course: CourseEntity, user_id: Nanoid): void {

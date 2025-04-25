@@ -2,6 +2,7 @@ import { CategoryRes } from '@/api/category';
 import { CourseLevel, CourseStatus } from '@/api/course';
 import { InstructorRes } from '@/api/instructor';
 import { MediaRes } from '@/api/media';
+import { SectionRes } from '@/api/section';
 import { Nanoid } from '@/common';
 import { Language } from '@/constants';
 import { ClassField, EnumField, NumberField, StringField } from '@/decorators';
@@ -66,4 +67,8 @@ export class CourseRes {
 
   @Expose()
   status: CourseStatus;
+
+  @Expose()
+  @ClassField(() => SectionRes, { each: true })
+  sections: SectionRes[];
 }

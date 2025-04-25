@@ -1,13 +1,19 @@
+import { forwardRef, Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { ArticleController } from '@/api/course-item/article/article.controller';
 import { ArticleEntity } from '@/api/course-item/article/article.entity';
 import { ArticleService } from '@/api/course-item/article/article.service';
+
 import { LectureController } from '@/api/course-item/lecture/lecture.controller';
 import {
   LectureEntity,
   LectureVideoEntity,
   ResourceEntity,
 } from '@/api/course-item/lecture/lecture.entity';
+import { LectureRepository } from '@/api/course-item/lecture/lecture.repository';
 import { LectureService } from '@/api/course-item/lecture/lecture.service';
+
 import { QuizAnswerEntity } from '@/api/course-item/quiz/entities/quiz-answer.entity';
 import {
   QuizAttempt,
@@ -18,18 +24,19 @@ import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
 import { QuizAttemptService } from '@/api/course-item/quiz/quiz-attempt.service';
 import { QuizController } from '@/api/course-item/quiz/quiz.controller';
 import { QuizService } from '@/api/course-item/quiz/quiz.service';
-import { MediaModule } from '@/api/media';
+
+import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.entity';
+import { MediaModule } from '@/api/media/media.module';
 import { SectionModule } from '@/api/section/section.module';
 import { MinioClientModule } from '@/libs/minio';
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { EnrolledCourseEntity } from '../course/entities/enrolled-course.entity';
+import { CourseProgressModule } from '../course-progress/course-progress.module';
 
 @Module({
   imports: [
     SectionModule,
     MediaModule,
     MinioClientModule,
+    forwardRef(() => CourseProgressModule),
     TypeOrmModule.forFeature([
       EnrolledCourseEntity,
       ArticleEntity,
@@ -44,6 +51,13 @@ import { EnrolledCourseEntity } from '../course/entities/enrolled-course.entity'
     ]),
   ],
   controllers: [ArticleController, QuizController, LectureController],
-  providers: [ArticleService, QuizService, LectureService, QuizAttemptService],
+  providers: [
+    ArticleService,
+    QuizService,
+    LectureService,
+    QuizAttemptService,
+    LectureRepository,
+  ],
+  exports: [LectureRepository],
 })
 export class CourseItemModule {}

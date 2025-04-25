@@ -17,16 +17,19 @@ export class EnrollCourseService {
   ) {}
 
   async enrollCourse(course_id: Uuid, user_id: Uuid): Promise<void> {
-    const enrollCourse = this.enrolledCourseRepository.create({
+    const enroll_course = this.enrolledCourseRepository.create({
       course_id,
       user_id,
     });
-    await this.enrolledCourseRepository.save(enrollCourse);
+    await this.enrolledCourseRepository.save(enroll_course);
   }
 
-  async unenrollCourse(course_id: Uuid, user_id: Uuid): Promise<void> {
+  async unenrollCourse(course_id: Uuid, user_id: Nanoid): Promise<void> {
     if (this.isEnrolled(course_id, user_id)) {
-      await this.enrolledCourseRepository.softDelete({ user_id, course_id });
+      await this.enrolledCourseRepository.softDelete({
+        user: { id: user_id },
+        course_id,
+      });
     } else {
       throw new ValidationException(ErrorCode.E046);
     }
@@ -55,9 +58,12 @@ export class EnrollCourseService {
     return ['user1', 'user2', 'user3'];
   }
 
-  async isEnrolled(course_id: Uuid, user_id: Uuid): Promise<boolean> {
+  async isEnrolled(course_id: Uuid, user_id: Nanoid): Promise<boolean> {
+    // Check if type of user_id is nanoid, query user first
+
     const has_enrolled = await this.enrolledCourseRepository.exists({
-      where: { course_id, user_id },
+      where: { course_id, user: { id: user_id } },
+      relations: ['user'],
     });
     return has_enrolled;
   }

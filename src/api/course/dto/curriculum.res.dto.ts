@@ -1,14 +1,28 @@
 import { SectionDetailRes } from '@/api/section';
-import { Nanoid } from '@/common';
-import { ClassField, StringField } from '@/decorators';
-import { Expose } from 'class-transformer';
+import { ClassField, NumberField } from '@/decorators';
+import { Exclude, Expose } from 'class-transformer';
+import { CourseRes } from './course.res.dto';
 
-// @Exclude()
-export class CurriculumRes {
+@Exclude()
+class CourseProgressRes {
   @Expose()
-  @StringField()
-  id: Nanoid;
+  @NumberField()
+  total: number;
+  @Expose()
+  @NumberField()
+  completed: number;
+  @Expose()
+  @NumberField()
+  progress: number;
+}
+
+@Exclude()
+export class CurriculumRes extends CourseRes {
   @Expose()
   @ClassField(() => SectionDetailRes, { each: true })
-  sections: SectionDetailRes[];
+  declare sections: SectionDetailRes[];
+
+  @Expose()
+  @ClassField(() => CourseProgressRes)
+  course_progress: CourseProgressRes;
 }

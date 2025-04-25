@@ -12,6 +12,7 @@ import { UserModule } from '@/api/user';
 import { MinioClientModule } from '@/libs/minio';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CourseProgressModule } from '../course-progress/course-progress.module';
 import { EnrollCourseService } from './services/enroll-course.service';
 
 @Module({
@@ -23,6 +24,7 @@ import { EnrollCourseService } from './services/enroll-course.service';
     PriceModule,
     MediaModule,
     MinioClientModule,
+    forwardRef(() => CourseProgressModule),
     forwardRef(() => SectionModule),
   ],
   controllers: [CourseController],
