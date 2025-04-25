@@ -12,5 +12,6 @@ import { LectureCommentService } from './lecture-comment.service';
     TypeOrmModule.forFeature([LectureCommentEntity]),
   ],
   providers: [LectureCommentService],
+  exports: [LectureCommentService],
 })
 export class LectureCommentModule {}
