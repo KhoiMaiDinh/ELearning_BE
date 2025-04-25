@@ -8,7 +8,7 @@ import { PostEntity } from '@/api/post/entities/post.entity';
 import { PreferenceEntity } from '@/api/preference/entities/preference.entity';
 import { RoleEntity } from '@/api/role/entities/role.entity';
 import { SessionEntity } from '@/api/user/entities/session.entity';
-import { Uuid } from '@/common';
+import { Nanoid, Uuid } from '@/common';
 import { Entity as E, RegisterMethod } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
@@ -58,7 +58,7 @@ export class UserEntity extends AbstractEntity {
     length: 13,
   })
   @AutoNanoId(13)
-  id: string;
+  id: Nanoid;
 
   @Column({
     length: 50,
