@@ -18,6 +18,7 @@ export class PermissionSeeder1739636388516 implements Seeder {
       [Permission.WRITE_CATEGORY]: PermissionGroup.CATEGORY,
       [Permission.DELETE_CATEGORY]: PermissionGroup.CATEGORY,
       [Permission.WRITE_COURSE]: PermissionGroup.COURSE,
+      [Permission.READ_COURSE]: PermissionGroup.COURSE,
       [Permission.READ_COURSE_ITEM]: PermissionGroup.COURSE,
       [Permission.WRITE_COURSE_ITEM]: PermissionGroup.COURSE,
       [Permission.WRITE_SECTION]: PermissionGroup.COURSE,

@@ -5,6 +5,7 @@ import {
   ClassField,
   ClassFieldOptional,
   EnumField,
+  NumberField,
   StringField,
   StringFieldOptional,
 } from '@/decorators';
@@ -25,9 +26,15 @@ export class CreateCourseItemReq {
   section: SectionReq;
 }
 
+export class LectureVideoReq extends MediaReq {
+  @NumberField({ int: true, isPositive: true })
+  duration_in_seconds: number;
+}
+
 export class CreateLectureReq extends CreateCourseItemReq {
-  @ClassField(() => MediaReq)
-  video: MediaReq;
+  @ClassField(() => LectureVideoReq)
+  video: LectureVideoReq;
+
   @StringFieldOptional({ maxLength: 300 })
   description: string;
   @ClassFieldOptional(() => ResourceReq, { each: true })

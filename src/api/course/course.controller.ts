@@ -47,9 +47,10 @@ export class CourseController {
     statusCode: HttpStatus.OK,
     summary: 'Get courses by offset pagination',
     type: CourseRes,
+    isPaginated: true,
   })
   async findMany(@Query() query: CoursesQuery) {
-    return await this.courseService.findMany(query);
+    return await this.courseService.find(query);
   }
 
   @Get('me')
@@ -105,13 +106,16 @@ export class CourseController {
   }
 
   @Get(':id/curriculums')
-  @ApiPublic({
+  @ApiAuth({
     statusCode: HttpStatus.OK,
     summary: 'Get course curriculums',
     type: CourseRes,
   })
-  async findCurriculums(@Param('id') id: Nanoid | string) {
-    return await this.courseService.findCurriculums(id);
+  async findCurriculums(
+    @CurrentUser() user: JwtPayloadType,
+    @Param('id') id: Nanoid | string,
+  ) {
+    return await this.courseService.findCurriculums(user, id);
   }
 
   @Get('enrolled/me')

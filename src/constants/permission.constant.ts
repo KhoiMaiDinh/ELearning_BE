@@ -7,6 +7,7 @@ export enum Permission {
   WRITE_CATEGORY = 'write:category',
   DELETE_CATEGORY = 'delete:category',
   WRITE_COURSE = 'write:course',
+  READ_COURSE = 'read:course',
   WRITE_SECTION = 'write:section',
   WRITE_COURSE_ITEM = 'write:course_item',
   READ_COURSE_ITEM = 'read:course_item',
