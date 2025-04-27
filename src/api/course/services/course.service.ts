@@ -17,6 +17,7 @@ import { InstructorRepository } from '@/api/instructor';
 import { PriceHistoryRepository } from '@/api/price/price-history.repository';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
+import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid, OffsetPaginatedDto, Uuid } from '@/common';
 import {
   Entity,
@@ -39,6 +40,7 @@ import { EnrollCourseService } from './enroll-course.service';
 @Injectable()
 export class CourseService {
   constructor(
+    private readonly userRepository: UserRepository,
     private readonly courseRepository: CourseRepository,
     private readonly categoryRepository: CategoryRepository,
     private readonly instructorRepository: InstructorRepository,
@@ -82,12 +84,13 @@ export class CourseService {
 
     if (query.with_category)
       query_builder.leftJoinAndSelect('course.category', 'category');
-    if (query.with_instructor)
+    if (query.with_instructor || query.instructor_username) {
       query_builder
         .leftJoinAndSelect('course.instructor', 'instructor')
         .leftJoinAndSelect('instructor.user', 'user')
         .leftJoinAndSelect('user.profile_image', 'profile_image')
         .addSelect('user.username', 'username');
+    }
 
     // **Category Filtering**
     if (query.category_slug) {
@@ -110,13 +113,9 @@ export class CourseService {
     }
 
     if (query.instructor_username) {
-      query_builder
-        .leftJoinAndSelect('course.instructor', 'instructor')
-        .leftJoinAndSelect('instructor.user', 'user')
-        .andWhere('user.username = :username', {
-          username: query.instructor_username,
-        })
-        .leftJoinAndSelect('user.profile_image', 'profile_image');
+      query_builder.andWhere('user.username = :username', {
+        username: query.instructor_username,
+      });
     }
 
     const [courses, metaDto] = await paginate<CourseEntity>(
@@ -391,6 +390,26 @@ export class CourseService {
         );
       res.course_progress = course_progress;
     }
+
+    return res;
+  }
+
+  async findEnrolled(user_id: Nanoid): Promise<CourseRes[]> {
+    const enrolled_courses =
+      await this.enrollCourseService.findEnrolled(user_id);
+
+    const res = await Promise.all(
+      enrolled_courses.map(async (enrolled_course) => {
+        const course_progress =
+          await this.courseProgressService.getCourseProgress(
+            user_id,
+            enrolled_course.course_id,
+          );
+        const res = enrolled_course.toDto(CurriculumRes);
+        res.course_progress = course_progress;
+        return res;
+      }),
+    );
 
     return res;
   }

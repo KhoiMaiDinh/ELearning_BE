@@ -76,7 +76,7 @@ export class LectureController {
     @CurrentUser() user: JwtPayloadType,
     @Body() dto: CreateCommentReq,
   ) {
-    return this.commentService.create(user, { ...dto, lecture_id: id });
+    return await this.commentService.create(user, { ...dto, lecture_id: id });
   }
 
   // @ApiPublic({
