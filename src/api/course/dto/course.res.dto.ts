@@ -71,4 +71,12 @@ export class CourseRes {
   @Expose()
   @ClassField(() => SectionRes, { each: true })
   sections: SectionRes[];
+
+  @Expose()
+  @NumberField({ nullable: true })
+  avg_rating: number | null;
+
+  @Expose()
+  @NumberField({ nullable: true })
+  total_enrolled: number;
 }
