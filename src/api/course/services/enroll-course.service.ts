@@ -1,11 +1,10 @@
-import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid, Uuid } from '@/common';
 import { ErrorCode } from '@/constants';
 import { ValidationException } from '@/exceptions';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CourseRes } from '../dto';
+import { CourseEntity } from '../entities/course.entity';
 import { EnrolledCourseEntity } from '../entities/enrolled-course.entity';
 
 @Injectable()
@@ -13,10 +12,9 @@ export class EnrollCourseService {
   constructor(
     @InjectRepository(EnrolledCourseEntity)
     private readonly enrolledCourseRepository: Repository<EnrolledCourseEntity>,
-    private readonly userRepository: UserRepository,
   ) {}
 
-  async enrollCourse(course_id: Uuid, user_id: Uuid): Promise<void> {
+  async enroll(course_id: Uuid, user_id: Uuid): Promise<void> {
     const enroll_course = this.enrolledCourseRepository.create({
       course_id,
       user_id,
@@ -34,23 +32,17 @@ export class EnrollCourseService {
       throw new ValidationException(ErrorCode.E046);
     }
   }
-  async getEnrolledCourses(ex_user_id: Nanoid): Promise<CourseRes[]> {
-    const user = await this.userRepository.findOne({
-      where: { id: ex_user_id },
-    });
-    if (!user) throw new NotFoundException(ErrorCode.E002);
-
-    const enrolledCourses = await this.enrolledCourseRepository.find({
-      where: { user_id: user.user_id },
-      relations: ['course'],
+  async findEnrolled(ex_user_id: Nanoid): Promise<CourseEntity[]> {
+    const enrolled_courses = await this.enrolledCourseRepository.find({
+      where: { user: { id: ex_user_id } },
+      relations: ['course', 'user'],
     });
 
     return (
-      enrolledCourses.map((enrolledCourse) =>
-        enrolledCourse.course.toDto(CourseRes),
-      ) || []
+      enrolled_courses.map((enrolledCourse) => enrolledCourse.course) || []
     );
   }
+
   async getEnrolledUsers(courseId: string): Promise<string[]> {
     // Logic to get the list of users enrolled in the course
     console.log(`Getting enrolled users for course ${courseId}`);

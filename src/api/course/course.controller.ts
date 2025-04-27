@@ -125,7 +125,7 @@ export class CourseController {
     type: CourseRes,
   })
   async getEnrolledCourses(@CurrentUser('id') user_id: Nanoid) {
-    return await this.enrollCourseService.getEnrolledCourses(user_id);
+    return await this.courseService.findEnrolled(user_id);
   }
 
   // @Put(':id/curriculums')
