@@ -18,6 +18,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   Relation,
+  VirtualColumn,
 } from 'typeorm';
 
 @Index('UQ_course_title_per_instructor', ['title', 'instructor_id'], {
@@ -134,4 +135,26 @@ export class CourseEntity extends AbstractEntity {
 
   @Column({ type: 'varchar', length: 3, default: 'VND' })
   currency: string;
+
+  @VirtualColumn({
+    query: (alias) =>
+      `(SELECT AVG(enrolled.rating)
+              FROM "enrolled-course" enrolled
+              WHERE enrolled.course_id = ${alias}.course_id
+                AND enrolled.rating IS NOT NULL)`,
+  })
+  avg_rating: number;
+
+  @VirtualColumn({
+    query: (alias) =>
+      `(SELECT COUNT(*)
+              FROM "enrolled-course" enrolled
+              WHERE enrolled.course_id = ${alias}.course_id)`,
+  })
+  total_enrolled: number;
+
+  @VirtualColumn({
+    query: (alias) => ``,
+  })
+  course_progress: number;
 }

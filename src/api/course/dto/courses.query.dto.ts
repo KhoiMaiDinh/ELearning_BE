@@ -15,10 +15,10 @@ export class CoursesQuery extends PageOffsetOptionsDto implements CourseQuery {
   @EnumFieldOptional(() => CourseLevel)
   level?: string;
 
-  @NumberFieldOptional({ min: 0 })
+  @NumberFieldOptional({ min: 0, default: 0 })
   min_price?: number;
 
-  @NumberFieldOptional({ max: 30000 })
+  @NumberFieldOptional({})
   max_price?: number;
 
   @NumberFieldOptional({ min: 0, max: 5 })

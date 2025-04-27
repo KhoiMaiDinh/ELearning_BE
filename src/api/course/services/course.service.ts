@@ -80,7 +80,13 @@ export class CourseService {
   async find(query: CoursesQuery, user?: JwtPayloadType) {
     const query_builder = this.courseRepository
       .createQueryBuilder('course')
-      .leftJoinAndSelect('course.thumbnail', 'thumbnail');
+      .leftJoinAndSelect('course.thumbnail', 'thumbnail')
+      .leftJoin('course.enrolled_users', 'enrolled')
+      .addSelect(this.getAvgRatingSQL('course'), 'course_avg_rating')
+      .loadRelationCountAndMap(
+        'course.total_enrolled',
+        'course.enrolled_users',
+      );
 
     if (query.with_category)
       query_builder.leftJoinAndSelect('course.category', 'category');
@@ -99,12 +105,21 @@ export class CourseService {
       });
     }
 
+    if (query.min_rating) {
+      query_builder.andWhere(
+        `${this.getAvgRatingSQL('course')} >= :min_rating`,
+        {
+          min_rating: query.min_rating,
+        },
+      );
+    }
+
     // if Not provide include_disabled -> return only enabled course. If provide and has permission -> return all
     if (!query.include_disabled)
       query_builder.andWhere('course.status = :status', {
         status: CourseStatus.PUBLISHED,
       });
-    else if (!user?.permissions.includes(Permission.WRITE_COURSE))
+    else if (!user?.permissions.includes(Permission.READ_COURSE))
       throw new ForbiddenException(ErrorCode.E028);
 
     // **Level Filtering**
@@ -115,6 +130,18 @@ export class CourseService {
     if (query.instructor_username) {
       query_builder.andWhere('user.username = :username', {
         username: query.instructor_username,
+      });
+    }
+
+    if (query.min_price > 0) {
+      query_builder.andWhere('course.price >= :min_price', {
+        min_price: query.min_price,
+      });
+    }
+
+    if (query.max_price) {
+      query_builder.andWhere('course.price <= :max_price', {
+        max_price: query.max_price,
       });
     }
 
@@ -131,14 +158,18 @@ export class CourseService {
   }
 
   async findFromUser(user: JwtPayloadType) {
-    const courses = await this.courseRepository.find({
-      where: { instructor: { user: { id: user.id } } },
-      relations: {
-        category: true,
-        instructor: { user: true },
-        thumbnail: true,
-      },
-    });
+    const query_builder = this.courseRepository
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'user')
+      .leftJoinAndSelect('course.thumbnail', 'thumbnail')
+      .leftJoin('course.enrolled_users', 'enrolled')
+      .addSelect(this.getAvgRatingSQL('course'), 'course_avg_rating')
+      .loadRelationCountAndMap('course.total_enrolled', 'course.enrolled_users')
+      .where('user.id = :user_id', { user_id: user.id });
+
+    const courses = await query_builder.getMany();
 
     return plainToInstance(CourseRes, courses);
   }
@@ -149,6 +180,7 @@ export class CourseService {
   ): Promise<CourseEntity> {
     const load_entities: FindOptionsRelations<CourseEntity> = {};
     load_entities.instructor = { user: true };
+
     if (query?.with_sections)
       load_entities.sections = {
         lectures: true,
@@ -161,6 +193,7 @@ export class CourseService {
         parent: { translations: true },
       };
     if (query?.with_thumbnail) load_entities.thumbnail = true;
+
     const course = await this.courseRepository.findOne({
       where: [{ id: id_or_slug }, { slug: id_or_slug }],
       relations: load_entities,
@@ -168,14 +201,22 @@ export class CourseService {
 
     if (!course) throw new NotFoundException(ErrorCode.E025);
 
-    // get thumbnail access
-    if (query?.with_thumbnail)
+    const rating_result = await this.enrollCourseService.getAverageRating(
+      course.course_id,
+    );
+    course.avg_rating = rating_result.average_rating ?? 0;
+
+    const enrolledCountResult = await this.enrollCourseService.getEnrolledCount(
+      course.course_id,
+    );
+    course.total_enrolled = enrolledCountResult.count ?? 0;
+
+    if (query?.with_thumbnail && course.thumbnail)
       course.thumbnail = await this.storageService.getPresignedUrl(
         course.thumbnail,
       );
 
-    // get selected language for category
-    if (query?.with_category)
+    if (query?.with_category && course.category)
       this.categoryService.filterTranslations(course.category, Language.VI);
 
     return course;
@@ -381,6 +422,16 @@ export class CourseService {
       }),
     );
 
+    const enrolledCountResult = await this.enrollCourseService.getEnrolledCount(
+      course.course_id,
+    );
+    course.total_enrolled = enrolledCountResult.count ?? 0;
+
+    const result = await this.enrollCourseService.getAverageRating(
+      course.course_id,
+    );
+    course.avg_rating = result.average_rating;
+
     const res = course.toDto(CurriculumRes);
     if (is_enrolled) {
       const course_progress =
@@ -405,6 +456,11 @@ export class CourseService {
             user_id,
             enrolled_course.course_id,
           );
+
+        const result = await this.enrollCourseService.getAverageRating(
+          enrolled_course.course_id,
+        );
+        (enrolled_course as any).rating = result.average_rating;
         const res = enrolled_course.toDto(CurriculumRes);
         res.course_progress = course_progress;
         return res;
@@ -460,5 +516,12 @@ export class CourseService {
       },
       { status: CourseStatus.ARCHIVED },
     );
+  }
+
+  getAvgRatingSQL(alias: string) {
+    return `(SELECT AVG(enrolled.rating)
+              FROM "enrolled-course" enrolled
+              WHERE enrolled.course_id = ${alias}.course_id
+                AND enrolled.rating IS NOT NULL)`;
   }
 }
