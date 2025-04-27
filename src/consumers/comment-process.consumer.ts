@@ -6,8 +6,8 @@ import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
-export class DocumentProcessConsumer {
-  private readonly logger = new Logger(DocumentProcessConsumer.name);
+export class CommentProcessConsumer {
+  private readonly logger = new Logger(CommentProcessConsumer.name);
   constructor(private readonly commentService: LectureCommentService) {}
 
   @EventPattern(KafkaTopic.COMMENT_PROCESSED)

@@ -36,6 +36,11 @@ export class LectureCommentEntity extends AbstractEntity {
   @Column('varchar')
   content: string;
 
-  @OneToMany(() => CommentAspectEntity, (aspect) => aspect.comment)
+  @Column({ type: 'boolean', default: false })
+  is_solved: boolean;
+
+  @OneToMany(() => CommentAspectEntity, (aspect) => aspect.comment, {
+    cascade: true,
+  })
   aspects: Relation<CommentAspectEntity[]>;
 }

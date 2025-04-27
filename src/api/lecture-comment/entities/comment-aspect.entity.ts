@@ -20,9 +20,7 @@ export class CommentAspectEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid')
   comment_aspect_id: Uuid;
 
-  @ManyToOne(() => LectureCommentEntity, (comment) => comment.aspects, {
-    cascade: true,
-  })
+  @ManyToOne(() => LectureCommentEntity, (comment) => comment.aspects)
   comment: Relation<LectureCommentEntity>;
 
   @Column({ type: 'enum', enum: Aspect })
