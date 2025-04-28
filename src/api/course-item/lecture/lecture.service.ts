@@ -1,20 +1,3 @@
-import {
-  CreateLectureReq,
-  LectureRes,
-  UpdateLectureReq,
-} from '@/api/course-item';
-import { ArticleEntity } from '@/api/course-item/article/article.entity';
-import { CourseItemService } from '@/api/course-item/course-item.service';
-import {
-  LectureEntity,
-  LectureVideoEntity,
-  ResourceEntity,
-} from '@/api/course-item/lecture/lecture.entity';
-import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
-import { CourseStatus } from '@/api/course/enums/course-status.enum';
-import { MediaRepository } from '@/api/media';
-import { SectionRepository } from '@/api/section/section.repository';
-import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
 import { Bucket, ErrorCode, Permission, UploadStatus } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
@@ -22,7 +5,27 @@ import { MinioClientService } from '@/libs/minio';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ResourceReq } from '../dto/resource.req.dto';
+
+import {
+  CreateLectureReq,
+  LectureRes,
+  UpdateLectureReq,
+} from '@/api/course-item';
+import { ArticleEntity } from '@/api/course-item/article/article.entity';
+import { CourseItemService } from '@/api/course-item/course-item.service';
+import { ResourceReq } from '@/api/course-item/dto/resource.req.dto';
+import {
+  LectureEntity,
+  LectureVideoEntity,
+  ResourceEntity,
+} from '@/api/course-item/lecture/lecture.entity';
+import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
+
+import { CourseStatus } from '@/api/course/enums/course-status.enum';
+import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
+import { MediaRepository } from '@/api/media';
+import { SectionRepository } from '@/api/section/section.repository';
+import { JwtPayloadType } from '@/api/token';
 
 @Injectable()
 export class LectureService extends CourseItemService {
@@ -37,6 +40,7 @@ export class LectureService extends CourseItemService {
     @InjectRepository(LectureVideoEntity)
     private readonly videoRepository: Repository<LectureVideoEntity>,
     private readonly storageService: MinioClientService,
+    private readonly commentService: LectureCommentService,
   ) {
     super(
       sectionRepository,
@@ -212,6 +216,7 @@ export class LectureService extends CourseItemService {
     Object.assign(lecture, rest);
 
     await this.lectureRepository.save(lecture);
+    await this.commentService.markAllAsSolved(lecture.id);
 
     lecture.resources = await this.getResourceAccess(lecture.resources);
     return lecture.toDto(LectureRes);

@@ -2,7 +2,8 @@ import { CreateLectureReq, LectureRes } from '@/api/course-item';
 import { LectureService } from '@/api/course-item/lecture/lecture.service';
 import { ProgressRes, UpsertWatchTimeReq } from '@/api/course-progress/dto';
 import { LessonProgressService } from '@/api/course-progress/lesson-progress.service';
-import { CreateCommentReq } from '@/api/lecture-comment/dto';
+import { CreateCommentReq, LectureCommentRes } from '@/api/lecture-comment/dto';
+import { LectureCommentsQuery } from '@/api/lecture-comment/dto/lecture-comment.query.dto';
 import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
@@ -15,6 +16,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 
 @Controller({ path: 'lectures', version: '1' })
@@ -77,6 +79,19 @@ export class LectureController {
     @Body() dto: CreateCommentReq,
   ) {
     return await this.commentService.create(user, { ...dto, lecture_id: id });
+  }
+
+  @ApiAuth({
+    summary: 'Get comments of course item: Lecture',
+    statusCode: HttpStatus.OK,
+    type: LectureCommentRes,
+  })
+  @Get(':id/comments')
+  async getComments(
+    @Param('id') id: Nanoid,
+    @Query() query: LectureCommentsQuery,
+  ) {
+    return await this.commentService.findWithAspectStats(id, query);
   }
 
   // @ApiPublic({

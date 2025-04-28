@@ -4,9 +4,7 @@ import { ErrorCode, KafkaTopic } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { KafkaProducerService } from '@/kafka';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
 import { LectureRepository } from '../course-item/lecture/lecture.repository';
 import { UserRepository } from '../user/user.repository';
 import { CreateCommentReq, LectureCommentRes } from './dto';
@@ -15,17 +13,25 @@ import { LectureCommentsQuery } from './dto/lecture-comment.query.dto';
 import { CommentAspectEntity } from './entities/comment-aspect.entity';
 import { LectureCommentEntity } from './entities/lecture-comment.entity';
 import { Aspect, Emotion } from './enum';
+import { LectureCommentRepository } from './lecture-comment.repository';
 
 @Injectable()
 export class LectureCommentService {
   constructor(
-    // private readonly courseAccessService: CourseAccessService,
-    @InjectRepository(LectureCommentEntity)
-    private readonly commentRepo: Repository<LectureCommentEntity>,
+    private readonly commentRepo: LectureCommentRepository,
     private readonly lectureRepo: LectureRepository,
     private readonly producerService: KafkaProducerService,
     private readonly userRepository: UserRepository,
   ) {}
+
+  async markAllAsSolved(lecture_id: Nanoid) {
+    await this.commentRepo
+      .createQueryBuilder()
+      .update(LectureCommentEntity)
+      .set({ is_solved: true })
+      .where('lecture.id = :lecture_id', { lecture_id })
+      .execute();
+  }
 
   async create(user_payload: JwtPayloadType, dto: CreateCommentReq) {
     const lecture = await this.lectureRepo.findOne({
