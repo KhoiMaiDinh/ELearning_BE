@@ -132,12 +132,23 @@ export class InstructorService {
           language: Language.VI,
         },
       )
-      .leftJoinAndSelect('instructor.certificates', 'certificates')
       .loadRelationCountAndMap('instructor.total_courses', 'instructor.courses')
       .leftJoinAndSelect('instructor.user', 'user')
       .where('user.username = :username', { username })
       .leftJoinAndSelect('user.profile_image', 'profile_image')
+      .leftJoinAndSelect('instructor.resume', 'resume')
+      .leftJoinAndSelect('instructor.certificates', 'certificates')
+      .leftJoinAndSelect('certificates.certificate_file', 'certificate_file')
       .getOne();
+
+    if (instructor?.resume)
+      await this.storageService.getPresignedUrl(instructor.resume);
+
+    if (instructor?.certificates) {
+      for (const certificate of instructor.certificates) {
+        await this.storageService.getPresignedUrl(certificate.certificate_file);
+      }
+    }
 
     return instructor.toDto(InstructorRes);
   }
