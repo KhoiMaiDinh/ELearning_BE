@@ -1,11 +1,12 @@
 import { CursorPaginatedDto, Nanoid } from '@/common';
-import { ApiAuth, CurrentUser } from '@/decorators';
+import { Permission } from '@/constants';
+import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
 import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtPayloadType } from '../token';
 import { CreateOrderReq } from './dto/create-order.req.dto';
 import { CreateOrderRes } from './dto/create-order.res.dto';
-import { LoadOrderReq } from './dto/load-order.req.dto';
+import { LoadOrderQuery } from './dto/load-order.req.dto';
 import { OrderRes } from './dto/order.res.dto';
 import { OrderService } from './services/order.service';
 
@@ -36,13 +37,14 @@ export class OrderController {
     type: OrderRes,
     summary: 'Load more order',
     isPaginated: true,
-    paginationType: 'cursor',
+    paginationType: 'offset',
   })
-  async loadMoreOrders(
+  @Permissions(Permission.READ_ORDER)
+  async findOrders(
     @CurrentUser() user: JwtPayloadType,
-    @Query() query: LoadOrderReq,
+    @Query() query: LoadOrderQuery,
   ): Promise<CursorPaginatedDto<OrderRes>> {
-    return await this.orderService.loadMoreOrders(user, query);
+    return await this.orderService.findByOffset(user, query);
   }
 
   @Get('me')

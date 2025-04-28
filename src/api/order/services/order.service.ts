@@ -1,12 +1,14 @@
+import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
 import { In, Repository } from 'typeorm';
 
-import { CursorPaginatedDto, CursorPaginationDto, Nanoid } from '@/common';
+import { CursorPaginatedDto, Nanoid, OffsetPaginatedDto } from '@/common';
 import { ErrorCode as EC, JobName, Permission, QueueName } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
-import { buildPaginator } from '@/utils';
+import { paginate } from '@/utils';
 
 import { CouponService } from '@/api/coupon/coupon.service';
 import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
@@ -16,7 +18,7 @@ import { EnrollCourseService } from '@/api/course/services/enroll-course.service
 import {
   CreateOrderReq,
   CreateOrderRes,
-  LoadOrderReq,
+  LoadOrderQuery,
   OrderRes,
 } from '@/api/order/dto';
 import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
@@ -26,8 +28,6 @@ import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { VnpayPaymentService } from '@/api/payment/services/vnpay-payment.service';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
 
 @Injectable()
 export class OrderService {
@@ -121,10 +121,7 @@ export class OrderService {
 
     await Promise.all(
       order.details.map(async (detail) =>
-        this.enrollCourseService.enrollCourse(
-          detail.course_id,
-          order.user.user_id,
-        ),
+        this.enrollCourseService.enroll(detail.course_id, order.user.user_id),
       ),
     );
 
@@ -173,39 +170,34 @@ export class OrderService {
     const orders = await this.orderRepo.find({
       where: { user: { id: user.id } },
       order: { createdAt: 'DESC' },
-      relations: ['details'],
+      relations: { details: { course: { thumbnail: true } } },
     });
 
     return plainToInstance(OrderRes, orders);
   }
 
-  async loadMoreOrders(
+  async findByOffset(
     user: JwtPayloadType,
-    reqDto: LoadOrderReq,
+    filter: LoadOrderQuery,
   ): Promise<CursorPaginatedDto<OrderRes>> {
-    const queryBuilder = this.orderRepo.createQueryBuilder('user');
-    const paginator = buildPaginator({
-      entity: OrderEntity,
-      alias: 'order',
-      paginationKeys: ['createdAt'],
-      query: {
-        limit: reqDto.limit,
-        order: 'DESC',
-        afterCursor: reqDto.afterCursor,
-        beforeCursor: reqDto.beforeCursor,
+    const query_builder = this.orderRepo.createQueryBuilder('order');
+    query_builder
+      .leftJoinAndSelect('order.details', 'details')
+      .leftJoinAndSelect('details.course', 'course')
+      .leftJoinAndSelect('course.thumbnail', 'thumbnail')
+      .leftJoinAndSelect('details.coupon', 'coupon')
+      .leftJoinAndSelect('order.user', 'user');
+
+    const [orders, metaDto] = await paginate<OrderEntity>(
+      query_builder,
+      filter,
+      {
+        skipCount: false,
+        takeAll: false,
       },
-    });
-
-    const { data, cursor } = await paginator.paginate(queryBuilder);
-
-    const metaDto = new CursorPaginationDto(
-      data.length,
-      cursor.afterCursor,
-      cursor.beforeCursor,
-      reqDto,
     );
 
-    return new CursorPaginatedDto(plainToInstance(OrderRes, data), metaDto);
+    return new OffsetPaginatedDto(plainToInstance(OrderRes, orders), metaDto);
   }
 
   private async validateCourses(

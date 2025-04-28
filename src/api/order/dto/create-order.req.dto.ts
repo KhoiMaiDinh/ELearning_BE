@@ -6,5 +6,5 @@ export class CreateOrderReq {
   course_ids: Nanoid[];
 
   @StringFieldOptional()
-  coupon_code: string;
+  coupon_code: Nanoid;
 }
