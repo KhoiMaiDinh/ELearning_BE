@@ -1,4 +1,5 @@
 import { JwtPayloadType } from '@/api/token';
+import { Nanoid } from '@/common';
 import { Permission } from '@/constants';
 import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
 import {
@@ -39,7 +40,7 @@ export class CouponController {
     statusCode: HttpStatus.OK,
   })
   @Get(':code')
-  async getCouponByCode(@Param('code') code: string) {
+  async getCouponByCode(@Param('code') code: Nanoid) {
     const coupon = await this.couponService.findByCode(code);
     return coupon.toDto(CouponRes);
   }
@@ -52,7 +53,7 @@ export class CouponController {
   @Permissions(Permission.WRITE_COUPON)
   @Post(':code/toggle')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async toggleCouponStatus(@Param('code') code: string): Promise<void> {
+  async toggleCouponStatus(@Param('code') code: Nanoid): Promise<void> {
     await this.couponService.toggleStatus(code);
   }
 
@@ -63,7 +64,7 @@ export class CouponController {
   })
   @Put(':code')
   async update(
-    @Param('code') code: string,
+    @Param('code') code: Nanoid,
     @CurrentUser() user: JwtPayloadType,
     @Body() dto: Partial<UpdateCouponReq>,
   ): Promise<CouponRes> {
@@ -78,7 +79,7 @@ export class CouponController {
   })
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteCoupon(
-    @Param('code') code: string,
+    @Param('code') code: Nanoid,
     @CurrentUser() user: JwtPayloadType,
   ): Promise<void> {
     await this.couponService.delete(code, user);
