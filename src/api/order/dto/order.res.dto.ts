@@ -12,7 +12,7 @@ export class OrderRes {
   @Expose()
   transaction_id: string;
   @Expose()
-  amount: number;
+  total_amount: number;
 
   @Expose()
   currency: string;
@@ -23,4 +23,9 @@ export class OrderRes {
   @Expose()
   @ClassField(() => OrderDetailRes, { each: true })
   details: OrderDetailRes[];
+
+  @Expose()
+  createdAt: Date;
+  @Expose()
+  updatedAt: Date;
 }

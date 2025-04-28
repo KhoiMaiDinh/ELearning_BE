@@ -1,3 +1,3 @@
-import { PageCursorOptionsDto } from '@/common';
+import { PageOffsetOptionsDto } from '@/common';
 
-export class LoadOrderReq extends PageCursorOptionsDto {}
+export class LoadOrderQuery extends PageOffsetOptionsDto {}
