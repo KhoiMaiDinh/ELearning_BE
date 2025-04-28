@@ -72,7 +72,13 @@ export class UserService {
   ): Promise<OffsetPaginatedDto<DTO.UserRes>> {
     const query = this.userRepository
       .createQueryBuilder('user')
-      .orderBy('user.createdAt', 'DESC');
+      .orderBy('user.createdAt', 'DESC')
+      .leftJoinAndSelect('user.roles', 'role');
+
+    if (reqDto.role) {
+      query.andWhere('role.role_name = :role', { role: reqDto.role });
+    }
+
     const [users, metaDto] = await paginate<UserEntity>(query, reqDto, {
       skipCount: false,
       takeAll: false,
