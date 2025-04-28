@@ -1,3 +1,7 @@
-import { PageOffsetOptionsDto as PageOptionsDto } from '@/common';
+import { PageOffsetOptionsDto } from '@/common';
+import { StringFieldOptional } from '@/decorators';
 
-export class ListUserReqDto extends PageOptionsDto {}
+export class ListUserReqDto extends PageOffsetOptionsDto {
+  @StringFieldOptional()
+  role: string;
+}
