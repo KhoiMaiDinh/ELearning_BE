@@ -45,6 +45,10 @@ export class InstructorRes {
   linkedin_url?: string;
 
   @Expose()
+  @StringFieldOptional()
+  disapproval_reason?: string;
+
+  @Expose()
   @BooleanField()
   is_approved: boolean;
 
