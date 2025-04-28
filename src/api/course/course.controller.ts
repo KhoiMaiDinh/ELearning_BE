@@ -20,6 +20,8 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { CourseReviewRes } from './dto/review.res.dto';
+import { SubmitReviewReq } from './dto/submit-review.req.dto';
 import { CourseService } from './services/course.service';
 import { EnrollCourseService } from './services/enroll-course.service';
 
@@ -128,6 +130,51 @@ export class CourseController {
     return await this.courseService.findEnrolled(user_id);
   }
 
+  @Post(':course_id/review')
+  @ApiAuth({
+    statusCode: HttpStatus.CREATED,
+    summary: 'Submit a review',
+    type: CourseReviewRes,
+  })
+  async submitReview(
+    @Param('course_id') course_id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+    @Body() dto: SubmitReviewReq,
+  ) {
+    return await this.enrollCourseService.submitOrUpdateReview(
+      user.id,
+      course_id,
+      dto,
+    );
+  }
+
+  @Get(':course_id/reviews')
+  @ApiPublic({
+    statusCode: HttpStatus.OK,
+    summary: 'Get course reviews',
+    type: CourseReviewRes,
+  })
+  async getReviews(@Param('course_id') course_id: Nanoid) {
+    const reviews = await this.enrollCourseService.getCourseReviews(course_id);
+    return reviews;
+  }
+
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    summary: 'Get my review',
+    type: CourseReviewRes,
+  })
+  @Get(':course_id/reviews/me')
+  async getMyReview(
+    @Param('course_id') course_id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    const review = await this.enrollCourseService.getMyReview(
+      user.id,
+      course_id,
+    );
+    return review;
+  }
   // @Put(':id/curriculums')
   // @ApiAuth({
   //   statusCode: HttpStatus.CREATED,
