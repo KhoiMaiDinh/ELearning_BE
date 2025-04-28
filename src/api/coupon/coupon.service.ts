@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, Repository } from 'typeorm';
+import { Between, In } from 'typeorm';
 
 import { CourseService } from '@/api/course/services/course.service';
 import { OrderDetailRepository } from '@/api/order/repositories/order-detail.repository';
 import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { JwtPayloadType } from '@/api/token';
-import { Uuid } from '@/common';
+import { Nanoid, Uuid } from '@/common';
 import { ErrorCode, Permission } from '@/constants';
 import {
   ForbiddenException,
@@ -16,12 +15,12 @@ import {
 
 import { CouponQuery, CreateCouponReq } from '@/api/coupon/dto';
 import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
+import { CouponRepository } from './coupon.repository';
 
 @Injectable()
 export class CouponService {
   constructor(
-    @InjectRepository(CouponEntity)
-    private readonly couponRepo: Repository<CouponEntity>,
+    private readonly couponRepo: CouponRepository,
     private readonly orderDetailRepo: OrderDetailRepository,
     private readonly courseService: CourseService,
   ) {}
@@ -54,7 +53,7 @@ export class CouponService {
   }
 
   async update(
-    code: string,
+    code: Nanoid,
     user: JwtPayloadType,
     dto: Partial<CreateCouponReq>,
   ): Promise<CouponEntity> {
@@ -79,7 +78,7 @@ export class CouponService {
     return this.couponRepo.save(coupon);
   }
 
-  async delete(code: string, user: JwtPayloadType): Promise<void> {
+  async delete(code: Nanoid, user: JwtPayloadType): Promise<void> {
     const coupon = await this.couponRepo.findOne({ where: { code } });
     if (!coupon) throw new NotFoundException(ErrorCode.E065);
 
@@ -100,7 +99,7 @@ export class CouponService {
   }
 
   async findByCode(
-    code: string,
+    code: Nanoid,
     query: CouponQuery = {},
   ): Promise<CouponEntity> {
     const now = new Date();
@@ -139,7 +138,7 @@ export class CouponService {
     }
   }
 
-  async toggleStatus(code: string): Promise<void> {
+  async toggleStatus(code: Nanoid): Promise<void> {
     const coupon = await this.couponRepo.findOne({ where: { code } });
     if (!coupon) throw new NotFoundException(ErrorCode.E065);
 

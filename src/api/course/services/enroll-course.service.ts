@@ -2,20 +2,15 @@ import { Nanoid, Uuid } from '@/common';
 import { ErrorCode } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
 import { CourseReviewRes } from '../dto/review.res.dto';
 import { SubmitReviewReq } from '../dto/submit-review.req.dto';
 import { CourseEntity } from '../entities/course.entity';
-import { EnrolledCourseEntity } from '../entities/enrolled-course.entity';
+import { EnrolledCourseRepository } from '../repositories/enrolled-course.repository';
 
 @Injectable()
 export class EnrollCourseService {
-  constructor(
-    @InjectRepository(EnrolledCourseEntity)
-    private readonly enrolledRepo: Repository<EnrolledCourseEntity>,
-  ) {}
+  constructor(private readonly enrolledRepo: EnrolledCourseRepository) {}
 
   async enroll(course_id: Uuid, user_id: Uuid): Promise<void> {
     const enroll_course = this.enrolledRepo.create({

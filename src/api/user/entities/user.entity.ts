@@ -134,6 +134,10 @@ export class UserEntity extends AbstractEntity {
   @OneToMany(() => OrderEntity, (order) => order.user)
   orders?: Relation<OrderEntity[]>;
 
+  get fullName() {
+    return `${this.first_name} ${this.last_name}`;
+  }
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {

@@ -11,6 +11,7 @@ import { UserModule } from '../user';
 import { AccountEntity } from './entities/account.entity';
 import { PayoutEntity } from './entities/payout.entity';
 import { StripeAccountEntity } from './entities/stripe-account.entity';
+import { PayoutRepository } from './repositories/payout.repository';
 import { AccountService } from './services/account.service';
 import { PaymentService } from './services/payment.service';
 import { PayoutService } from './services/payout.service';
@@ -50,6 +51,7 @@ export class PaymentModule {
       ],
       controllers: [PaymentController],
       providers: [
+        PayoutRepository,
         StripeAccountService,
         VnpIpnHandler,
         PaymentService,
@@ -66,6 +68,7 @@ export class PaymentModule {
         },
       ],
       exports: [
+        PayoutRepository,
         PaymentService,
         StripeAccountService,
         PayoutService,

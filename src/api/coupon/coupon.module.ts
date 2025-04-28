@@ -5,6 +5,7 @@ import { OrderModule } from '@/api/order/order.module';
 
 import { CourseModule } from '../course/course.module';
 import { CouponController } from './coupon.controller';
+import { CouponRepository } from './coupon.repository';
 import { CouponService } from './coupon.service';
 import { CouponEntity } from './entities/coupon.entity';
 
@@ -15,7 +16,7 @@ import { CouponEntity } from './entities/coupon.entity';
     TypeOrmModule.forFeature([CouponEntity]),
   ],
   controllers: [CouponController],
-  providers: [CouponService],
-  exports: [CouponService],
+  providers: [CouponService, CouponRepository],
+  exports: [CouponService, CouponRepository],
 })
 export class CouponModule {}
