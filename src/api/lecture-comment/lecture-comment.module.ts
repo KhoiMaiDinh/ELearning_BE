@@ -5,6 +5,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommentAspectEntity } from './entities/comment-aspect.entity';
 import { LectureCommentEntity } from './entities/lecture-comment.entity';
+import { LectureCommentRepository } from './lecture-comment.repository';
 import { LectureCommentService } from './lecture-comment.service';
 
 @Module({
@@ -14,7 +15,7 @@ import { LectureCommentService } from './lecture-comment.service';
     forwardRef(() => CourseItemModule),
     TypeOrmModule.forFeature([LectureCommentEntity, CommentAspectEntity]),
   ],
-  providers: [LectureCommentService],
-  exports: [LectureCommentService],
+  providers: [LectureCommentService, LectureCommentRepository],
+  exports: [LectureCommentService, LectureCommentRepository],
 })
 export class LectureCommentModule {}
