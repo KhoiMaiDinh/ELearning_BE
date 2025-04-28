@@ -6,20 +6,18 @@ import { Bucket, ErrorCode, UploadStatus } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { paginate } from '@/utils';
 import { Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
 import { PayoutQuery } from '../dto/payout.query.dto';
 import { PayoutRes } from '../dto/payout.res.dto';
 import { UpdatePayoutReq } from '../dto/update-payout.req.dto';
 import { PayoutEntity } from '../entities/payout.entity';
 import { PayoutStatus } from '../enums/payment-status.enum';
+import { PayoutRepository } from '../repositories/payout.repository';
 
 export class PayoutService {
   private logger = new Logger(PayoutService.name);
   constructor(
-    @InjectRepository(PayoutEntity)
-    private readonly payoutRepo: Repository<PayoutEntity>,
+    private readonly payoutRepo: PayoutRepository,
     private readonly orderDetailService: OrderDetailService,
     private readonly mediaRepository: MediaRepository,
   ) {}

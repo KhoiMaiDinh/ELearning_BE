@@ -14,6 +14,7 @@ import { UserModule } from '@/api/user';
 import { MinioClientModule } from '@/libs/minio';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EnrolledCourseRepository } from './repositories/enrolled-course.repository';
 
 @Module({
   imports: [
@@ -28,7 +29,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     forwardRef(() => SectionModule),
   ],
   controllers: [CourseController],
-  providers: [CourseService, CourseRepository, EnrollCourseService],
-  exports: [CourseRepository, EnrollCourseService, CourseService],
+  providers: [
+    CourseService,
+    CourseRepository,
+    EnrollCourseService,
+    EnrolledCourseRepository,
+  ],
+  exports: [
+    CourseRepository,
+    EnrollCourseService,
+    CourseService,
+    EnrolledCourseRepository,
+  ],
 })
 export class CourseModule {}

@@ -1,6 +1,6 @@
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
-import { Uuid } from '@/common';
+import { Nanoid, Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
 import {
@@ -23,7 +23,7 @@ export class CouponEntity extends AbstractEntity {
   @Column({ type: 'varchar' })
   @AutoNanoId(13)
   @Index('UQ_coupon_code', { unique: true })
-  code: string;
+  code: Nanoid;
 
   @Column({ type: 'enum', enum: CouponType })
   type: CouponType;
