@@ -112,6 +112,9 @@ export enum ErrorCode {
   E069 = 'coupon.error.cannot_modify',
   E070 = 'coupon.error.unapplicable',
 
+  // Thread
+  E040 = 'thread.error.not_found',
+
   // Auth
   E055 = 'auth.error.facebook_token_expired',
   E056 = 'auth.error.facebook_token_invalid',

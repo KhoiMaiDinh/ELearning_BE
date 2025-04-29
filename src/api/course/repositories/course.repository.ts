@@ -17,7 +17,7 @@ export class CourseRepository extends Repository<CourseEntity> {
     throw_exception: boolean = true,
   ): Promise<CourseEntity> {
     const course = await this.findOne({
-      where: [{ id }, { slug: id }],
+      where: [{ id: id as Nanoid }, { slug: id }],
       relations: load_entities,
     });
 

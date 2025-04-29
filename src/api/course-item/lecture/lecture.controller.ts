@@ -5,6 +5,8 @@ import { LessonProgressService } from '@/api/course-progress/lesson-progress.ser
 import { CreateCommentReq, LectureCommentRes } from '@/api/lecture-comment/dto';
 import { LectureCommentsQuery } from '@/api/lecture-comment/dto/lecture-comment.query.dto';
 import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
+import { ThreadRes } from '@/api/thread/dto';
+import { ThreadService } from '@/api/thread/services/thread.service';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
 import { ApiAuth, CurrentUser } from '@/decorators';
@@ -18,6 +20,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 
 @Controller({ path: 'lectures', version: '1' })
 export class LectureController {
@@ -25,6 +28,7 @@ export class LectureController {
     private readonly lectureService: LectureService,
     private readonly progressService: LessonProgressService,
     private readonly commentService: LectureCommentService,
+    private readonly threadService: ThreadService,
   ) {}
 
   @ApiAuth({
@@ -94,16 +98,12 @@ export class LectureController {
     return await this.commentService.findWithAspectStats(id, query);
   }
 
-  // @ApiPublic({
-  //   summary: 'Get comments of course item: Lecture',
-  //   statusCode: HttpStatus.OK,
-  //   type: LectureCommentRes,
-  // })
-  // @Get('lectures/:id/comments')
-  // async getLectureComments(
-  //   @Param('id') lectureId: string,
-  //   @Query() query: PaginateQueryDto,
-  // ): Promise<PaginatedResult<LectureCommentRes>> {
-  //   return this.lectureCommentService.paginateLectureComments(lectureId, query);
-  // }
+  @Get(':lecture_id/threads')
+  @ApiAuth({
+    summary: 'Get threads for a lecture',
+  })
+  async findThreads(@Param('lecture_id') lecture_id: Nanoid) {
+    const threads = this.threadService.getByLecture(lecture_id);
+    return plainToInstance(ThreadRes, threads);
+  }
 }

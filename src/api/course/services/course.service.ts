@@ -195,7 +195,7 @@ export class CourseService {
     if (query?.with_thumbnail) load_entities.thumbnail = true;
 
     const course = await this.courseRepository.findOne({
-      where: [{ id: id_or_slug }, { slug: id_or_slug }],
+      where: [{ id: id_or_slug as Nanoid }, { slug: id_or_slug }],
       relations: load_entities,
     });
 
@@ -350,7 +350,7 @@ export class CourseService {
   ) {
     let is_enrolled: boolean;
     const course = await this.courseRepository.findOne({
-      where: [{ id: id_or_slug }, { slug: id_or_slug }],
+      where: [{ id: id_or_slug as Nanoid }, { slug: id_or_slug }],
       relations: {
         thumbnail: true,
         instructor: { user: true },
