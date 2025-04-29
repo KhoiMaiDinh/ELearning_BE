@@ -4,7 +4,7 @@ import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.enti
 import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { SectionEntity } from '@/api/section/entities/section.entity';
-import { Uuid } from '@/common';
+import { Nanoid, Uuid } from '@/common';
 import { Entity as E, Language } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
@@ -47,7 +47,7 @@ export class CourseEntity extends AbstractEntity {
     length: 13,
   })
   @AutoNanoId(13)
-  id: string;
+  id: Nanoid;
 
   @Column({ type: 'varchar', length: 60 })
   title!: string;

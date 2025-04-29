@@ -31,6 +31,7 @@ import { SectionModule } from '@/api/section/section.module';
 import { MinioClientModule } from '@/libs/minio';
 import { CourseProgressModule } from '../course-progress/course-progress.module';
 import { LectureCommentModule } from '../lecture-comment/lecture-comment.module';
+import { ThreadModule } from '../thread/thread.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { LectureCommentModule } from '../lecture-comment/lecture-comment.module'
     MinioClientModule,
     forwardRef(() => LectureCommentModule),
     forwardRef(() => CourseProgressModule),
+    forwardRef(() => ThreadModule),
     TypeOrmModule.forFeature([
       EnrolledCourseEntity,
       ArticleEntity,

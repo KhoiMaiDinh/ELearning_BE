@@ -20,6 +20,7 @@ import { WebhookModule } from '@/api/webhook/webhook.module';
 import { Module } from '@nestjs/common';
 import { LectureCommentModule } from './lecture-comment/lecture-comment.module';
 import { NotificationModule } from './notification/notification.module';
+import { ThreadModule } from './thread/thread.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { NotificationModule } from './notification/notification.module';
     CourseProgressModule,
     LectureCommentModule,
     NotificationModule,
+    ThreadModule,
   ],
 })
 export class ApiModule {}
