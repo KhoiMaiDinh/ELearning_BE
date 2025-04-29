@@ -1,5 +1,6 @@
 import { TokenService } from '@/api/token';
 import { type AllConfigType } from '@/config';
+import { RedisIoAdapter } from '@/gateway';
 import { AuthGuard, PermissionGuard } from '@/guards';
 import { RemoveStoragePrefixPipe } from '@/pipes';
 import {
@@ -43,6 +44,12 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService<AllConfigType>);
   const reflector = app.get(Reflector);
+
+  const redisIoAdapter = new RedisIoAdapter(app, configService);
+  await redisIoAdapter.connectToRedis();
+
+  app.useWebSocketAdapter(redisIoAdapter);
+
   // Use global prefix if you don't have subdomain
   app.setGlobalPrefix(
     configService.getOrThrow('app.apiPrefix', { infer: true }),
