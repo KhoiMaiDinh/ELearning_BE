@@ -7,6 +7,7 @@ import { AllConfigType } from '@/config/config.type';
 import { Environment } from '@/constants/index';
 import databaseConfig from '@/database/config/database.config';
 import { TypeOrmConfigService } from '@/database/typeorm-config.service';
+import { GatewayModule } from '@/gateway/gateway.module';
 import { KafkaModule } from '@/kafka';
 import kafkaConfig from '@/kafka/config/kafka.config';
 import minioConfig from '@/libs/minio/config/minio.config';
@@ -155,6 +156,7 @@ function generateModulesSet(): ModuleMetadata['imports'] {
         KafkaModule,
         ConsumerModule,
         TasksModule,
+        GatewayModule,
       ];
       break;
     case 'api':

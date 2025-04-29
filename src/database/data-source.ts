@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SeederOptions } from 'typeorm-extension';
+import { UserSeeder1722335726360 } from './seeds/1722335726360-user-seeder';
 import { RoleSeeder1739599861794 } from './seeds/1739599861794-role-seeder';
 
 export const AppDataSource = new DataSource({
@@ -35,7 +36,7 @@ export const AppDataSource = new DataSource({
       : undefined,
   seeds: [
     // PermissionSeeder1739636388516,
-    // UserSeeder1722335726360,
+    UserSeeder1722335726360,
     RoleSeeder1739599861794,
   ],
   seedTracking: true,
