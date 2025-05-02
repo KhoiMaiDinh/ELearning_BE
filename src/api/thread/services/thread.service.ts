@@ -1,4 +1,3 @@
-// threads/thread.service.ts
 import { LectureRepository } from '@/api/course-item/lecture/lecture.repository';
 import { EnrolledCourseRepository } from '@/api/course/repositories/enrolled-course.repository';
 import { JwtPayloadType } from '@/api/token';
@@ -6,15 +5,14 @@ import { Nanoid } from '@/common';
 import { ErrorCode } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { CreateThreadDto } from '../dto';
 import { ThreadEntity } from '../entities/thread.entity';
+import { ThreadRepository } from '../repositories/thread.repository';
+
 @Injectable()
 export class ThreadService {
   constructor(
-    @InjectRepository(ThreadEntity)
-    private readonly threadRepo: Repository<ThreadEntity>,
+    private readonly threadRepo: ThreadRepository,
 
     private readonly lectureRepo: LectureRepository,
     private readonly enrolledRepo: EnrolledCourseRepository,

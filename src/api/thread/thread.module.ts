@@ -8,6 +8,8 @@ import { ThreadController } from './controllers/thread.controller';
 import { ReplyVoteEntity } from './entities/reply-vote.entity';
 import { ReplyEntity } from './entities/reply.entity';
 import { ThreadEntity } from './entities/thread.entity';
+import { ReplyRepository } from './repositories/reply.repository';
+import { ThreadRepository } from './repositories/thread.repository';
 import { ReplyService } from './services/reply.service';
 import { ThreadService } from './services/thread.service';
 import { VoteService } from './services/vote.service';
@@ -20,7 +22,13 @@ import { VoteService } from './services/vote.service';
     forwardRef(() => CourseModule),
   ],
   controllers: [ThreadController, ReplyVoteController],
-  providers: [ReplyService, ThreadService, VoteService],
-  exports: [ThreadService],
+  providers: [
+    ReplyService,
+    ThreadService,
+    VoteService,
+    ReplyRepository,
+    ThreadRepository,
+  ],
+  exports: [ThreadService, ReplyRepository, ThreadRepository],
 })
 export class ThreadModule {}

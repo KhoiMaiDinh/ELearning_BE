@@ -1,11 +1,15 @@
 import { LectureRes } from '@/api/course-item';
 import { UserRes } from '@/api/user';
+import { Nanoid } from '@/common';
 import { ClassField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 import { ReplyRes } from './reply.res.dto';
 
 @Exclude()
 export class ThreadRes {
+  @Expose()
+  id: Nanoid;
+
   @Expose()
   title: string;
 
