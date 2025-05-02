@@ -5,15 +5,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReplyVoteEntity } from '../entities/reply-vote.entity';
-import { ReplyEntity } from '../entities/reply.entity';
+import { ReplyRepository } from '../repositories/reply.repository';
 
 @Injectable()
 export class VoteService {
   constructor(
     @InjectRepository(ReplyVoteEntity)
     private readonly voteRepo: Repository<ReplyVoteEntity>,
-    @InjectRepository(ReplyEntity)
-    private readonly replyRepo: Repository<ReplyEntity>,
+
+    private readonly replyRepo: ReplyRepository,
     private readonly userRepo: UserRepository,
   ) {}
 

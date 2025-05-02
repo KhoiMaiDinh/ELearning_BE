@@ -1,24 +1,20 @@
-// replies/reply.service.ts
 import { EnrolledCourseRepository } from '@/api/course/repositories/enrolled-course.repository';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid } from '@/common';
 import { ErrorCode } from '@/constants';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CreateReplyReq } from '../dto/create-reply.req.dto';
+import { CreateReplyReq } from '../dto';
 import { ReplyEntity } from '../entities/reply.entity';
-import { ThreadEntity } from '../entities/thread.entity';
+import { ReplyRepository } from '../repositories/reply.repository';
+import { ThreadRepository } from '../repositories/thread.repository';
 
 @Injectable()
 export class ReplyService {
   constructor(
-    @InjectRepository(ReplyEntity)
-    private readonly replyRepo: Repository<ReplyEntity>,
+    private readonly replyRepo: ReplyRepository,
 
-    @InjectRepository(ThreadEntity)
-    private readonly threadRepo: Repository<ThreadEntity>,
+    private readonly threadRepo: ThreadRepository,
     private readonly enrolledRepo: EnrolledCourseRepository,
     private readonly userRepo: UserRepository,
   ) {}
