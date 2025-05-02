@@ -88,7 +88,7 @@ export class CourseService {
         'course.enrolled_users',
       );
 
-    if (query.with_category)
+    if (query.with_category || query.category_slug)
       query_builder.leftJoinAndSelect('course.category', 'category');
     if (query.with_instructor || query.instructor_username) {
       query_builder
