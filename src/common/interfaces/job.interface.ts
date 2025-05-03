@@ -20,3 +20,8 @@ export interface IHandleOrderExpirationJob {
 export interface IVerifyEmailJob extends IEmailJob {
   token: string;
 }
+
+export interface IGiveCouponJob extends IEmailJob {
+  coupon_code: Nanoid;
+  reason: string;
+}
