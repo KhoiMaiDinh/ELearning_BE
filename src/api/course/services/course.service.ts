@@ -10,6 +10,7 @@ import {
   PublicCourseReq,
   UpdateCourseReq,
 } from '@/api/course';
+import { LectureRepository } from '@/api/course-item/lecture/lecture.repository';
 import { LessonProgressService } from '@/api/course-progress/lesson-progress.service';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseRepository } from '@/api/course/repositories/course.repository';
@@ -51,6 +52,7 @@ export class CourseService {
     private readonly categoryService: CategoryService,
     private readonly courseProgressService: LessonProgressService,
     private readonly enrollCourseService: EnrollCourseService,
+    private readonly lectureRepository: LectureRepository,
   ) {}
   async create(public_user_id: Nanoid, dto: CreateCourseReq) {
     const {
@@ -523,5 +525,16 @@ export class CourseService {
               FROM "enrolled-course" enrolled
               WHERE enrolled.course_id = ${alias}.course_id
                 AND enrolled.rating IS NOT NULL)`;
+  }
+
+  async unban(course_id: Nanoid) {
+    await this.courseRepository.update(
+      { id: course_id },
+      { status: CourseStatus.PUBLISHED },
+    );
+    await this.lectureRepository.update(
+      { section: { course: { id: course_id } }, status: CourseStatus.BANNED },
+      { status: CourseStatus.PUBLISHED },
+    );
   }
 }

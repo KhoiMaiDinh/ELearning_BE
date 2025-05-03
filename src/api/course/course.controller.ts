@@ -4,11 +4,14 @@ import {
   CoursesQuery,
   CreateCourseReq,
   PublicCourseReq,
+  RequestCourseUnbanReq,
+  ReviewUnbanReq,
   UpdateCourseReq,
 } from '@/api/course';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
-import { ApiAuth, ApiPublic, CurrentUser } from '@/decorators';
+import { Permission } from '@/constants';
+import { ApiAuth, ApiPublic, CurrentUser, Permissions } from '@/decorators';
 import {
   Body,
   Controller,
@@ -22,6 +25,8 @@ import {
 } from '@nestjs/common';
 import { CourseReviewRes } from './dto/review.res.dto';
 import { SubmitReviewReq } from './dto/submit-review.req.dto';
+import { CourseUnbanResponseDto } from './dto/unban-request.res.dto';
+import { CourseModerationService } from './services/course-moderation.service';
 import { CourseService } from './services/course.service';
 import { EnrollCourseService } from './services/enroll-course.service';
 
@@ -30,6 +35,7 @@ export class CourseController {
   constructor(
     private readonly courseService: CourseService,
     private readonly enrollCourseService: EnrollCourseService,
+    private readonly moderationService: CourseModerationService,
   ) {}
 
   @Post()
@@ -175,17 +181,41 @@ export class CourseController {
     );
     return review;
   }
-  // @Put(':id/curriculums')
-  // @ApiAuth({
-  //   statusCode: HttpStatus.CREATED,
-  //   summary: 'Create or update a course curriculum',
-  //   type: CurriculumRes,
-  // })
-  // async upsertCurriculum(
-  //   @CurrentUser('id') user_id: Nanoid,
-  //   @Param('id') course_id: Nanoid | string,
-  //   @Body() dto: UpsertCurriculumReq,
-  // ) {
-  //   return await this.courseService.upsertCurriculum(user_id, course_id, dto);
-  // }
+
+  @ApiAuth({
+    statusCode: HttpStatus.CREATED,
+    summary: 'Request course unban',
+    type: CourseUnbanResponseDto,
+  })
+  @Post(':course_id/request-unban')
+  async requestUnban(
+    @Param('course_id') course_id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+    @Body() dto: RequestCourseUnbanReq,
+  ) {
+    const unban_request = await this.moderationService.requestUnban(
+      course_id,
+      user,
+      dto,
+    );
+    return unban_request.toDto(CourseUnbanResponseDto);
+  }
+
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    summary: 'Review course unban request',
+    type: CourseUnbanResponseDto,
+  })
+  @Patch(':course_id/unban')
+  @Permissions(Permission.WRITE_COURSE)
+  async reviewRequest(
+    @Param('course_id') course_id: Nanoid,
+    @Body() dto: ReviewUnbanReq,
+  ) {
+    const unban_request = await this.moderationService.reviewUnbanRequest(
+      course_id,
+      dto,
+    );
+    return unban_request.toDto(CourseUnbanResponseDto);
+  }
 }

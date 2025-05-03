@@ -5,5 +5,7 @@ export * from './courses.query.dto';
 export * from './create-course.req.dto';
 export * from './curriculum.res.dto';
 export * from './public-course.req.dto';
+export * from './request-unban.req.dto';
+export * from './review-unban.req.dto';
 export * from './update-course.req.dto';
 export * from './upsert-curriculum.req.dto';
