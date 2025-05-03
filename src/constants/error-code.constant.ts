@@ -128,4 +128,9 @@ export enum ErrorCode {
 
   // Comments
   E073 = 'comment.error.not_found',
+
+  // Course Unban Request
+  E074 = 'course_unban_request.error.existed',
+  E075 = 'course_unban_request.error.not_found',
+  E076 = 'course_unban_request.error.invalid_author',
 }

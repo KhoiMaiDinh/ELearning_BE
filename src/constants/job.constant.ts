@@ -15,4 +15,5 @@ export enum JobName {
   FORGOT_PASSWORD = 'forgot-password',
   PAYOUT_INSTRUCTOR = 'payout-instructor',
   HANDLE_ORDER_EXPIRATION = 'handle-order-expiration',
+  COUPON_GIFT = 'coupon-gift',
 }

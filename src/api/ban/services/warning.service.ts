@@ -1,12 +1,18 @@
+import { CouponService } from '@/api/coupon/coupon.service';
+import { CouponType } from '@/api/coupon/enum/coupon-type.enum';
 import { CourseRepository, CourseStatus } from '@/api/course';
 import { LectureRepository } from '@/api/course-item/lecture/lecture.repository';
 import { ReplyRepository } from '@/api/thread/repositories/reply.repository';
 import { ThreadRepository } from '@/api/thread/repositories/thread.repository';
+import { JwtPayloadType } from '@/api/token';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { UserRepository } from '@/api/user/user.repository';
-import { Nanoid } from '@/common';
+import { IGiveCouponJob, Nanoid } from '@/common';
+import { JobName, QueueName } from '@/constants';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bullmq';
 import { Repository } from 'typeorm';
 import { UserReportEntity } from '../entities/user-report.entity';
 import { WarningEntity } from '../entities/warning.entity';
@@ -27,9 +33,13 @@ export class WarningService {
     private readonly courseRepo: CourseRepository,
     private readonly lectureRepo: LectureRepository,
     private readonly userRepo: UserRepository,
+    @InjectQueue(QueueName.EMAIL)
+    private readonly emailQueue: Queue<IGiveCouponJob, any, string>,
+    private readonly couponService: CouponService,
   ) {}
 
   async issueWarning(
+    user_payload: JwtPayloadType,
     user: UserEntity,
     report?: UserReportEntity,
   ): Promise<WarningEntity> {
@@ -52,16 +62,43 @@ export class WarningService {
         break;
       }
       case WarningType.COURSE_ITEM: {
+        const lecture = await this.lectureRepo.findOne({
+          where: { id: report.metadata.lecture_id },
+          relations: {
+            section: { course: { enrolled_users: { user: true } } },
+          },
+        });
         await this.lectureRepo.update(
           { id: report.metadata.lecture_id },
           { status: CourseStatus.BANNED },
         );
         await this.courseRepo.update(
-          { id: report.metadata.course_id },
+          { id: lecture.section.course.id },
           { status: CourseStatus.BANNED },
         );
+        const ONE_YEAR_IN_MILLISECONDS = 1000 * 60 * 60 * 24 * 365;
         // notify course user
-        // notify throw email; create coupon
+        await Promise.all(
+          lecture.section.course.enrolled_users.map(async (enroll) => {
+            const coupon = await this.couponService.create(user_payload, {
+              type: CouponType.PERCENTAGE,
+              value: 100,
+              starts_at: new Date(),
+              expires_at: new Date(Date.now() + ONE_YEAR_IN_MILLISECONDS),
+              usage_limit: 1,
+            });
+            await this.emailQueue.add(
+              JobName.COUPON_GIFT,
+              {
+                email: enroll.user.email,
+                coupon_code: coupon.code,
+                reason:
+                  'We recently reviewed your purchase and found that the course you enrolled in has violated our platform’s terms and conditions. We understand this may have caused inconvenience.',
+              } as IGiveCouponJob,
+              { attempts: 3, backoff: { type: 'exponential', delay: 60000 } },
+            );
+          }),
+        );
         break;
       }
     }
@@ -75,7 +112,7 @@ export class WarningService {
   async getActiveWarnings(user_id: Nanoid): Promise<WarningEntity[]> {
     return this.warningRepo.find({
       where: { user: { id: user_id }, ban: null },
-      relations: { user: true },
+      relations: { user: true, report: true },
     });
   }
 }

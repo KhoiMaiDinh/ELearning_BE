@@ -46,7 +46,7 @@ export class CouponService {
       expires_at: dto.expires_at,
       usage_limit: dto.usage_limit,
       is_active: true,
-      coupon_id: course_id,
+      course_id: course_id,
       createdBy: user.id,
     });
     return this.couponRepo.save(coupon);

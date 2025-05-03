@@ -1,4 +1,7 @@
-import { IVerifyEmailJob } from '@/common/interfaces/job.interface';
+import {
+  IGiveCouponJob,
+  IVerifyEmailJob,
+} from '@/common/interfaces/job.interface';
 import { MailService } from '@/mail/mail.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -16,5 +19,14 @@ export class EmailQueueService {
   async sendForgotPassword(data: IVerifyEmailJob): Promise<void> {
     this.logger.debug(`Sending forgot password to ${data.email}`);
     await this.mailService.sendForgotPassword(data.email, data.token);
+  }
+
+  async sendCoupon(data: IGiveCouponJob): Promise<void> {
+    this.logger.debug(`Sending coupon to ${data.email}`);
+    await this.mailService.sendCouponEmail(
+      data.email,
+      data.coupon_code,
+      data.reason,
+    );
   }
 }

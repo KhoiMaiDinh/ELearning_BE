@@ -39,4 +39,17 @@ export class MailService {
       },
     });
   }
+
+  async sendCouponEmail(email: string, coupon_code: string, reason: string) {
+    return this.mailerService.sendMail({
+      to: email,
+      subject: 'Coupon',
+      template: 'coupon',
+      context: {
+        email: email,
+        coupon_code: coupon_code,
+        reason: reason,
+      },
+    });
+  }
 }
