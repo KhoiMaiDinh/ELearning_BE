@@ -58,7 +58,10 @@ export class WarningService {
         break;
       }
       case WarningType.COURSE: {
-        await this.courseRepo.softDelete({ id: report.metadata.course_id });
+        await this.courseRepo.update(
+          { id: report.metadata.course_id },
+          { status: CourseStatus.BANNED },
+        );
         break;
       }
       case WarningType.COURSE_ITEM: {
