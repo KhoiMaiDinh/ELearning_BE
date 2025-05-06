@@ -24,7 +24,7 @@ export class LessonProgressService {
   async upsertWatchTime(
     user_payload: JwtPayloadType,
     lecture_id: Nanoid,
-    seconds_watched: number,
+    watched_percentage: number,
   ) {
     const user = await this.userRepo.findOneByPublicId(user_payload.id);
     if (!user) throw new NotFoundException(ErrorCode.E002);
@@ -44,8 +44,7 @@ export class LessonProgressService {
       where: { user_id: user.user_id, lecture_id: lecture.lecture_id },
     });
 
-    const completed =
-      seconds_watched >= 0.8 * lecture.video.duration_in_seconds;
+    const completed = watched_percentage >= 80;
 
     if (!progress) {
       progress = this.progressRepo.create({
@@ -54,10 +53,11 @@ export class LessonProgressService {
         course_id: lecture.section.course_id,
       });
     } else {
-      if (progress.watch_time_in_seconds > seconds_watched) return progress;
+      if (progress.watch_time_in_percentage > watched_percentage)
+        return progress;
     }
 
-    progress.watch_time_in_seconds = seconds_watched;
+    progress.watch_time_in_percentage = watched_percentage;
     progress.completed = completed;
 
     return this.progressRepo.save(progress);

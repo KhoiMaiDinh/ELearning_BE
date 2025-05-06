@@ -38,8 +38,8 @@ export class UserLessonProgressEntity extends AbstractEntity {
   @Column('uuid')
   course_id: Uuid;
 
-  @Column({ type: 'int', default: 0 })
-  watch_time_in_seconds: number;
+  @Column({ type: 'float', default: 0 })
+  watch_time_in_percentage: number;
 
   @Column({ type: 'boolean', default: false })
   completed: boolean;
