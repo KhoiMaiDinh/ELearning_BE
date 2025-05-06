@@ -36,6 +36,7 @@ export class RoleSeeder1739599861794 implements Seeder {
               Permission.WRITE_CATEGORY,
               Permission.READ_COURSE_ITEM,
               Permission.READ_ORDER,
+              Permission.READ_REPORT,
             ]),
           },
         });
