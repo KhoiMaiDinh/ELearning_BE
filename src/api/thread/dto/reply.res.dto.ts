@@ -11,12 +11,12 @@ export class ReplyRes {
   content: string;
 
   @Expose()
-  user: UserRes;
+  author: UserRes;
 
   @Expose()
   createdAt: Date;
 
-  @Exclude()
+  @Expose()
   has_upvoted: boolean;
 
   @Expose()
