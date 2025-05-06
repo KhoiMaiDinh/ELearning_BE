@@ -2,12 +2,16 @@ import { CourseRepository } from '@/api/course';
 import { LectureRepository } from '@/api/course-item/lecture/lecture.repository';
 import { ReplyRepository } from '@/api/thread/repositories/reply.repository';
 import { ThreadRepository } from '@/api/thread/repositories/thread.repository';
+import { JwtPayloadType } from '@/api/token';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { UserRepository } from '@/api/user/user.repository';
-import { Nanoid } from '@/common';
+import { Nanoid, OffsetPaginatedDto } from '@/common';
+import { paginate } from '@/utils';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
+import { ReportQuery, ReportRes } from '../dto';
 import { ReportReq } from '../dto/report.req.dto';
 import { ReviewReportReq } from '../dto/review-report.req.dto';
 import { UserReportEntity } from '../entities/user-report.entity';
@@ -70,6 +74,7 @@ export class UserReportService {
 
   async markReportAsReviewed(
     report_id: Nanoid,
+    user_payload: JwtPayloadType,
     data: ReviewReportReq,
   ): Promise<void> {
     const report = await this.reportRepo.findOne({
@@ -119,14 +124,29 @@ export class UserReportService {
     }
 
     if (data.is_valid) {
-      await this.warningService.issueWarning(user, report);
+      await this.warningService.issueWarning(user_payload, user, report);
     }
   }
 
-  async getPendingReports(): Promise<UserReportEntity[]> {
-    return this.reportRepo.find({
-      where: { is_reviewed: false },
-      order: { createdAt: 'ASC' },
-    });
+  async find(query: ReportQuery): Promise<OffsetPaginatedDto<ReportRes>> {
+    const query_builder = this.reportRepo.createQueryBuilder('report');
+
+    if (query.is_reviewed !== undefined) {
+      query_builder.andWhere('report.is_reviewed = :is_reviewed', {
+        is_reviewed: query.is_reviewed,
+      });
+    }
+
+    query_builder.orderBy('report.createdAt', 'ASC');
+
+    const [users, metaDto] = await paginate<UserReportEntity>(
+      query_builder,
+      query,
+      {
+        skipCount: false,
+        takeAll: false,
+      },
+    );
+    return new OffsetPaginatedDto(plainToInstance(ReportRes, users), metaDto);
   }
 }
