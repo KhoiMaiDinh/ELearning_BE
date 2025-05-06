@@ -25,7 +25,7 @@ export class ReplyService {
   ): Promise<ReplyEntity> {
     const thread = await this.threadRepo.findOne({
       where: { id: dto.thread_id },
-      relations: { lecture: true },
+      relations: { lecture: { section: true } },
     });
     if (!thread) throw new NotFoundException(ErrorCode.E040);
 
@@ -55,7 +55,7 @@ export class ReplyService {
     const replies = await this.replyRepo
       .createQueryBuilder('reply')
       .leftJoinAndSelect('reply.author', 'author')
-      .leftJoin('author.profile_image', 'profile_image')
+      .leftJoinAndSelect('author.profile_image', 'profile_image')
       .leftJoin('reply.thread', 'thread')
       .leftJoin('reply.votes', 'votes') // All votes (for count)
       .leftJoin(
@@ -65,7 +65,7 @@ export class ReplyService {
         { current_user_id: user.user_id },
       ) // Only current user's vote
       .where('thread.id = :thread_id', { thread_id })
-      .groupBy('reply.reply_id, author.user_id')
+      .groupBy('reply.reply_id, author.user_id, profile_image.media_id')
       .addSelect('COUNT(votes.reply_vote_id)', 'vote_count')
       .addSelect(
         'CASE WHEN COUNT(user_vote.reply_vote_id) > 0 THEN true ELSE false END',
