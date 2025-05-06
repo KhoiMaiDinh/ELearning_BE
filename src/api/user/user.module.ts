@@ -1,3 +1,4 @@
+import { BanModule } from '@/api/ban/ban.module';
 import { MediaModule } from '@/api/media/media.module';
 import { SessionEntity } from '@/api/user/entities/session.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
@@ -11,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 @Module({
   imports: [
     forwardRef(() => MediaModule),
+    forwardRef(() => BanModule),
     MinioClientModule,
     forwardRef(() => TypeOrmModule.forFeature([UserEntity, SessionEntity])),
   ],

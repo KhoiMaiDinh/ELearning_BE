@@ -57,7 +57,16 @@ export class TokenService {
     if (payload.banned_until)
       throw new UnauthorizedException(
         ErrorCode.E077,
-        `Bạn đã bị cấm cho đến ${payload.banned_until.toISOString}`,
+        `Bạn đã bị cấm cho đến ${new Date(payload.banned_until)
+          .toLocaleString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric',
+            hour12: false,
+          })
+          .replace(',', '')}`,
       );
 
     return payload;

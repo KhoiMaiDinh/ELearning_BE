@@ -16,6 +16,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CourseItemModule } from '../course-item/course-item.module';
 import { CourseUnbanRequestEntity } from './entities/course-unban-request.entity';
+import { FavoriteCourseEntity } from './entities/favorite-course.entity';
 import { EnrolledCourseRepository } from './repositories/enrolled-course.repository';
 import { CourseModerationService } from './services/course-moderation.service';
 
@@ -25,8 +26,9 @@ import { CourseModerationService } from './services/course-moderation.service';
       CourseEntity,
       EnrolledCourseEntity,
       CourseUnbanRequestEntity,
+      FavoriteCourseEntity,
     ]),
-    UserModule,
+    forwardRef(() => UserModule),
     CategoryModule,
     InstructorModule,
     PriceModule,

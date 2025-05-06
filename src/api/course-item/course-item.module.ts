@@ -25,13 +25,13 @@ import { QuizAttemptService } from '@/api/course-item/quiz/quiz-attempt.service'
 import { QuizController } from '@/api/course-item/quiz/quiz.controller';
 import { QuizService } from '@/api/course-item/quiz/quiz.service';
 
+import { CourseProgressModule } from '@/api/course-progress/course-progress.module';
 import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.entity';
+import { LectureCommentModule } from '@/api/lecture-comment/lecture-comment.module';
 import { MediaModule } from '@/api/media/media.module';
 import { SectionModule } from '@/api/section/section.module';
+import { ThreadModule } from '@/api/thread/thread.module';
 import { MinioClientModule } from '@/libs/minio';
-import { CourseProgressModule } from '../course-progress/course-progress.module';
-import { LectureCommentModule } from '../lecture-comment/lecture-comment.module';
-import { ThreadModule } from '../thread/thread.module';
 
 @Module({
   imports: [
