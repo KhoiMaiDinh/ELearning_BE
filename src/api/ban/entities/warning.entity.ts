@@ -23,7 +23,7 @@ export class WarningEntity extends AbstractEntity {
   @ManyToOne(() => UserBanEntity, (user_ban) => user_ban.warnings)
   @JoinColumn({ name: 'ban_id' })
   ban: Relation<UserBanEntity>;
-  @Column('uuid')
+  @Column('uuid', { nullable: true })
   ban_id: Uuid;
 
   @ManyToOne(() => UserReportEntity, { nullable: true })

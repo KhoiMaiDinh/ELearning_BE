@@ -45,7 +45,7 @@ export class ReportController {
 
   @ApiAuth({
     summary: 'Report content',
-    statusCode: HttpStatus.CREATED,
+    statusCode: HttpStatus.OK,
   })
   @Permissions(Permission.READ_REPORT)
   @Get()
