@@ -138,3 +138,13 @@ The factory callback provides an instance of the [faker](https://fakerjs.dev/gui
     ```bash
     pnpm seed:run
     ```
+
+## Database Extensions
+
+If you use PostgreSQL, you must enable the `unaccent` extension to support accent-insensitive search (for example, searching "Tieng anh" will match "Tiếng anh").
+
+To enable the extension, run the following SQL command after your database is created:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS unaccent;
+```
