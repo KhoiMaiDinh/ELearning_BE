@@ -11,7 +11,7 @@ import { LectureCommentService } from './lecture-comment.service';
 @Module({
   imports: [
     KafkaModule,
-    UserModule,
+    forwardRef(() => UserModule),
     forwardRef(() => CourseItemModule),
     TypeOrmModule.forFeature([LectureCommentEntity, CommentAspectEntity]),
   ],

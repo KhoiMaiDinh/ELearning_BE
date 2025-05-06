@@ -17,7 +17,7 @@ import { VoteService } from './services/vote.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([ThreadEntity, ReplyEntity, ReplyVoteEntity]),
-    UserModule,
+    forwardRef(() => UserModule),
     forwardRef(() => CourseItemModule),
     forwardRef(() => CourseModule),
   ],

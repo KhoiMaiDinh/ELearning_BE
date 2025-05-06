@@ -18,7 +18,7 @@ import { OrderService } from './services/order.service';
 
 @Module({
   imports: [
-    UserModule,
+    forwardRef(() => UserModule),
     CourseModule,
     forwardRef(() => CouponModule),
     forwardRef(() => PaymentModule.forRootAsync()),
