@@ -5,6 +5,7 @@ import { QueueName, QueuePrefix } from '@/constants';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { BanModule } from '../ban/ban.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './services/auth.service';
 import { OAuthService } from './services/oauth.service';
@@ -15,6 +16,7 @@ import { RegistrationService } from './services/registration.service';
     UserModule,
     TokenModule,
     RoleModule,
+    BanModule,
     BullModule.registerQueue({
       name: QueueName.EMAIL,
       prefix: QueuePrefix.AUTH,

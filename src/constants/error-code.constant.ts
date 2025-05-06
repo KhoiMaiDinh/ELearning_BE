@@ -122,6 +122,7 @@ export enum ErrorCode {
   E058 = 'auth.error.google_token_invalid',
   E059 = 'auth.error.google_token_expire',
   E060 = 'auth.error.google_token_wrong_audience',
+  E077 = 'auth.error.banned',
 
   // Storage
   E061 = 'storage.error.invalid_url',

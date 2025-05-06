@@ -1,3 +1,4 @@
+import { UserBanService } from '@/api/ban/services/ban.service';
 import { JwtPayloadType, TokenService } from '@/api/token';
 import { SessionEntity } from '@/api/user/entities/session.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
@@ -44,6 +45,7 @@ export class AuthService {
     private readonly emailQueue: Queue<IEmailJob, any, string>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    private readonly banService: UserBanService,
   ) {}
 
   async resetPassword(dto: DTO.ResetPasswordReq): Promise<void> {
@@ -191,14 +193,17 @@ export class AuthService {
       return role.role_name;
     });
 
+    const ban = await this.banService.getBanInfo(user.id);
+
     const permissions = Array.from(permission_set);
 
-    const token = await this.tokenService.createToken({
+    const token = await this.tokenService.create({
       id: user.id,
       roles: roles,
       permissions: permissions,
       session_id: session.id,
       hash,
+      banned_until: ban ? ban.expires_at : undefined,
     });
 
     return plainToInstance(DTO.LoginRes, {
@@ -230,6 +235,7 @@ export class AuthService {
       where: { user_id: session.user_id },
       relations: ['roles', 'roles.permissions'],
     });
+    const ban = await this.banService.getBanInfo(user.id);
 
     const newHash = crypto
       .createHash('sha256')
@@ -242,12 +248,13 @@ export class AuthService {
       role.permissions.map((permission) => permission.permission_key),
     );
 
-    return await this.tokenService.createToken({
+    return await this.tokenService.create({
       id: user.id,
       roles: user.roles.map((role) => role.role_name),
       permissions: permissions,
       session_id: session.id,
       hash: newHash,
+      banned_until: ban ? ban.expires_at : undefined,
     });
   }
 }

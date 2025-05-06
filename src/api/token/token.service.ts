@@ -1,3 +1,4 @@
+import { Nanoid } from '@/common';
 import { AllConfigType } from '@/config';
 import { CacheKey, ErrorCode, Permission } from '@/constants';
 import { UnauthorizedException } from '@/exceptions';
@@ -53,6 +54,12 @@ export class TokenService {
       throw new UnauthorizedException(ErrorCode.E071);
     }
 
+    if (payload.banned_until)
+      throw new UnauthorizedException(
+        ErrorCode.E077,
+        `Bạn đã bị cấm cho đến ${payload.banned_until.toISOString}`,
+      );
+
     return payload;
   }
 
@@ -98,12 +105,13 @@ export class TokenService {
     );
   }
 
-  async createToken(data: {
-    id: string;
+  async create(data: {
+    id: Nanoid;
     roles: string[];
     permissions: Permission[];
     session_id: string;
     hash: string;
+    banned_until?: Date;
   }): Promise<Token> {
     const tokenExpiresIn = this.configService.getOrThrow('auth.expires', {
       infer: true,
@@ -116,7 +124,8 @@ export class TokenService {
           roles: data.roles,
           permissions: data.permissions,
           session_id: data.session_id,
-        },
+          banned_until: data?.banned_until,
+        } as JwtPayloadType,
         {
           secret: this.configService.getOrThrow('auth.secret', { infer: true }),
           expiresIn: tokenExpiresIn,
