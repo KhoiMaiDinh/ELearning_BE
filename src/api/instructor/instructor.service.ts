@@ -87,26 +87,39 @@ export class InstructorService {
   async load(
     dto: ListInstructorQuery,
   ): Promise<OffsetPaginatedDto<InstructorRes>> {
-    const { is_approved, specialty } = dto;
-    const query = InstructorEntity.createQueryBuilder('instructor')
-      .where(is_approved ? 'instructor.is_approved = :is_approved' : '1=1', {
-        is_approved,
-      })
-      .leftJoinAndSelect('instructor.category', 'category')
-      .andWhere(specialty ? 'category.slug = :slug' : '1=1', {
-        slug: specialty,
-      })
-      .leftJoinAndSelect('category.translations', 'category_translations')
-      .andWhere('category_translations.language = :language', {
-        language: Language.VI,
-      })
+    const { is_approved, specialty, q } = dto;
+    const query_builder = InstructorEntity.createQueryBuilder('instructor')
       .leftJoinAndSelect('instructor.user', 'user')
       .leftJoinAndSelect('user.profile_image', 'profile_image')
       .loadRelationCountAndMap('instructor.total_courses', 'instructor.courses')
       .orderBy('instructor.createdAt', 'DESC');
 
+    if (is_approved !== undefined)
+      query_builder.andWhere('instructor.is_approved = :is_approved', {
+        is_approved,
+      });
+
+    if (specialty !== undefined)
+      query_builder
+        .leftJoinAndSelect('instructor.category', 'category')
+        .andWhere('category.slug = :slug', {
+          slug: specialty,
+        })
+        .leftJoinAndSelect('category.translations', 'category_translations')
+        .andWhere('category_translations.language = :language', {
+          language: Language.VI,
+        });
+
+    // Add search by q (e.g., search by headline or user name)
+    if (q) {
+      query_builder.andWhere(
+        '(instructor.headline ILIKE :q OR user.username ILIKE :q OR user.full_name ILIKE :q)',
+        { q: `%${q}%` },
+      );
+    }
+
     const [instructors, metaDto] = await paginate<InstructorEntity>(
-      query,
+      query_builder,
       dto,
       {
         skipCount: false,
