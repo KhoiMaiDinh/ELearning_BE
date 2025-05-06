@@ -3,7 +3,7 @@ import { ApiAuth } from '@/decorators';
 import { Controller, HttpStatus, Param, Patch } from '@nestjs/common';
 import { UserBanService } from '../services/ban.service';
 
-@Controller('bans')
+@Controller({ path: 'bans', version: '1' })
 export class BanController {
   constructor(private readonly banService: UserBanService) {}
 

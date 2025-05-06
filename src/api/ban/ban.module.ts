@@ -1,6 +1,9 @@
 import { CourseModule } from '@/api/course/course.module';
+import { QueueName } from '@/constants';
+import { BullModule } from '@nestjs/bullmq';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CouponModule } from '../coupon/coupon.module';
 import { CourseItemModule } from '../course-item/course-item.module';
 import { ThreadModule } from '../thread/thread.module';
 import { UserModule } from '../user';
@@ -20,7 +23,16 @@ import { WarningService } from './services/warning.service';
     forwardRef(() => CourseModule),
     forwardRef(() => ThreadModule),
     forwardRef(() => CourseItemModule),
+    CouponModule,
     TypeOrmModule.forFeature([WarningEntity, UserBanEntity, UserReportEntity]),
+    BullModule.registerQueue({
+      name: QueueName.EMAIL,
+      streams: {
+        events: {
+          maxLen: 1000,
+        },
+      },
+    }),
   ],
   controllers: [UserWarningController, BanController, ReportController],
   providers: [WarningService, UserBanService, UserReportService],

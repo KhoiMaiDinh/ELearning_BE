@@ -1,3 +1,4 @@
+import { JwtPayloadType } from '@/api/token';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Nanoid, SuccessBasicDto } from '@/common';
 import { Permission } from '@/constants';
@@ -10,12 +11,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
+import { ReportQuery } from '../dto/report.query.dto';
 import { ReportReq } from '../dto/report.req.dto';
 import { ReviewReportReq } from '../dto/review-report.req.dto';
 import { UserReportService } from '../services/user-report.service';
 
-@Controller('reports')
+@Controller({ path: 'reports', version: '1' })
 export class ReportController {
   constructor(private readonly reportService: UserReportService) {}
 
@@ -45,9 +48,9 @@ export class ReportController {
     statusCode: HttpStatus.CREATED,
   })
   @Permissions(Permission.READ_REPORT)
-  @Get('pending')
-  async getPendingReports() {
-    return this.reportService.getPendingReports();
+  @Get()
+  async getPendingReports(@Query() query: ReportQuery) {
+    return this.reportService.find(query);
   }
 
   @ApiAuth({
@@ -57,8 +60,9 @@ export class ReportController {
   @Patch(':report_id/review')
   async reviewReport(
     @Param('report_id') report_id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
     @Body() dto: ReviewReportReq,
   ) {
-    return this.reportService.markReportAsReviewed(report_id, dto);
+    return this.reportService.markReportAsReviewed(report_id, user, dto);
   }
 }
