@@ -137,6 +137,7 @@ export class CourseEntity extends AbstractEntity {
   currency: string;
 
   @VirtualColumn({
+    type: 'float',
     query: (alias) =>
       `(SELECT AVG(enrolled.rating)
               FROM "enrolled-course" enrolled

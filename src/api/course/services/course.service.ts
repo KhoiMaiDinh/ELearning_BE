@@ -23,12 +23,14 @@ import { Nanoid, OffsetPaginatedDto, Uuid } from '@/common';
 import {
   Entity,
   ErrorCode,
+  KafkaTopic,
   Language,
   Permission,
   UploadEntityProperty,
   UploadStatus,
 } from '@/constants';
 import { ForbiddenException, ValidationException } from '@/exceptions';
+import { KafkaProducerService } from '@/kafka';
 import { MinioClientService } from '@/libs/minio';
 import { paginate } from '@/utils';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -53,6 +55,7 @@ export class CourseService {
     private readonly courseProgressService: LessonProgressService,
     private readonly enrollCourseService: EnrollCourseService,
     private readonly lectureRepository: LectureRepository,
+    private readonly producerService: KafkaProducerService,
   ) {}
   async create(public_user_id: Nanoid, dto: CreateCourseReq) {
     const {
@@ -76,6 +79,9 @@ export class CourseService {
     });
     await this.courseRepository.save(course);
 
+    await this.producerService.send(KafkaTopic.COURSE_SAVED, {
+      course,
+    });
     return course.toDto(CourseRes);
   }
 
@@ -98,6 +104,13 @@ export class CourseService {
         .leftJoinAndSelect('instructor.user', 'user')
         .leftJoinAndSelect('user.profile_image', 'profile_image')
         .addSelect('user.username', 'username');
+    }
+
+    if (query.q) {
+      query_builder.andWhere(
+        `to_tsvector('simple', unaccent(coalesce(course.title,'') || ' ' || coalesce(course.subtitle,'') || ' ' || coalesce(course.description,''))) @@ plainto_tsquery('simple', unaccent(:q))`,
+        { q: query.q },
+      );
     }
 
     // **Category Filtering**
@@ -265,6 +278,10 @@ export class CourseService {
     Object.assign(course, rest);
     course.updatedBy = user.id;
     await course.save();
+
+    await this.producerService.send(KafkaTopic.COURSE_SAVED, {
+      course,
+    });
     return course.toDto(CourseRes);
   }
 
