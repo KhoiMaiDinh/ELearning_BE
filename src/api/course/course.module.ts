@@ -14,17 +14,25 @@ import { UserModule } from '@/api/user';
 import { MinioClientModule } from '@/libs/minio';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CourseItemModule } from '../course-item/course-item.module';
+import { CourseUnbanRequestEntity } from './entities/course-unban-request.entity';
 import { EnrolledCourseRepository } from './repositories/enrolled-course.repository';
+import { CourseModerationService } from './services/course-moderation.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CourseEntity, EnrolledCourseEntity]),
+    TypeOrmModule.forFeature([
+      CourseEntity,
+      EnrolledCourseEntity,
+      CourseUnbanRequestEntity,
+    ]),
     UserModule,
     CategoryModule,
     InstructorModule,
     PriceModule,
     MediaModule,
     MinioClientModule,
+    forwardRef(() => CourseItemModule),
     forwardRef(() => CourseProgressModule),
     forwardRef(() => SectionModule),
   ],
@@ -34,6 +42,7 @@ import { EnrolledCourseRepository } from './repositories/enrolled-course.reposit
     CourseRepository,
     EnrollCourseService,
     EnrolledCourseRepository,
+    CourseModerationService,
   ],
   exports: [
     CourseRepository,
