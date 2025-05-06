@@ -36,5 +36,6 @@ import { WarningService } from './services/warning.service';
   ],
   controllers: [UserWarningController, BanController, ReportController],
   providers: [WarningService, UserBanService, UserReportService],
+  exports: [UserBanService],
 })
 export class BanModule {}
