@@ -81,7 +81,8 @@ export class UserReportService {
       where: { id: report_id },
       relations: { reporter: true },
     });
-    report.is_reviewed = data.is_valid;
+    report.is_reviewed = true;
+    report.is_valid = data.is_valid;
     await this.reportRepo.save(report);
 
     let user: UserEntity;
