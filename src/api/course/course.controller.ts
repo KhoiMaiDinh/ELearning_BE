@@ -3,6 +3,7 @@ import {
   CourseRes,
   CoursesQuery,
   CreateCourseReq,
+  FavoriteCourseRes,
   PublicCourseReq,
   RequestCourseUnbanReq,
   ReviewUnbanReq,
@@ -15,6 +16,7 @@ import { ApiAuth, ApiPublic, CurrentUser, Permissions } from '@/decorators';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -23,12 +25,14 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { CourseReviewRes } from './dto/review.res.dto';
 import { SubmitReviewReq } from './dto/submit-review.req.dto';
 import { CourseUnbanResponseDto } from './dto/unban-request.res.dto';
 import { CourseModerationService } from './services/course-moderation.service';
 import { CourseService } from './services/course.service';
 import { EnrollCourseService } from './services/enroll-course.service';
+import { FavoriteCourseService } from './services/favorite-course.service';
 
 @Controller({ path: 'courses', version: '1' })
 export class CourseController {
@@ -36,6 +40,7 @@ export class CourseController {
     private readonly courseService: CourseService,
     private readonly enrollCourseService: EnrollCourseService,
     private readonly moderationService: CourseModerationService,
+    private readonly favoriteCourseService: FavoriteCourseService,
   ) {}
 
   @Post()
@@ -217,5 +222,42 @@ export class CourseController {
       dto,
     );
     return unban_request.toDto(CourseUnbanResponseDto);
+  }
+
+  @Post(':course_id/favorites')
+  @ApiAuth({
+    statusCode: HttpStatus.CREATED,
+    summary: 'Add course to favorites',
+    type: FavoriteCourseRes,
+  })
+  async addFavorite(
+    @CurrentUser('id') user_id: Nanoid,
+    @Param('course_id') course_id: Nanoid,
+  ) {
+    const favorite = await this.favoriteCourseService.add(user_id, course_id);
+    return favorite.toDto(FavoriteCourseRes);
+  }
+
+  @Delete(':course_id/favorites')
+  @ApiAuth({
+    statusCode: HttpStatus.NO_CONTENT,
+    summary: 'Remove course from favorites',
+  })
+  async removeFavorite(
+    @CurrentUser('id') user_id: Nanoid,
+    @Param('course_id') course_id: Nanoid,
+  ) {
+    await this.favoriteCourseService.remove(user_id, course_id);
+  }
+
+  @Get('favorites/me')
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    summary: 'Get my favorite courses',
+    type: FavoriteCourseRes,
+  })
+  async listFavorites(@CurrentUser('id') user_id: Nanoid) {
+    const favorite_list = await this.favoriteCourseService.list(user_id);
+    return plainToInstance(FavoriteCourseRes, favorite_list);
   }
 }
