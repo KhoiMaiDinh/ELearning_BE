@@ -1,5 +1,6 @@
 import { AuthConfig } from '@/api/auth/config/auth-config.type';
 import { PaymentConfig } from '@/api/payment/config/payment-config.type';
+import { RecommenderConfig } from '@/api/recommender/config/recommender-config.type';
 import { DatabaseConfig } from '@/database/config/database-config.type';
 import { KafkaConfig } from '@/kafka';
 import { MinioConfig } from '@/libs/minio/config/minio-config.type';
@@ -16,4 +17,5 @@ export type AllConfigType = {
   storage: MinioConfig;
   kafka: KafkaConfig;
   payment: PaymentConfig;
+  third_party: RecommenderConfig;
 };

@@ -16,4 +16,5 @@ export enum Entity {
   LECTURE_RESOURCE = 'resource',
   USER_LESSON_PROGRESS = 'user-course-progress',
   LECTURE_COMMENT = 'lecture-comment',
+  FAVORITE_COURSE = 'favorite_courses',
 }
