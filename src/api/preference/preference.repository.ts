@@ -16,7 +16,7 @@ export class PreferenceRepository extends Repository<PreferenceEntity> {
   ): Promise<PreferenceEntity> {
     const preference = await this.findOne({
       where: { user: { id: user_public_id } },
-      relations: ['user'],
+      relations: { user: true, categories: true },
     });
 
     if (!preference) {

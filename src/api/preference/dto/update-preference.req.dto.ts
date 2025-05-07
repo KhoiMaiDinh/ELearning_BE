@@ -1,5 +1,6 @@
+import { CategoryReq } from '@/api/category';
 import { Language, Theme } from '@/constants';
-import { EnumField } from '@/decorators';
+import { ClassField, EnumField } from '@/decorators';
 
 export class UpdatePreferenceReq {
   @EnumField(() => Theme)
@@ -7,4 +8,7 @@ export class UpdatePreferenceReq {
 
   @EnumField(() => Language)
   language: Language;
+
+  @ClassField(() => CategoryReq, { each: true })
+  categories: CategoryReq[];
 }

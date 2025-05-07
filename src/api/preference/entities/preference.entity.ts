@@ -1,3 +1,4 @@
+import { CategoryEntity } from '@/api/category/entities/category.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
 import { Entity as E, Language, Theme } from '@/constants';
@@ -6,6 +7,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   Relation,
@@ -29,4 +32,21 @@ export class PreferenceEntity extends AbstractEntity {
   @OneToOne(() => UserEntity, (user) => user.preference)
   @JoinColumn({ name: 'user_id' })
   user: Relation<UserEntity>;
+
+  @Column('uuid')
+  user_id: Uuid;
+
+  @ManyToMany(() => CategoryEntity, { cascade: true })
+  @JoinTable({
+    name: 'preference_categories',
+    joinColumn: {
+      name: 'preference_id',
+      referencedColumnName: 'preference_id',
+    },
+    inverseJoinColumn: {
+      name: 'category_id',
+      referencedColumnName: 'category_id',
+    },
+  })
+  categories: Relation<CategoryEntity>[];
 }
