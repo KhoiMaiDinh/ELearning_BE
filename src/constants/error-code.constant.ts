@@ -26,6 +26,8 @@ export enum ErrorCode {
   E046 = 'course.error.enroll_not_found',
   E047 = 'course.error.enroll_already_exists',
   E072 = 'course.error.enroll_own_course',
+  E078 = 'course.error.favorite_existed',
+  E079 = 'course.error.favorite_not_found',
 
   // Order
   E044 = 'order.error.unpublish_course',

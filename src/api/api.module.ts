@@ -21,6 +21,7 @@ import { Module } from '@nestjs/common';
 import { BanModule } from './ban/ban.module';
 import { LectureCommentModule } from './lecture-comment/lecture-comment.module';
 import { NotificationModule } from './notification/notification.module';
+import { RecommenderModule } from './recommender/recommender.module';
 import { ThreadModule } from './thread/thread.module';
 
 @Module({
@@ -48,6 +49,7 @@ import { ThreadModule } from './thread/thread.module';
     NotificationModule,
     ThreadModule,
     BanModule,
+    RecommenderModule,
   ],
 })
 export class ApiModule {}
