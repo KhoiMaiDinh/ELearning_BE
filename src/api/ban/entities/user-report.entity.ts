@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
-import { WarningType } from '../enum/warning-type.enum';
+import { WarningType as ReportType } from '../enum/warning-type.enum';
 
 @Entity('user_report')
 export class UserReportEntity extends AbstractEntity {
@@ -30,8 +30,8 @@ export class UserReportEntity extends AbstractEntity {
   @Column({ type: 'jsonb', nullable: true })
   metadata: Record<string, any>;
 
-  @Column('enum', { enum: WarningType })
-  type: WarningType;
+  @Column('enum', { enum: ReportType })
+  type: ReportType;
 
   @Column('varchar')
   reason: string;

@@ -25,6 +25,6 @@ export class UserBanEntity extends AbstractEntity {
   @Column('boolean', { default: true })
   is_active: boolean;
 
-  @OneToMany(() => WarningEntity, (warning) => warning.ban)
+  @OneToMany(() => WarningEntity, (warning) => warning.ban, { cascade: true })
   warnings: Relation<WarningEntity[]>;
 }

@@ -107,7 +107,7 @@ export class WarningService {
     }
     const active_warnings = await this.getActiveWarnings(user.id);
     if (active_warnings.length >= this.WARNING_LIMIT) {
-      await this.userBanService.banUser(user);
+      await this.userBanService.banUser(user, active_warnings);
     }
     return warning;
   }

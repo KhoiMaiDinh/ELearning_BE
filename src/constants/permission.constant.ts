@@ -18,6 +18,8 @@ export enum Permission {
   WRITE_PAYOUT = 'write:payout',
   WRITE_COUPON = 'write:coupon',
   READ_REPORT = 'read:report',
+  READ_BAN = 'read:ban',
+  WRITE_BAN = 'write:ban',
 }
 
 export enum PermissionGroup {
