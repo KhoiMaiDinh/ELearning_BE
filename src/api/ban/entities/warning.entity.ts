@@ -6,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
@@ -26,6 +27,6 @@ export class WarningEntity extends AbstractEntity {
   @Column('uuid', { nullable: true })
   ban_id: Uuid;
 
-  @ManyToOne(() => UserReportEntity, { nullable: true })
+  @OneToOne(() => UserReportEntity, { nullable: true })
   report: Relation<UserReportEntity>;
 }

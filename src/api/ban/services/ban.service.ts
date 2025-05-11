@@ -1,10 +1,15 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
-import { Nanoid } from '@/common';
+import { Nanoid, OffsetPaginatedDto } from '@/common';
+import { paginate } from '@/utils';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import ms from 'ms';
 import { MoreThan, Repository } from 'typeorm';
+import { BanQuery } from '../dto';
+import { BanRes } from '../dto/ban.res.dto';
 import { UserBanEntity } from '../entities/user-ban.entity';
+import { WarningEntity } from '../entities/warning.entity';
 
 @Injectable()
 export class UserBanService {
@@ -13,7 +18,10 @@ export class UserBanService {
     private readonly banRepo: Repository<UserBanEntity>,
   ) {}
 
-  async banUser(user: UserEntity) {
+  async banUser(
+    user: UserEntity,
+    active_warnings?: WarningEntity[],
+  ): Promise<UserBanEntity> {
     let expires_at: Date | null;
     const active_bans = await this.banRepo.find({
       where: { user: { user_id: user.user_id }, is_active: true },
@@ -28,6 +36,7 @@ export class UserBanService {
       user,
       expires_at,
       is_active: true,
+      warnings: active_warnings,
     });
 
     return await this.banRepo.save(ban);
@@ -63,5 +72,22 @@ export class UserBanService {
       where: { user: { id: user_id }, is_active: true },
       relations: { user: true },
     });
+  }
+
+  async find(query: BanQuery): Promise<OffsetPaginatedDto<BanRes>> {
+    const query_builder = this.banRepo
+      .createQueryBuilder('user')
+      .orderBy('user.createdAt', query.order)
+      .leftJoinAndSelect('user.roles', 'role');
+
+    const [ban_infos, metaDto] = await paginate<UserBanEntity>(
+      query_builder,
+      query,
+      {
+        skipCount: false,
+        takeAll: false,
+      },
+    );
+    return new OffsetPaginatedDto(plainToInstance(BanRes, ban_infos), metaDto);
   }
 }

@@ -30,6 +30,8 @@ export class PermissionSeeder1739636388516 implements Seeder {
       [Permission.WRITE_PAYOUT]: PermissionGroup.PAYOUT,
       [Permission.WRITE_COUPON]: PermissionGroup.COUPON,
       [Permission.READ_REPORT]: PermissionGroup.BAN,
+      [Permission.WRITE_BAN]: PermissionGroup.BAN,
+      [Permission.READ_BAN]: PermissionGroup.BAN,
     };
 
     const permissions = Object.values(Permission).map((permission_key) => ({

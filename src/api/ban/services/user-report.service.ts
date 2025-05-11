@@ -137,8 +137,18 @@ export class UserReportService {
         is_reviewed: query.is_reviewed,
       });
     }
+    if (query.is_valid !== undefined) {
+      query_builder.andWhere('report.is_valid = :is_valid', {
+        is_valid: query.is_valid,
+      });
+    }
+    if (query.type) {
+      query_builder.andWhere('report.type = :type', {
+        type: query.type,
+      });
+    }
 
-    query_builder.orderBy('report.createdAt', 'ASC');
+    if (query.order) query_builder.orderBy('report.createdAt', query.order);
 
     const [users, metaDto] = await paginate<UserReportEntity>(
       query_builder,
