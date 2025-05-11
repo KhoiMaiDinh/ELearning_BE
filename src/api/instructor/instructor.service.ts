@@ -15,7 +15,7 @@ import { paginate } from '@/utils';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { MediaEntity } from '../media/entities/media.entity';
 import {
   ApproveInstructorDto,
@@ -52,7 +52,7 @@ export class InstructorService {
     const category = await this.getAndCheckCategory(dto.category.slug);
 
     const resume = await this.mediaRepository.findOneById(dto.resume.id);
-    this.checkValidResume(resume);
+    this.isValidResume(resume);
 
     const new_instructor_profile = new InstructorEntity({
       user_id: user.user_id,
@@ -76,7 +76,7 @@ export class InstructorService {
         instructor: new_instructor_profile,
       });
     });
-    this.checkValidCertificates(new_certificates);
+    this.isValidCertificates(new_certificates);
     await this.certificateRepository.save(new_certificates);
 
     new_instructor_profile.user = user;
@@ -87,11 +87,18 @@ export class InstructorService {
   async load(
     dto: ListInstructorQuery,
   ): Promise<OffsetPaginatedDto<InstructorRes>> {
-    const { is_approved, specialty, q } = dto;
+    const { is_approved, specialty, q, approved_at } = dto;
     const query_builder = InstructorEntity.createQueryBuilder('instructor')
       .leftJoinAndSelect('instructor.user', 'user')
       .leftJoinAndSelect('user.profile_image', 'profile_image')
       .loadRelationCountAndMap('instructor.total_courses', 'instructor.courses')
+      .addSelect(this.buildAvgRatingSubQuery(), 'instructor_avg_rating')
+      .addSelect(this.buildTotalStudentsSubQuery(), 'instructor_total_students')
+      .leftJoinAndSelect('instructor.category', 'category')
+      .leftJoinAndSelect('category.translations', 'category_translations')
+      .andWhere('category_translations.language = :language', {
+        language: Language.VI,
+      })
       .orderBy('instructor.createdAt', 'DESC');
 
     if (is_approved !== undefined)
@@ -99,21 +106,19 @@ export class InstructorService {
         is_approved,
       });
 
-    if (specialty !== undefined)
+    if (approved_at !== undefined)
       query_builder
-        .leftJoinAndSelect('instructor.category', 'category')
-        .andWhere('category.slug = :slug', {
-          slug: specialty,
-        })
-        .leftJoinAndSelect('category.translations', 'category_translations')
-        .andWhere('category_translations.language = :language', {
-          language: Language.VI,
-        });
+        .andWhere('instructor.approved_at IS NOT NULL')
+        .orderBy('instructor.approved_at', approved_at);
 
-    // Add search by q (e.g., search by headline or user name)
+    if (specialty !== undefined)
+      query_builder.andWhere('category.slug = :slug', {
+        slug: specialty,
+      });
+
     if (q) {
       query_builder.andWhere(
-        '(instructor.headline ILIKE :q OR user.username ILIKE :q OR user.full_name ILIKE :q)',
+        "(instructor.headline ILIKE :q OR user.username ILIKE :q OR (user.first_name || ' ' || user.last_name) ILIKE :q)",
         { q: `%${q}%` },
       );
     }
@@ -146,6 +151,8 @@ export class InstructorService {
         },
       )
       .loadRelationCountAndMap('instructor.total_courses', 'instructor.courses')
+      .addSelect(this.buildAvgRatingSubQuery(), 'instructor_avg_rating')
+      .addSelect(this.buildTotalStudentsSubQuery(), 'instructor_total_students')
       .leftJoinAndSelect('instructor.user', 'user')
       .where('user.username = :username', { username })
       .leftJoinAndSelect('user.profile_image', 'profile_image')
@@ -184,7 +191,7 @@ export class InstructorService {
     } = dto;
     if (resume_dto && resume_dto.id !== instructor.resume.id) {
       const resume_file = await this.mediaRepository.findOneById(resume_dto.id);
-      this.checkValidResume(resume_file);
+      this.isValidResume(resume_file);
       instructor.resume = resume_file;
     }
 
@@ -219,7 +226,7 @@ export class InstructorService {
         ),
         ...new_certificates,
       ];
-      this.checkValidCertificates(instructor.certificates);
+      this.isValidCertificates(instructor.certificates);
       await this.certificateRepository.save(new_certificates);
     }
     Object.assign(instructor, rest_dto);
@@ -239,6 +246,10 @@ export class InstructorService {
     const instructor =
       await this.instructorRepository.findOneByUsername(username);
     instructor.is_approved = dto.is_approved;
+    if (dto.is_approved) {
+      const now = new Date();
+      instructor.approved_at = now;
+    }
     instructor.disapproval_reason = dto.disapproval_reason;
     instructor.updatedBy = update_by;
     await instructor.save();
@@ -251,7 +262,7 @@ export class InstructorService {
     return category;
   }
 
-  private checkValidResume(resume: MediaEntity) {
+  private isValidResume(resume: MediaEntity) {
     if (
       resume.status != UploadStatus.VALIDATED &&
       resume.status != UploadStatus.UPLOADED
@@ -264,7 +275,7 @@ export class InstructorService {
       throw new ValidationException(ErrorCode.E034);
   }
 
-  private checkValidCertificates(certificates: CertificateEntity[]) {
+  private isValidCertificates(certificates: CertificateEntity[]) {
     certificates.forEach(({ certificate_file }) => {
       if (
         certificate_file.status != UploadStatus.VALIDATED &&
@@ -278,5 +289,33 @@ export class InstructorService {
       )
         throw new ValidationException(ErrorCode.E034);
     });
+  }
+
+  // In instructor.service.ts or a utility file
+  private buildAvgRatingSubQuery(alias = 'instructor') {
+    return (sub_query: SelectQueryBuilder<any>) =>
+      sub_query
+        .select('AVG(enrolled.rating)', 'avg_rating')
+        .from('course', 'course')
+        .leftJoin(
+          'enrolled-course',
+          'enrolled',
+          'enrolled.course_id = course.course_id',
+        )
+        .where(`course.instructor_id = ${alias}.instructor_id`)
+        .andWhere('enrolled.rating IS NOT NULL');
+  }
+
+  private buildTotalStudentsSubQuery(alias = 'instructor') {
+    return (sub_query: SelectQueryBuilder<any>) =>
+      sub_query
+        .select('COUNT(DISTINCT enrolled.user_id)', 'total_students')
+        .from('course', 'course')
+        .leftJoin(
+          'enrolled-course',
+          'enrolled',
+          'enrolled.course_id = course.course_id',
+        )
+        .where(`course.instructor_id = ${alias}.instructor_id`);
   }
 }

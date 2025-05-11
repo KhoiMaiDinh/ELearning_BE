@@ -6,6 +6,7 @@ import {
   BooleanField,
   ClassField,
   ClassFieldOptional,
+  DateFieldOptional,
   NumberFieldOptional,
   ObjectField,
   StringField,
@@ -53,6 +54,10 @@ export class InstructorRes {
   is_approved: boolean;
 
   @Expose()
+  @DateFieldOptional()
+  approved_at?: Date;
+
+  @Expose()
   @ClassFieldOptional(() => UserRes)
   user?: WrapperType<UserRes>;
 
@@ -63,4 +68,12 @@ export class InstructorRes {
   @Expose()
   @NumberFieldOptional()
   total_courses?: number;
+
+  @Expose()
+  @NumberFieldOptional()
+  total_students?: number;
+
+  @Expose()
+  @NumberFieldOptional()
+  avg_rating?: number;
 }

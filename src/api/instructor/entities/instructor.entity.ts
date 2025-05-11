@@ -15,6 +15,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   Relation,
+  VirtualColumn,
 } from 'typeorm';
 
 @Entity(E.INSTRUCTOR)
@@ -43,6 +44,9 @@ export class InstructorEntity extends AbstractEntity {
   // approval
   @Column({ type: 'boolean', default: false })
   is_approved!: boolean;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  approved_at!: Date;
 
   @Column({ type: 'jsonb', nullable: true })
   disapproval_reason!: object;
@@ -74,4 +78,15 @@ export class InstructorEntity extends AbstractEntity {
 
   @OneToMany(() => CourseEntity, (course) => course.instructor)
   courses: Relation<CourseEntity[]>;
+
+  @VirtualColumn({
+    type: 'float',
+    query: (alias) => ``,
+  })
+  avg_rating: number;
+
+  @VirtualColumn({
+    query: (alias) => ``,
+  })
+  total_students: number;
 }
