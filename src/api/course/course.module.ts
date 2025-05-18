@@ -8,7 +8,7 @@ import { InstructorModule } from '@/api/instructor/instructor.module';
 import { MediaModule } from '@/api/media';
 import { PriceModule } from '@/api/price/price.module';
 import { SectionModule } from '@/api/section/section.module';
-import { UserModule } from '@/api/user';
+import { UserModule } from '@/api/user/user.module';
 import { MinioClientModule } from '@/libs/minio';
 
 import { CourseController } from '@/api/course/course.controller';
@@ -23,16 +23,23 @@ import { CourseModerationService } from '@/api/course/services/course-moderation
 import { CourseService } from '@/api/course/services/course.service';
 import { EnrollCourseService } from '@/api/course/services/enroll-course.service';
 import { FavoriteCourseService } from '@/api/course/services/favorite-course.service';
+import { CouponModule } from '../coupon/coupon.module';
+import { RatingController } from './rating.controller';
+import { RatingService } from './services/rating.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      CourseEntity,
-      EnrolledCourseEntity,
-      CourseUnbanRequestEntity,
-      FavoriteCourseEntity,
-    ]),
+    forwardRef(() =>
+      TypeOrmModule.forFeature([
+        CourseEntity,
+        EnrolledCourseEntity,
+        CourseUnbanRequestEntity,
+        FavoriteCourseEntity,
+      ]),
+    ),
     forwardRef(() => UserModule),
+    forwardRef(() => CouponModule),
+    CouponModule,
     CategoryModule,
     InstructorModule,
     PriceModule,
@@ -42,7 +49,7 @@ import { FavoriteCourseService } from '@/api/course/services/favorite-course.ser
     forwardRef(() => CourseProgressModule),
     forwardRef(() => SectionModule),
   ],
-  controllers: [CourseController],
+  controllers: [CourseController, RatingController],
   providers: [
     CourseService,
     CourseRepository,
@@ -51,6 +58,7 @@ import { FavoriteCourseService } from '@/api/course/services/favorite-course.ser
     CourseModerationService,
     FavoriteCourseRepository,
     FavoriteCourseService,
+    RatingService,
   ],
   exports: [
     CourseRepository,

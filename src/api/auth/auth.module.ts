@@ -1,6 +1,6 @@
 import { RoleModule } from '@/api/role';
 import { TokenModule } from '@/api/token';
-import { UserModule } from '@/api/user';
+import { UserModule } from '@/api/user/user.module';
 import { QueueName, QueuePrefix } from '@/constants';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
