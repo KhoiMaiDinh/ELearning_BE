@@ -1,27 +1,26 @@
-import { RoleRepository } from '@/api/role/entities/role.repository';
+import { RoleRepository } from '@/api/role/repositories/role.repository';
 import { ErrorCode } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { In, Repository } from 'typeorm';
+import { In } from 'typeorm';
+import { UserEntity } from '../user/entities/user.entity';
 import { CreateRoleReq, RoleRes, UpdateRoleReq } from './dto';
-import { PermissionEntity } from './entities/permission.entity';
 import { RoleEntity } from './entities/role.entity';
+import { PermissionRepository } from './repositories/permission.repository';
 
 @Injectable()
 export class RoleService {
   constructor(
     private readonly roleRepository: RoleRepository,
-    @InjectRepository(PermissionEntity)
-    private readonly permissionRepository: Repository<PermissionEntity>,
+    private readonly permissionRepository: PermissionRepository,
   ) {}
 
   /**
    * Get all roles
    * @returns Role[]
    */
-  async getRoles(): Promise<RoleRes[]> {
+  async get(): Promise<RoleRes[]> {
     const roles = await this.roleRepository.find({
       relations: ['permissions'],
     });
@@ -33,7 +32,7 @@ export class RoleService {
    * @param dto CreateRoleReq
    * @returns Role
    */
-  async createRole(dto: CreateRoleReq): Promise<RoleRes> {
+  async create(dto: CreateRoleReq): Promise<RoleRes> {
     const { role_name, permission_keys } = dto;
     const permissions = await this.permissionRepository.find({
       where: { permission_key: In([...permission_keys]) },
@@ -58,7 +57,7 @@ export class RoleService {
    * @param dto UpdateRolePermissionsReq
    * @returns UpdateRolePermissionsRes
    **/
-  async updateRole(role_name: string, dto: UpdateRoleReq): Promise<RoleRes> {
+  async update(role_name: string, dto: UpdateRoleReq): Promise<RoleRes> {
     const role = await this.roleRepository.getRoleByRoleName(role_name);
 
     const [permissions, count] = await this.permissionRepository.findAndCount({
@@ -74,5 +73,11 @@ export class RoleService {
     await role.save();
 
     return role.toDto(RoleRes);
+  }
+
+  async addToUser(user: UserEntity, role_name: string) {
+    const new_role = await this.roleRepository.getRoleByRoleName(role_name);
+    user.roles = [...user.roles, new_role];
+    await user.save();
   }
 }

@@ -1,4 +1,4 @@
-import { Entity } from './entity.constant';
+import { ENTITY } from './entity.constant';
 
 export enum UploadResource {
   VIDEO = 'video',
@@ -29,9 +29,10 @@ export enum UploadEntityProperty {
   RESUME = 'resume',
   CERTIFICATE_FILE = 'certificate_file',
   RESOURCE_FILE = 'resource_file',
+  EVIDENCE = 'evidence',
 }
 
-export const VALID_UPLOAD_TYPES: Record<Entity, UploadEntityProperty[]> = {
+export const VALID_UPLOAD_TYPES: Record<ENTITY, UploadEntityProperty[]> = {
   user: [UploadEntityProperty.PROFILE_IMAGE],
   instructor: [UploadEntityProperty.RESUME],
   course: [UploadEntityProperty.THUMBNAIL],
@@ -49,6 +50,9 @@ export const VALID_UPLOAD_TYPES: Record<Entity, UploadEntityProperty[]> = {
   'category-translation': [],
   'user-course-progress': [],
   'lecture-comment': [],
+  favorite_courses: [],
+  reply: [],
+  payout: [UploadEntityProperty.EVIDENCE],
 };
 
 export const UPLOAD_TYPE_RESOURCE: Record<
@@ -62,4 +66,5 @@ export const UPLOAD_TYPE_RESOURCE: Record<
   [UploadEntityProperty.RESUME]: UploadResource.PDF,
   [UploadEntityProperty.CERTIFICATE_FILE]: UploadResource.PDF,
   [UploadEntityProperty.RESOURCE_FILE]: UploadResource.PDF,
+  [UploadEntityProperty.EVIDENCE]: UploadResource.IMAGE,
 };

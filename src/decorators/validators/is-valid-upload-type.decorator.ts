@@ -1,4 +1,4 @@
-import { Entity, UploadEntityProperty, VALID_UPLOAD_TYPES } from '@/constants';
+import { ENTITY, UploadEntityProperty, VALID_UPLOAD_TYPES } from '@/constants';
 import {
   ValidationArguments,
   ValidatorConstraint,
@@ -8,7 +8,7 @@ import {
 @ValidatorConstraint({ name: 'IsValidUploadType', async: false })
 export class IsValidUploadType implements ValidatorConstraintInterface {
   validate(uploadType: UploadEntityProperty, args: ValidationArguments) {
-    const entityType = (args.object as { entityType: Entity })[
+    const entityType = (args.object as { entityType: ENTITY })[
       args.constraints[0]
     ];
 
@@ -20,7 +20,7 @@ export class IsValidUploadType implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
-    const entityType = (args.object as { entityType: Entity })[
+    const entityType = (args.object as { entityType: ENTITY })[
       args.constraints[0]
     ];
     return `Upload type '${args.value}' is not allowed for entity type '${entityType}'.`;

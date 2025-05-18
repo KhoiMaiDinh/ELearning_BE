@@ -1,10 +1,10 @@
 import { Nanoid } from '@/common';
-import { Permission } from '@/constants';
+import { PERMISSION } from '@/constants';
 
 export type JwtPayloadType = {
   id: Nanoid;
   session_id: string;
-  permissions: Permission[];
+  permissions: PERMISSION[];
   iat?: number;
   exp?: number;
   banned_until: Date;

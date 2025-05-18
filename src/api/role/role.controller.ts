@@ -1,4 +1,4 @@
-import { Permission } from '@/constants/permission.constant';
+import { PERMISSION } from '@/constants/permission.constant';
 import { ApiAuth } from '@/decorators/http.decorators';
 import { Permissions } from '@/decorators/permission.decorator';
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
@@ -14,27 +14,27 @@ export class RoleController {
     type: RoleRes,
     summary: 'Get all roles',
   })
-  @Permissions(Permission.READ_ROLE)
+  @Permissions(PERMISSION.READ_ROLE)
   @Get()
   async getRoles(): Promise<RoleRes[]> {
-    return await this.roleService.getRoles();
+    return await this.roleService.get();
   }
 
   @ApiAuth({
     type: RoleRes,
     summary: 'Create a new role',
   })
-  @Permissions(Permission.WRITE_ROLE)
+  @Permissions(PERMISSION.WRITE_ROLE)
   @Post()
   async createRole(@Body() dto: CreateRoleReq): Promise<RoleRes> {
-    return await this.roleService.createRole(dto);
+    return await this.roleService.create(dto);
   }
 
   @ApiAuth({
     type: RoleRes,
     summary: 'Change permissions and name of a role',
   })
-  @Permissions(Permission.WRITE_ROLE)
+  @Permissions(PERMISSION.WRITE_ROLE)
   @Put(':role_name')
   @ApiParam({ name: 'role_name', type: 'String' })
   async updateRolePermissions(
@@ -42,7 +42,7 @@ export class RoleController {
     @Body()
     dto: UpdateRoleReq,
   ): Promise<RoleRes> {
-    const result = await this.roleService.updateRole(role_name, dto);
+    const result = await this.roleService.update(role_name, dto);
     return result;
   }
 }

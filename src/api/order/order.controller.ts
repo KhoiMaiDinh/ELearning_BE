@@ -1,9 +1,9 @@
+import { JwtPayloadType } from '@/api/token';
 import { CursorPaginatedDto, Nanoid } from '@/common';
-import { Permission } from '@/constants';
+import { PERMISSION } from '@/constants';
 import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
 import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
-import { JwtPayloadType } from '../token';
 import { CreateOrderReq } from './dto/create-order.req.dto';
 import { CreateOrderRes } from './dto/create-order.res.dto';
 import { LoadOrderQuery } from './dto/load-order.req.dto';
@@ -39,7 +39,7 @@ export class OrderController {
     isPaginated: true,
     paginationType: 'offset',
   })
-  @Permissions(Permission.READ_ORDER)
+  @Permissions(PERMISSION.READ_ORDER)
   async findOrders(
     @CurrentUser() user: JwtPayloadType,
     @Query() query: LoadOrderQuery,

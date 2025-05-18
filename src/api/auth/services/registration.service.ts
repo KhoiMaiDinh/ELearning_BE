@@ -1,5 +1,5 @@
 import { PreferenceEntity } from '@/api/preference/entities/preference.entity';
-import { RoleRepository } from '@/api/role';
+import { RoleRepository } from '@/api/role/repositories/role.repository';
 import { JwtPayloadType, TokenService } from '@/api/token';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { UserRepository } from '@/api/user/user.repository';

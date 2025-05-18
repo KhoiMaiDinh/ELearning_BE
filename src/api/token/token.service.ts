@@ -1,6 +1,6 @@
 import { Nanoid } from '@/common';
 import { AllConfigType } from '@/config';
-import { CacheKey, ErrorCode, Permission } from '@/constants';
+import { CacheKey, ErrorCode, PERMISSION } from '@/constants';
 import { UnauthorizedException } from '@/exceptions';
 import { createCacheKey } from '@/utils/cache.util';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -93,8 +93,18 @@ export class TokenService {
           infer: true,
         }),
       });
-    } catch {
-      throw new UnauthorizedException();
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException(ErrorCode.E010);
+      }
+      if (
+        error.name === 'JsonWebTokenError' &&
+        error.message.includes('invalid secret')
+      ) {
+        throw new UnauthorizedException(ErrorCode.E009);
+      }
+      this.logger.debug('Verify token error', error);
+      throw new UnauthorizedException(ErrorCode.V000);
     }
   }
 
@@ -117,7 +127,7 @@ export class TokenService {
   async create(data: {
     id: Nanoid;
     roles: string[];
-    permissions: Permission[];
+    permissions: PERMISSION[];
     session_id: string;
     hash: string;
     banned_until?: Date;

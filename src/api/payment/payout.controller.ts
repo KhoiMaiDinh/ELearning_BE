@@ -1,6 +1,6 @@
 import { Nanoid } from '@/common';
-import { Permission } from '@/constants';
-import { ApiAuth, Permissions } from '@/decorators';
+import { PERMISSION } from '@/constants';
+import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
 import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { PayoutQuery } from './dto/payout.query.dto';
 import { PayoutRes } from './dto/payout.res.dto';
@@ -17,15 +17,19 @@ export class PayoutController {
     isPaginated: true,
     type: PayoutRes,
   })
-  @Permissions(Permission.READ_PAYOUT)
+  @Permissions(PERMISSION.READ_PAYOUT)
   async find(@Query() query: PayoutQuery) {
     return await this.payoutService.find(query);
   }
 
   @Put(':id')
   @ApiAuth()
-  @Permissions(Permission.WRITE_PAYOUT)
-  async update(@Query('id') id: Nanoid, @Body() dto: UpdatePayoutReq) {
-    return await this.payoutService.update(id, dto);
+  @Permissions(PERMISSION.WRITE_PAYOUT)
+  async update(
+    @CurrentUser() user: JwtPayloadType,
+    @Query('id') id: Nanoid,
+    @Body() dto: UpdatePayoutReq,
+  ) {
+    return await this.payoutService.update(user, id, dto);
   }
 }
