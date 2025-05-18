@@ -8,7 +8,7 @@ import {
 } from '@/api/user';
 import { UserService } from '@/api/user/user.service';
 import { CursorPaginatedDto, Nanoid, OffsetPaginatedDto } from '@/common';
-import { Permission } from '@/constants';
+import { PERMISSION } from '@/constants';
 import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
 import { ParseNanoidPipe } from '@/pipes';
 import {
@@ -49,7 +49,7 @@ export class UserController {
     summary: 'Create user',
     statusCode: HttpStatus.CREATED,
   })
-  @Permissions(Permission.CREATE_USER)
+  @Permissions(PERMISSION.CREATE_USER)
   async createUser(@Body() createUserDto: CreateUserReqDto): Promise<UserRes> {
     return await this.userService.create(createUserDto);
   }
@@ -87,7 +87,7 @@ export class UserController {
   }
 
   @Patch(':id')
-  @Permissions(Permission.WRITE_USER)
+  @Permissions(PERMISSION.WRITE_USER)
   @ApiAuth({ type: UserRes, summary: 'Update user', statusCode: HttpStatus.OK })
   @ApiParam({ name: 'id', type: 'String' })
   updateUser(

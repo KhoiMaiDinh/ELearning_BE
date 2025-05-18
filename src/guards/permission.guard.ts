@@ -1,4 +1,4 @@
-import { Permission } from '@/constants/permission.constant';
+import { PERMISSION } from '@/constants/permission.constant';
 import { PERMISSIONS_KEY } from '@/decorators/permission.decorator';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -12,7 +12,7 @@ export class PermissionGuard implements CanActivate {
   canActivate(context: ExecutionContext) {
     const [req] = context.getArgs();
     const user_permissions = req?.user?.permissions;
-    const required_permissions: Permission[] =
+    const required_permissions: PERMISSION[] =
       this.reflector.get(PERMISSIONS_KEY, context.getHandler()) || [];
     const has_one_of_permissions = required_permissions.some((permission) =>
       user_permissions.includes(permission),

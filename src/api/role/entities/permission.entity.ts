@@ -1,6 +1,6 @@
 import { RoleEntity } from '@/api/role/entities/role.entity';
 import { Uuid } from '@/common';
-import { Entity as E, Permission, PermissionGroup } from '@/constants';
+import { ENTITY as E, PERMISSION, PERMISSION_GROUP } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -24,17 +24,17 @@ export class PermissionEntity extends AbstractEntity {
 
   @Column({
     type: 'enum',
-    enum: Permission,
+    enum: PERMISSION,
     unique: true,
     nullable: false,
   })
-  permission_key!: Permission;
+  permission_key!: PERMISSION;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
   description!: string;
 
-  @Column({ type: 'enum', enum: PermissionGroup, nullable: false })
-  permission_group!: PermissionGroup;
+  @Column({ type: 'enum', enum: PERMISSION_GROUP, nullable: false })
+  permission_group!: PERMISSION_GROUP;
 
   @ManyToMany(() => RoleEntity, (role) => role.permissions)
   roles: Relation<RoleEntity[]>;

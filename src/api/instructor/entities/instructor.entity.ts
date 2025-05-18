@@ -4,7 +4,7 @@ import { CertificateEntity } from '@/api/instructor/entities/certificate.entity'
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
-import { Entity as E } from '@/constants';
+import { ENTITY as E } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -48,8 +48,8 @@ export class InstructorEntity extends AbstractEntity {
   @Column({ type: 'timestamptz', nullable: true })
   approved_at!: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
-  disapproval_reason!: object;
+  @Column({ type: 'text', nullable: true })
+  disapproval_reason!: string;
 
   // urls
   @Column({ type: 'varchar', length: 255, nullable: true })

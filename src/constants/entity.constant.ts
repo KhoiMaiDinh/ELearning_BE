@@ -1,4 +1,4 @@
-export enum Entity {
+export enum ENTITY {
   MEDIA = 'media',
   POST = 'post',
   PREFERENCE = 'preference',
@@ -17,4 +17,6 @@ export enum Entity {
   USER_LESSON_PROGRESS = 'user-course-progress',
   LECTURE_COMMENT = 'lecture-comment',
   FAVORITE_COURSE = 'favorite_courses',
+  REPLY = 'reply',
+  PAYOUT = 'payout',
 }

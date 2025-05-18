@@ -9,21 +9,20 @@ import {
   CacheKey,
   ErrorCode,
   JobName,
-  Permission,
+  PERMISSION,
   QueueName,
   RegisterMethod,
   SYSTEM_USER_ID,
 } from '@/constants';
-import { RequestThrottledException } from '@/exceptions';
+import {
+  NotFoundException,
+  RequestThrottledException,
+  UnauthorizedException,
+} from '@/exceptions';
 import { createCacheKey, verifyPassword } from '@/utils';
 import { InjectQueue } from '@nestjs/bullmq';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bullmq';
@@ -184,7 +183,7 @@ export class AuthService {
     });
     await session.save();
 
-    const permission_set = new Set<Permission>();
+    const permission_set = new Set<PERMISSION>();
 
     const roles = user.roles.map((role) => {
       role.permissions.forEach((permission) => {

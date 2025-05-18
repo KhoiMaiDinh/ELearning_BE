@@ -1,7 +1,7 @@
 import { ErrorCode } from '@/constants/error-code.constant';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { RoleEntity } from './role.entity';
+import { RoleEntity } from '../entities/role.entity';
 
 @Injectable()
 export class RoleRepository extends Repository<RoleEntity> {

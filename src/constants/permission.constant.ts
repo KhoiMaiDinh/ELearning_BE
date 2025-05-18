@@ -1,4 +1,4 @@
-export enum Permission {
+export enum PERMISSION {
   HOME = 'read:home',
   CREATE_USER = 'create:user',
   WRITE_USER = 'write:user',
@@ -20,9 +20,10 @@ export enum Permission {
   READ_REPORT = 'read:report',
   READ_BAN = 'read:ban',
   WRITE_BAN = 'write:ban',
+  READ_REPLY = 'read:reply',
 }
 
-export enum PermissionGroup {
+export enum PERMISSION_GROUP {
   USER = 'user',
   ROLE = 'role',
   CATEGORY = 'category',
@@ -33,4 +34,5 @@ export enum PermissionGroup {
   PAYOUT = 'payout',
   COUPON = 'coupon',
   BAN = 'ban',
+  THREAD = 'thread',
 }

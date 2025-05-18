@@ -1,16 +1,17 @@
 import { CourseModule } from '@/api/course/course.module';
 import { OrderModule } from '@/api/order/order.module';
 import { PaymentController } from '@/api/payment/payment.controller';
+import { UserModule } from '@/api/user/user.module';
 import { AllConfigType } from '@/config';
 import { VnpayModule } from '@khoimd/nestjs-vnpay';
 import { DynamicModule, forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MediaModule } from '../media';
-import { UserModule } from '../user';
 import { AccountEntity } from './entities/account.entity';
 import { PayoutEntity } from './entities/payout.entity';
 import { StripeAccountEntity } from './entities/stripe-account.entity';
+import { PayoutController } from './payout.controller';
 import { PayoutRepository } from './repositories/payout.repository';
 import { AccountService } from './services/account.service';
 import { PaymentService } from './services/payment.service';
@@ -49,7 +50,7 @@ export class PaymentModule {
           inject: [ConfigService],
         }),
       ],
-      controllers: [PaymentController],
+      controllers: [PaymentController, PayoutController],
       providers: [
         PayoutRepository,
         StripeAccountService,

@@ -1,4 +1,4 @@
-import { Permission } from '@/constants/permission.constant';
+import { PERMISSION } from '@/constants/permission.constant';
 import { StringField } from '@/decorators/field.decorators';
 
 export class CreateRoleReq {
@@ -8,7 +8,7 @@ export class CreateRoleReq {
   @StringField({
     each: true,
     required: false,
-    enum: Permission,
+    enum: PERMISSION,
   })
-  permission_keys?: Permission[];
+  permission_keys?: PERMISSION[];
 }
