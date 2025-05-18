@@ -1,5 +1,5 @@
 import { CategoryEntity } from '@/api/category/entities/category.entity';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryController } from './category.controller';
 import { CategoryService } from './category.service';
@@ -10,7 +10,9 @@ import { CategoryRepository } from './repositories/category.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CategoryEntity, CategoryTranslationEntity]),
+    forwardRef(() =>
+      TypeOrmModule.forFeature([CategoryEntity, CategoryTranslationEntity]),
+    ),
   ],
   controllers: [CategoryController],
   providers: [
