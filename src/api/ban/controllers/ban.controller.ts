@@ -1,5 +1,5 @@
 import { Nanoid, SuccessBasicDto } from '@/common';
-import { Permission } from '@/constants';
+import { PERMISSION } from '@/constants';
 import { ApiAuth, Permissions } from '@/decorators';
 import {
   Controller,
@@ -24,7 +24,7 @@ export class BanController {
     type: BanRes,
   })
   @Get()
-  @Permissions(Permission.READ_BAN)
+  @Permissions(PERMISSION.READ_BAN)
   async getBannedUsers(@Query() query: BanQuery) {
     return await this.banService.find(query);
   }
@@ -34,7 +34,7 @@ export class BanController {
     statusCode: HttpStatus.OK,
   })
   @Patch(':user_id/unban')
-  @Permissions(Permission.WRITE_BAN)
+  @Permissions(PERMISSION.WRITE_BAN)
   async unbanUser(@Param('user_id') user_id: Nanoid): Promise<SuccessBasicDto> {
     await this.banService.unbanUser(user_id);
     return {

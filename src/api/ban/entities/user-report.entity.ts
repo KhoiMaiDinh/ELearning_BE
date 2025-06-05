@@ -6,6 +6,7 @@ import {
   Column,
   Entity,
   Index,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   Relation,
@@ -25,7 +26,10 @@ export class UserReportEntity extends AbstractEntity {
   id: Nanoid;
 
   @ManyToOne(() => UserEntity)
+  @JoinColumn({ name: 'reporter_id', referencedColumnName: 'user_id' })
   reporter: Relation<UserEntity>;
+  @Column('uuid')
+  reporter_id: Uuid;
 
   @Column({ type: 'jsonb', nullable: true })
   metadata: Record<string, any>;

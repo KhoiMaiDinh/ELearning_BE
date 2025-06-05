@@ -1,7 +1,7 @@
 import { JwtPayloadType } from '@/api/token';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Nanoid, SuccessBasicDto } from '@/common';
-import { Permission } from '@/constants';
+import { PERMISSION } from '@/constants';
 import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
 import {
   Body,
@@ -47,7 +47,7 @@ export class ReportController {
     summary: 'Report content',
     statusCode: HttpStatus.OK,
   })
-  @Permissions(Permission.READ_REPORT)
+  @Permissions(PERMISSION.READ_REPORT)
   @Get()
   async getPendingReports(@Query() query: ReportQuery) {
     return this.reportService.find(query);

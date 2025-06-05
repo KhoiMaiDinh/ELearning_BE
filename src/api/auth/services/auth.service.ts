@@ -202,6 +202,7 @@ export class AuthService {
       permissions: permissions,
       session_id: session.id,
       hash,
+      is_verified: user.is_verified,
       banned_until: ban ? ban.expires_at : undefined,
     });
 
@@ -253,6 +254,7 @@ export class AuthService {
       permissions: permissions,
       session_id: session.id,
       hash: newHash,
+      is_verified: user.is_verified,
       banned_until: ban ? ban.expires_at : undefined,
     });
   }

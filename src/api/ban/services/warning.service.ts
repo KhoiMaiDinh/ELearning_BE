@@ -1,7 +1,7 @@
 import { CouponService } from '@/api/coupon/coupon.service';
 import { CouponType } from '@/api/coupon/enum/coupon-type.enum';
 import { CourseRepository, CourseStatus } from '@/api/course';
-import { LectureRepository } from '@/api/course-item/lecture/lecture.repository';
+import { LectureRepository } from '@/api/course-item/lecture/repositories/lecture.repository';
 import { ReplyRepository } from '@/api/thread/repositories/reply.repository';
 import { ThreadRepository } from '@/api/thread/repositories/thread.repository';
 import { JwtPayloadType } from '@/api/token';
@@ -21,7 +21,7 @@ import { UserBanService } from './ban.service';
 
 @Injectable()
 export class WarningService {
-  private readonly WARNING_LIMIT = 3;
+  private readonly WARNING_LIMIT = 1;
 
   constructor(
     @InjectRepository(WarningEntity)
@@ -40,11 +40,11 @@ export class WarningService {
 
   async issueWarning(
     user_payload: JwtPayloadType,
-    user: UserEntity,
+    reported_user: UserEntity,
     report?: UserReportEntity,
   ): Promise<WarningEntity> {
     const warning = this.warningRepo.create({
-      user,
+      user: reported_user,
       report,
     });
     await this.warningRepo.save(warning);
@@ -68,13 +68,14 @@ export class WarningService {
         const lecture = await this.lectureRepo.findOne({
           where: { id: report.metadata.lecture_id },
           relations: {
-            section: { course: { enrolled_users: { user: true } } },
+            section: {
+              course: { enrolled_users: { user: true } },
+            },
+            series: true,
           },
         });
-        await this.lectureRepo.update(
-          { id: report.metadata.lecture_id },
-          { status: CourseStatus.BANNED },
-        );
+        lecture.latestPublishedSeries.status = CourseStatus.BANNED;
+        await this.lectureRepo.save(lecture);
         await this.courseRepo.update(
           { id: lecture.section.course.id },
           { status: CourseStatus.BANNED },
@@ -89,6 +90,7 @@ export class WarningService {
               starts_at: new Date(),
               expires_at: new Date(Date.now() + ONE_YEAR_IN_MILLISECONDS),
               usage_limit: 1,
+              is_public: false,
             });
             await this.emailQueue.add(
               JobName.COUPON_GIFT,
@@ -105,15 +107,16 @@ export class WarningService {
         break;
       }
     }
-    const active_warnings = await this.getActiveWarnings(user.id);
-    if (active_warnings.length >= this.WARNING_LIMIT) {
-      await this.userBanService.banUser(user, active_warnings);
-    }
+    const active_warnings = await this.getActiveWarnings(reported_user.id);
+    console.log(active_warnings);
+    if (active_warnings.length >= this.WARNING_LIMIT)
+      await this.userBanService.banUser(reported_user, active_warnings);
+
     return warning;
   }
 
   async getActiveWarnings(user_id: Nanoid): Promise<WarningEntity[]> {
-    return this.warningRepo.find({
+    return await this.warningRepo.find({
       where: { user: { id: user_id }, ban: null },
       relations: { user: true, report: true },
     });
