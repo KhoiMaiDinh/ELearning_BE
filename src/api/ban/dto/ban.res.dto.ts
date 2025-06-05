@@ -18,7 +18,7 @@ export class BanRes {
 
   @Expose()
   @ClassField(() => WarningRes)
-  warning: WrapperType<WarningRes>;
+  warnings: WrapperType<WarningRes>;
 
   @Expose()
   createdAt: Date;

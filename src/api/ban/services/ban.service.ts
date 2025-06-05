@@ -43,13 +43,12 @@ export class UserBanService {
   }
 
   async unbanUser(user_id: Nanoid): Promise<void> {
-    await this.banRepo
-      .createQueryBuilder()
-      .update()
-      .set({ is_active: false })
-      .where('user.id = :user_id', { user_id })
-      .andWhere('is_active = true')
-      .execute();
+    const ban = await this.banRepo.findOne({
+      where: { user: { id: user_id }, is_active: true },
+      relations: { user: true },
+    });
+    ban.is_active = false;
+    await this.banRepo.save(ban);
   }
 
   async getUserBanned(user_id: Nanoid): Promise<UserBanEntity> {
@@ -62,7 +61,7 @@ export class UserBanService {
           expires_at: MoreThan(new Date()),
         },
       ],
-      relations: { user: true },
+      relations: { user: true, warnings: { report: true } },
     });
     return active_ban;
   }
@@ -76,9 +75,16 @@ export class UserBanService {
 
   async find(query: BanQuery): Promise<OffsetPaginatedDto<BanRes>> {
     const query_builder = this.banRepo
-      .createQueryBuilder('user')
-      .orderBy('user.createdAt', query.order)
-      .leftJoinAndSelect('user.roles', 'role');
+      .createQueryBuilder('ban')
+      .leftJoinAndSelect('ban.user', 'user')
+      .leftJoinAndSelect('ban.warnings', 'warnings')
+      .leftJoinAndSelect('warnings.report', 'report')
+      .orderBy('ban.createdAt', query.order);
+
+    if (query.is_active != undefined)
+      query_builder.andWhere('ban.is_active = :is_active', {
+        is_active: query.is_active,
+      });
 
     const [ban_infos, metaDto] = await paginate<UserBanEntity>(
       query_builder,

@@ -4,6 +4,7 @@ import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -17,7 +18,10 @@ export class UserBanEntity extends AbstractEntity {
   ban_id: Uuid;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: Relation<UserEntity>;
+  @Column('uuid')
+  user_id: Uuid;
 
   @Column('timestamptz', { nullable: true })
   expires_at: Date | null; // null means permanent ban

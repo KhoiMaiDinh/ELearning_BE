@@ -1,5 +1,5 @@
 import { CourseRepository } from '@/api/course';
-import { LectureRepository } from '@/api/course-item/lecture/lecture.repository';
+import { LectureRepository } from '@/api/course-item/lecture/repositories/lecture.repository';
 import { ReplyRepository } from '@/api/thread/repositories/reply.repository';
 import { ThreadRepository } from '@/api/thread/repositories/thread.repository';
 import { JwtPayloadType } from '@/api/token';
@@ -8,22 +8,20 @@ import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid, OffsetPaginatedDto } from '@/common';
 import { paginate } from '@/utils';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
 import { ReportQuery, ReportRes } from '../dto';
 import { ReportReq } from '../dto/report.req.dto';
 import { ReviewReportReq } from '../dto/review-report.req.dto';
 import { UserReportEntity } from '../entities/user-report.entity';
 import { WarningType } from '../enum/warning-type.enum';
 import { WarningMetadataMap } from '../interface/metadata-map.type';
+import { ReportRepository } from '../repositories/report.repository';
 import { WarningService } from './warning.service';
 
 @Injectable()
 export class UserReportService {
   constructor(
-    @InjectRepository(UserReportEntity)
-    private readonly reportRepo: Repository<UserReportEntity>,
+    private readonly reportRepo: ReportRepository,
 
     private readonly replyRepo: ReplyRepository,
     private readonly threadRepo: ThreadRepository,
