@@ -167,7 +167,7 @@ export class LectureCommentService {
       relations: {
         user: { profile_image: true },
         aspects: true,
-        lecture: true,
+        lecture: { series: true },
       },
     });
 
@@ -187,7 +187,8 @@ export class LectureCommentService {
       .leftJoinAndSelect('comment.aspects', 'aspect')
       .leftJoinAndSelect('comment.user', 'user')
       .leftJoinAndSelect('user.profile_image', 'profile_image')
-      .leftJoinAndSelect('comment.lecture', 'lecture');
+      .leftJoinAndSelect('comment.lecture', 'lecture')
+      .leftJoinAndSelect('lecture.series', 'series');
 
     if (options.lecture_id)
       query.where('lecture.id = :lecture_id', {

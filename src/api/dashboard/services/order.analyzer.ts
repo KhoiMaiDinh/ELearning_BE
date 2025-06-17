@@ -200,6 +200,6 @@ export class OrderAnalyzer {
       })
       .getRawOne();
 
-    return Number(result.total) || 0;
+    return parseFloat(result?.total ?? '0');
   }
 }

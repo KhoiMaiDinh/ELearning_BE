@@ -42,7 +42,7 @@ export class InstructorDashboardService {
     );
 
     const total_payout = await this.orderAnalyzer.getTotalPayout(
-      instructor.instructor_id,
+      instructor.user.user_id,
     );
 
     const avg_rating = await this.courseAnalyzer.getInstructorAvgRating(
