@@ -11,6 +11,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 import * as DTO from './dto';
 import { AuthService } from './services/auth.service';
@@ -41,7 +42,7 @@ export class AuthController {
     response.cookie(CookiesEnum.ACCESS_TOKEN, `Bearer ${result.access_token}`);
     response.cookie(CookiesEnum.REFRESH_TOKEN, result.refresh_token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
     });
     return result;
   }
@@ -77,7 +78,7 @@ export class AuthController {
     const result = await this.authService.googleLogIn(dto);
     response.cookie(CookiesEnum.REFRESH_TOKEN, result.refresh_token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
     });
     return result;
   }
@@ -140,10 +141,11 @@ export class AuthController {
     @Cookies(CookiesEnum.REFRESH_TOKEN) refreshToken: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<DTO.RefreshRes> {
-    const tokens = await this.authService.refreshToken({ refreshToken });
+    const req = plainToInstance(DTO.RefreshReq, { refreshToken });
+    const tokens = await this.authService.refreshToken(req);
     response.cookie(CookiesEnum.REFRESH_TOKEN, tokens.refresh_token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
     });
     return tokens;
   }

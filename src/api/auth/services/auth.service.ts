@@ -222,10 +222,10 @@ export class AuthService {
   }
 
   async refreshToken(dto: DTO.RefreshReq): Promise<DTO.RefreshRes> {
-    const { sessionId, hash } = this.tokenService.verifyRefreshToken(
+    const { session_id, hash } = this.tokenService.verifyRefreshToken(
       dto.refreshToken,
     );
-    const session = await SessionEntity.findOneBy({ id: sessionId });
+    const session = await SessionEntity.findOneBy({ id: session_id });
 
     if (!session || session.hash !== hash) {
       throw new UnauthorizedException();
