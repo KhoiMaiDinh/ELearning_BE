@@ -13,16 +13,19 @@ import { QueueName } from '@/constants';
 import { OrderDetailEntity } from './entities/order-detail.entity';
 import { OrderEntity } from './entities/order.entity';
 import { OrderDetailRepository } from './repositories/order-detail.repository';
+import { OrderRepository } from './repositories/order.repository';
 import { OrderDetailService } from './services/order-detail.service';
 import { OrderService } from './services/order.service';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
-    CourseModule,
+    forwardRef(() => CourseModule),
     forwardRef(() => CouponModule),
     forwardRef(() => PaymentModule.forRootAsync()),
-    TypeOrmModule.forFeature([OrderEntity, OrderDetailEntity, CourseEntity]),
+    forwardRef(() =>
+      TypeOrmModule.forFeature([OrderEntity, OrderDetailEntity, CourseEntity]),
+    ),
     BullModule.registerQueue({
       name: QueueName.ORDER,
       streams: {
@@ -33,7 +36,17 @@ import { OrderService } from './services/order.service';
     }),
   ],
   controllers: [OrderController],
-  providers: [OrderService, OrderDetailService, OrderDetailRepository],
-  exports: [OrderService, OrderDetailService, OrderDetailRepository],
+  providers: [
+    OrderService,
+    OrderRepository,
+    OrderDetailService,
+    OrderDetailRepository,
+  ],
+  exports: [
+    OrderService,
+    OrderRepository,
+    OrderDetailService,
+    OrderDetailRepository,
+  ],
 })
 export class OrderModule {}

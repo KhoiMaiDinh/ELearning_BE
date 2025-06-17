@@ -3,6 +3,7 @@ import { CourseEntity } from '@/api/course/entities/course.entity';
 import { OrderEntity } from '@/api/order/entities/order.entity';
 import { PayoutEntity } from '@/api/payment/entities/payout.entity';
 import { Uuid } from '@/common';
+import { ENTITY } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -13,7 +14,7 @@ import {
   Relation,
 } from 'typeorm';
 
-@Entity('order-detail')
+@Entity(ENTITY.ORDER_DETAIL)
 export class OrderDetailEntity extends AbstractEntity {
   constructor(data?: Partial<OrderDetailEntity>) {
     super();

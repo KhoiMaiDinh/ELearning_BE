@@ -1,7 +1,8 @@
 import { Uuid } from '@/common';
 import { Injectable } from '@nestjs/common';
-import { LessThan, LessThanOrEqual } from 'typeorm';
+import { LessThan } from 'typeorm';
 
+import { PayoutCourseContributionRes } from '@/api/payment/dto/payout-course-contribution.res.dto';
 import { OrderDetailEntity } from '../entities/order-detail.entity';
 import { OrderDetailRepository } from '../repositories/order-detail.repository';
 
@@ -36,22 +37,49 @@ export class OrderDetailService {
   async findPayableByInstructor(instructor_id: Uuid) {
     const now = new Date();
 
-    const orders = await this.orderDetailRepo.find({
-      where: {
-        course: {
-          instructor_id,
-        },
-        payout_due_at: LessThanOrEqual(now),
-      },
-      relations: {
-        course: { instructor: { user: { account: true } } },
-      },
-    });
-
-    return orders;
+    return await this.orderDetailRepo
+      .createQueryBuilder('detail')
+      .innerJoinAndSelect('detail.course', 'course')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'user')
+      .leftJoinAndSelect('user.account', 'account')
+      .where('course.instructor_id = :instructor_id', { instructor_id })
+      .andWhere('detail.payout_due_at <= :now', { now })
+      .andWhere('detail.payout_id IS NULL')
+      .getMany();
   }
 
   async save(details: OrderDetailEntity[]) {
     return await this.orderDetailRepo.save(details);
+  }
+
+  async findPayoutCourseContribution(payout_ids: Uuid[]) {
+    const raw_contributions = await this.orderDetailRepo
+      .createQueryBuilder('od')
+      .leftJoin('od.course', 'course')
+      .select('od.payout_id', 'payout_id')
+      .addSelect('course.title', 'title')
+      .addSelect('SUM(ROUND(od.final_price))', 'final_price')
+      .addSelect('SUM(ROUND(od.platform_fee))', 'platform_fee')
+      .where('od.payout_id IN (:...payout_ids)', { payout_ids })
+      .groupBy('od.payout_id')
+      .addGroupBy('course.id')
+      .addGroupBy('course.title')
+      .getRawMany();
+
+    const contributions_map = new Map<string, PayoutCourseContributionRes[]>();
+    for (const row of raw_contributions) {
+      const entry: PayoutCourseContributionRes = {
+        course_title: row.title,
+        final_price: Number(row.final_price),
+        platform_fee: Number(row.platform_fee),
+        net_revenue: Number(row.final_price) - Number(row.platform_fee),
+      };
+      if (!contributions_map.has(row.payout_id)) {
+        contributions_map.set(row.payout_id, []);
+      }
+      contributions_map.get(row.payout_id).push(entry);
+    }
+    return contributions_map;
   }
 }
