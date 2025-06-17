@@ -3,8 +3,10 @@ import { UserModule } from '@/api/user/user.module';
 import { KafkaModule } from '@/kafka';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { InstructorModule } from '../instructor/instructor.module';
 import { CommentAspectEntity } from './entities/comment-aspect.entity';
 import { LectureCommentEntity } from './entities/lecture-comment.entity';
+import { LectureCommentController } from './lecture-comment.controller';
 import { LectureCommentRepository } from './lecture-comment.repository';
 import { LectureCommentService } from './lecture-comment.service';
 
@@ -13,8 +15,10 @@ import { LectureCommentService } from './lecture-comment.service';
     KafkaModule,
     forwardRef(() => UserModule),
     forwardRef(() => CourseItemModule),
+    InstructorModule,
     TypeOrmModule.forFeature([LectureCommentEntity, CommentAspectEntity]),
   ],
+  controllers: [LectureCommentController],
   providers: [LectureCommentService, LectureCommentRepository],
   exports: [LectureCommentService, LectureCommentRepository],
 })

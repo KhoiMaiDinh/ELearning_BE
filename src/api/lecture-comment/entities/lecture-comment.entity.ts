@@ -1,7 +1,7 @@
-import { LectureEntity } from '@/api/course-item/lecture/lecture.entity';
+import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Nanoid, Uuid } from '@/common';
-import { Entity as E } from '@/constants';
+import { ENTITY as E } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
 import {
@@ -35,7 +35,7 @@ export class LectureCommentEntity extends AbstractEntity {
 
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'user_id' })
-  user: UserEntity;
+  user: Relation<UserEntity>;
 
   @Column('uuid')
   user_id: Uuid;
