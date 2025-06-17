@@ -1,8 +1,8 @@
-import { LectureEntity } from '@/api/course-item/lecture/lecture.entity';
+import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
-import { Entity as E } from '@/constants';
+import { ENTITY as E } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,

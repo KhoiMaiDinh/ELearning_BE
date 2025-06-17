@@ -1,24 +1,27 @@
+import { LectureRepository } from '@/api/course-item/lecture/repositories/lecture.repository';
 import { EnrollCourseService } from '@/api/course/services/enroll-course.service';
+import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
-import { Nanoid, Uuid } from '@/common';
-import { ErrorCode } from '@/constants';
+import { IProgressJob, Nanoid, Uuid } from '@/common';
+import { ErrorCode, JobName, QueueName } from '@/constants';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { LectureRepository } from '../course-item/lecture/lecture.repository';
+import { Queue } from 'bullmq';
+import { In } from 'typeorm';
 import { CourseEntity } from '../course/entities/course.entity';
 import { CourseStatus } from '../course/enums/course-status.enum';
-import { JwtPayloadType } from '../token';
-import { UserLessonProgressEntity } from './entities/lesson-progress.entity';
+import { ICourseProgress } from './interfaces/progress.interface';
+import { LessonProgressRepository } from './lesson-progress.repository';
 
 @Injectable()
 export class LessonProgressService {
   constructor(
-    @InjectRepository(UserLessonProgressEntity)
-    private readonly progressRepo: Repository<UserLessonProgressEntity>,
+    private readonly progressRepo: LessonProgressRepository,
     private readonly enrollCourseService: EnrollCourseService,
     private readonly userRepo: UserRepository,
     private readonly lectureRepo: LectureRepository,
+    @InjectQueue(QueueName.PROGRESS)
+    private readonly progressQueue: Queue<IProgressJob, any, string>,
   ) {}
 
   async upsertWatchTime(
@@ -31,7 +34,7 @@ export class LessonProgressService {
 
     const lecture = await this.lectureRepo.findOne({
       where: { id: lecture_id },
-      relations: { section: true, videos: true },
+      relations: { section: { course: true } },
     });
     if (!lecture) throw new NotFoundException(ErrorCode.E033);
 
@@ -59,22 +62,39 @@ export class LessonProgressService {
 
     progress.watch_time_in_percentage = watched_percentage;
     progress.completed = completed;
+    if (completed) {
+      await this.progressQueue.add(
+        JobName.CHECK_PROGRESS,
+        {
+          course_id: lecture.section.course_id,
+          user_id: user.id,
+        },
+        { attempts: 3, backoff: { type: 'exponential', delay: 60000 } },
+      );
+    }
 
     return this.progressRepo.save(progress);
   }
 
-  async getCourseProgress(user_id: Nanoid, course_id: Uuid) {
+  async getCourseProgress(
+    user_id: Nanoid,
+    course_id: Uuid,
+  ): Promise<ICourseProgress> {
     // Step 1: Get total lectures in this course
-    const total_lectures = await this.lectureRepo.count({
-      where: {
-        section: { course_id: course_id },
-        status: CourseStatus.PUBLISHED,
-      },
-      relations: { section: true },
-    });
+    const total_public_lectures = await this.lectureRepo
+      .createQueryBuilder('lecture')
+      .innerJoin('lecture.series', 'series')
+      .innerJoin('lecture.section', 'section')
+      .where('section.course_id = :course_id', { course_id })
+      .andWhere('series.status = :status', { status: CourseStatus.PUBLISHED })
+      .getCount();
 
-    if (total_lectures === 0) {
-      return { progress: 0, total: 0, completed: 0 };
+    if (total_public_lectures === 0) {
+      return {
+        progress: 0,
+        total: 0,
+        completed: 0,
+      };
     }
 
     // Step 2: Get how many lectures this user has completed
@@ -88,10 +108,12 @@ export class LessonProgressService {
     });
 
     // Step 3: Calculate percentage
-    const percent = Math.round((completed_lectures / total_lectures) * 100);
+    const percent = Math.round(
+      (completed_lectures / total_public_lectures) * 100,
+    );
 
     return {
-      total: total_lectures,
+      total: total_public_lectures,
       completed: completed_lectures,
       progress: percent,
     };
