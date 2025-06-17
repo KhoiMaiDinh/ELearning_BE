@@ -7,7 +7,9 @@ import {
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
-import { Aspect, Emotion } from '../enum';
+// import { Aspect, Emotion } from '../enum';
+import { Aspect } from '@/api/lecture-comment/enum/aspect.enum';
+import { Emotion } from '@/api/lecture-comment/enum/emotion.enum';
 import { LectureCommentEntity } from './lecture-comment.entity';
 
 @Entity('comment-aspect')

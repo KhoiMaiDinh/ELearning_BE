@@ -42,7 +42,7 @@ export class InstructorEntity extends AbstractEntity {
   headline!: string;
 
   // approval
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', nullable: true })
   is_approved!: boolean;
 
   @Column({ type: 'timestamptz', nullable: true })
