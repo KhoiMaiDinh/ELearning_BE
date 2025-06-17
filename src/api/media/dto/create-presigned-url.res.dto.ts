@@ -1,4 +1,4 @@
-import { Entity, UploadEntityProperty } from '@/constants';
+import { ENTITY, UploadEntityProperty } from '@/constants';
 import {
   EnumField,
   IsValidMediaFileConstraint,
@@ -18,6 +18,6 @@ export class CreatePresignedUrlReq {
   @Validate(IsValidMediaFileConstraint, ['entity_property'])
   filename: string;
 
-  @EnumField(() => Entity)
-  entity: Entity;
+  @EnumField(() => ENTITY)
+  entity: ENTITY;
 }

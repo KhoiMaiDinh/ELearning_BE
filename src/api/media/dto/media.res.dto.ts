@@ -6,6 +6,9 @@ import { Exclude, Expose } from 'class-transformer';
 export class MediaRes {
   @StringField()
   @Expose()
+  id: string;
+  @StringField()
+  @Expose()
   key: string;
   @StringFieldOptional()
   @Expose()
