@@ -3,15 +3,18 @@ import {
   CourseRes,
   CoursesQuery,
   CreateCourseReq,
+  CurriculumQuery,
+  CurriculumRes,
   FavoriteCourseRes,
   PublicCourseReq,
   RequestCourseUnbanReq,
   ReviewUnbanReq,
+  UnbanRequestQuery,
   UpdateCourseReq,
 } from '@/api/course';
 import { JwtPayloadType } from '@/api/token';
-import { Nanoid } from '@/common';
-import { Permission } from '@/constants';
+import { Nanoid, OffsetPaginatedDto, SuccessBasicDto } from '@/common';
+import { PERMISSION } from '@/constants';
 import { ApiAuth, ApiPublic, CurrentUser, Permissions } from '@/decorators';
 import {
   Body,
@@ -26,13 +29,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { CourseReviewRes } from './dto/review.res.dto';
-import { SubmitReviewReq } from './dto/submit-review.req.dto';
-import { CourseUnbanResponseDto } from './dto/unban-request.res.dto';
-import { CourseModerationService } from './services/course-moderation.service';
-import { CourseService } from './services/course.service';
-import { EnrollCourseService } from './services/enroll-course.service';
-import { FavoriteCourseService } from './services/favorite-course.service';
+import { CourseReviewRes } from '../dto/review.res.dto';
+import { SubmitReviewReq } from '../dto/submit-review.req.dto';
+import { CourseUnbanResponseDto } from '../dto/unban-request.res.dto';
+import { CourseModerationService } from '../services/course-moderation.service';
+import { CourseService } from '../services/course.service';
+import { EnrollCourseService } from '../services/enroll-course.service';
+import { FavoriteCourseService } from '../services/favorite-course.service';
 
 @Controller({ path: 'courses', version: '1' })
 export class CourseController {
@@ -76,6 +79,21 @@ export class CourseController {
     return await this.courseService.findFromUser(user);
   }
 
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    summary: 'Get pending unban requests for a course',
+    type: CourseUnbanResponseDto,
+  })
+  @Get('unban-requests')
+  async getUnbanRequests(@Query() query: UnbanRequestQuery) {
+    const { course_with_unban_requests, meta } =
+      await this.moderationService.getUnbanRequests(query);
+    return new OffsetPaginatedDto(
+      plainToInstance(CourseRes, course_with_unban_requests),
+      meta,
+    );
+  }
+
   @Get(':id')
   @ApiPublic({
     statusCode: HttpStatus.OK,
@@ -115,7 +133,7 @@ export class CourseController {
     @CurrentUser() user: JwtPayloadType,
     @Param('id') id: Nanoid | string,
   ) {
-    return await this.courseService.changeStatus(id, user, dto);
+    return await this.courseService.publish(id, user, dto);
   }
 
   @Get(':id/curriculums')
@@ -127,8 +145,14 @@ export class CourseController {
   async findCurriculums(
     @CurrentUser() user: JwtPayloadType,
     @Param('id') id: Nanoid | string,
+    @Query() query: CurriculumQuery,
   ) {
-    return await this.courseService.findCurriculums(user, id);
+    const { course: curriculum, course_progress } =
+      await this.courseService.findCurriculums(user, id, query);
+    return plainToInstance(CurriculumRes, {
+      ...curriculum,
+      course_progress,
+    });
   }
 
   @Get('enrolled/me')
@@ -192,7 +216,7 @@ export class CourseController {
     summary: 'Request course unban',
     type: CourseUnbanResponseDto,
   })
-  @Post(':course_id/request-unban')
+  @Post(':course_id/unban-requests')
   async requestUnban(
     @Param('course_id') course_id: Nanoid,
     @CurrentUser() user: JwtPayloadType,
@@ -208,20 +232,29 @@ export class CourseController {
 
   @ApiAuth({
     statusCode: HttpStatus.OK,
+    summary: 'Get pending unban requests for a course',
+    type: CourseUnbanResponseDto,
+  })
+  @Get(':course_id/unban-requests')
+  async getUnbanRequestsOfCourse(@Param('course_id') course_id: Nanoid) {
+    const requests =
+      await this.moderationService.getCourseUnbanRequests(course_id);
+    return plainToInstance(CourseUnbanResponseDto, requests);
+  }
+
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
     summary: 'Review course unban request',
     type: CourseUnbanResponseDto,
   })
   @Patch(':course_id/unban')
-  @Permissions(Permission.WRITE_COURSE)
+  @Permissions(PERMISSION.WRITE_COURSE)
   async reviewRequest(
     @Param('course_id') course_id: Nanoid,
     @Body() dto: ReviewUnbanReq,
-  ) {
-    const unban_request = await this.moderationService.reviewUnbanRequest(
-      course_id,
-      dto,
-    );
-    return unban_request.toDto(CourseUnbanResponseDto);
+  ): Promise<SuccessBasicDto> {
+    await this.moderationService.reviewUnbanRequest(course_id, dto);
+    return plainToInstance(SuccessBasicDto, { message: 'Request done' });
   }
 
   @Post(':course_id/favorites')
@@ -254,10 +287,10 @@ export class CourseController {
   @ApiAuth({
     statusCode: HttpStatus.OK,
     summary: 'Get my favorite courses',
-    type: FavoriteCourseRes,
+    type: CourseRes,
   })
   async listFavorites(@CurrentUser('id') user_id: Nanoid) {
     const favorite_list = await this.favoriteCourseService.list(user_id);
-    return plainToInstance(FavoriteCourseRes, favorite_list);
+    return plainToInstance(CourseRes, favorite_list);
   }
 }

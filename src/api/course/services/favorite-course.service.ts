@@ -1,8 +1,10 @@
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { UserRepository } from '@/api/user/user.repository';
-import { Nanoid } from '@/common';
+import { Nanoid, Uuid } from '@/common';
 import { ErrorCode } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
+import { CourseEntity } from '../entities/course.entity';
 import { FavoriteCourseEntity } from '../entities/favorite-course.entity';
 import { CourseRepository } from '../repositories/course.repository';
 import { FavoriteCourseRepository } from '../repositories/favorite-course.repository';
@@ -46,12 +48,31 @@ export class FavoriteCourseService {
     await this.favoriteCourseRepo.softRemove(favorite);
   }
 
-  async list(user_id: Nanoid): Promise<FavoriteCourseEntity[]> {
+  async list(user_id: Nanoid): Promise<CourseEntity[]> {
     const favorites = await this.favoriteCourseRepo.find({
       where: { user: { id: user_id } },
-      relations: { user: true, course: true },
+      relations: {
+        user: true,
+        course: { instructor: { user: true }, thumbnail: true },
+      },
       order: { createdAt: 'DESC' },
     });
-    return favorites;
+    return favorites.map((favorite) => favorite.course);
+  }
+
+  async hasFavorited(user_id: Uuid, course_id: Uuid): Promise<boolean> {
+    const favorite = await this.favoriteCourseRepo.findOne({
+      where: { user_id, course_id },
+    });
+    return !!favorite;
+  }
+
+  async findUsers(course_id: Uuid): Promise<UserEntity[]> {
+    const favorites = await this.favoriteCourseRepo.find({
+      where: { course_id },
+      relations: { user: true },
+    });
+    const users = favorites.map((favorite) => favorite.user);
+    return users;
   }
 }

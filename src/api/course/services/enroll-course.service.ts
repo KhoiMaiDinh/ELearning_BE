@@ -1,23 +1,55 @@
+import { NotificationType } from '@/api/notification/enum/notification-type.enum';
+import { NotificationBuilderService } from '@/api/notification/notification-builder.service';
+import { NotificationService } from '@/api/notification/notification.service';
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { Nanoid, Uuid } from '@/common';
-import { ErrorCode } from '@/constants';
+import { ErrorCode, Language } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
+import { NotificationGateway } from '@/gateway/notification/notification.gateway';
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { CourseReviewRes } from '../dto/review.res.dto';
 import { SubmitReviewReq } from '../dto/submit-review.req.dto';
 import { CourseEntity } from '../entities/course.entity';
+import { EnrolledCourseEntity } from '../entities/enrolled-course.entity';
 import { EnrolledCourseRepository } from '../repositories/enrolled-course.repository';
 
 @Injectable()
 export class EnrollCourseService {
-  constructor(private readonly enrolledRepo: EnrolledCourseRepository) {}
+  constructor(
+    private readonly enrolledRepo: EnrolledCourseRepository,
+    private readonly notificationService: NotificationService,
+    private readonly notificationBuilder: NotificationBuilderService,
+    private readonly notificationGateway: NotificationGateway,
+  ) {}
 
-  async enroll(course_id: Uuid, user_id: Uuid): Promise<void> {
+  async enroll(course: CourseEntity, user: UserEntity): Promise<void> {
+    if (!course) throw new NotFoundException(ErrorCode.E025);
+
     const enroll_course = this.enrolledRepo.create({
-      course_id,
-      user_id,
+      course_id: course.course_id,
+      user_id: user.user_id,
     });
+
     await this.enrolledRepo.save(enroll_course);
+
+    const notification = await this.notificationService.save(
+      user.user_id,
+      NotificationType.COURSE_ENROLLED,
+      {
+        course_id: course.id,
+      },
+      {
+        title: 'Đăng ký khóa học thành công',
+        body: `Bạn đã đăng ký thành công khóa học ${course.title}`,
+      },
+    );
+    const built_notification = this.notificationBuilder.courseEnrolled(course);
+
+    this.notificationGateway.emitToUser(user.id, {
+      ...notification,
+      ...built_notification,
+    });
   }
 
   async unenrollCourse(course_id: Uuid, user_id: Nanoid): Promise<void> {
@@ -30,11 +62,108 @@ export class EnrollCourseService {
       throw new ValidationException(ErrorCode.E046);
     }
   }
-  async findEnrolled(ex_user_id: Nanoid): Promise<CourseEntity[]> {
-    const enrolled_courses = await this.enrolledRepo.find({
-      where: { user: { id: ex_user_id } },
-      relations: ['course', 'user'],
+
+  async markCourseCompleted(user_id: Nanoid, course_id: Uuid) {
+    const enrolled = await this.enrolledRepo.findOne({
+      where: {
+        user: { id: user_id },
+        course_id: course_id,
+      },
+      relations: {
+        course: true,
+        user: true,
+      },
     });
+
+    if (!enrolled) {
+      throw new NotFoundException(ErrorCode.E038);
+    }
+
+    if (!enrolled.is_completed) {
+      enrolled.is_completed = true;
+      enrolled.completed_at = new Date();
+
+      await this.enrolledRepo.save(enrolled);
+    }
+
+    const built_notification = this.notificationBuilder.courseCompleted(
+      enrolled.course,
+    );
+    const notification = await this.notificationService.save(
+      enrolled.user_id,
+      NotificationType.COURSE_COMPLETED,
+      {
+        course_id: enrolled.course.id,
+      },
+      built_notification,
+    );
+
+    this.notificationGateway.emitToUser(enrolled.user.id, {
+      ...notification,
+      ...built_notification,
+    });
+
+    return enrolled;
+  }
+
+  async getTopRatedCourses(limit: number) {
+    return this.enrolledRepo
+      .createQueryBuilder('enrollment')
+      .innerJoin('enrollment.course', 'course')
+      .select('course.name', 'name')
+      .addSelect('AVG(enrollment.rating)', 'course_avg_rating')
+      .where('enrollment.rating IS NOT NULL')
+      .groupBy('course.course_id')
+      .orderBy('course_avg_rating', 'DESC')
+      .limit(limit)
+      .getRawMany();
+  }
+
+  async findEnrolledUsers(course_id: Uuid) {
+    const enrolled_courses = await this.enrolledRepo
+      .createQueryBuilder('enrolled')
+      .leftJoinAndSelect('enrolled.user', 'user')
+      .where('enrolled.course_id = :course_id', { course_id })
+      .getMany();
+
+    return enrolled_courses.map((enrolled_course) => enrolled_course.user);
+  }
+
+  async findEnrolledCourses(ex_user_id: Nanoid): Promise<CourseEntity[]> {
+    const enrolled_courses = await this.enrolledRepo
+      .createQueryBuilder('enrolled')
+      .leftJoinAndSelect('enrolled.course', 'course')
+      .leftJoinAndSelect('enrolled.user', 'user')
+      .leftJoinAndSelect('course.thumbnail', 'thumbnail')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'instructor_user')
+      .leftJoinAndSelect('instructor_user.profile_image', 'profile_image')
+      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect(
+        'category.translations',
+        'translation',
+        'translation.language = :language',
+        { language: Language.VI },
+      )
+      .where('user.id = :id', { id: ex_user_id })
+      .addSelect(
+        (sub_query) =>
+          sub_query
+            .select('COUNT(*)')
+            .from('enrolled-course', 'ec')
+            .where('ec.course_id = course.course_id'),
+        'total_enrolled',
+      )
+      .addSelect(
+        (sub_query) =>
+          sub_query
+            .select('AVG(ec.rating)')
+            .from('enrolled-course', 'ec')
+            .where('ec.course_id = course.course_id')
+            .andWhere('ec.rating IS NOT NULL'),
+        'course_avg_rating',
+      )
+      .getMany();
 
     return (
       enrolled_courses.map((enrolled_course) => enrolled_course.course) || []
@@ -68,15 +197,20 @@ export class EnrollCourseService {
   ) {
     const enrolled = await this.enrolledRepo.findOne({
       where: { user: { id: user_id }, course: { id: course_id } },
-      relations: ['user', 'course'],
+      relations: {
+        user: true,
+        course: { instructor: { user: true } },
+      },
     });
 
     if (!enrolled) throw new NotFoundException(ErrorCode.E038);
 
     enrolled.rating = dto.rating;
     enrolled.rating_comment = dto.rating_comment ?? null;
+    enrolled.reviewed_at = new Date();
 
     await this.enrolledRepo.save(enrolled);
+    this.sendReviewReceivedNotification(enrolled);
     return enrolled.toDto(CourseReviewRes);
   }
 
@@ -115,5 +249,24 @@ export class EnrollCourseService {
       course_id,
       average_rating: average_rating,
     };
+  }
+
+  private async sendReviewReceivedNotification(enrolled: EnrolledCourseEntity) {
+    const built_notification =
+      this.notificationBuilder.courseReviewReceived(enrolled);
+    const notification = await this.notificationService.save(
+      enrolled.course.instructor.user_id,
+      NotificationType.COURSE_REVIEW_RECEIVED,
+      {
+        course_id: enrolled.course.id,
+        user_id: enrolled.user.id,
+        username: enrolled.user.username,
+      },
+      built_notification,
+    );
+    this.notificationGateway.emitToUser(enrolled.course.instructor.user.id, {
+      ...notification,
+      ...built_notification,
+    });
   }
 }

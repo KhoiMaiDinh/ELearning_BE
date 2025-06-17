@@ -1,11 +1,13 @@
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
-import { Entity as E } from '@/constants';
+import { ENTITY as E } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
+import { AutoCertificateCode } from '@/decorators';
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
@@ -13,6 +15,7 @@ import {
 } from 'typeorm';
 
 @Entity(E.ENROLLED_COURSE)
+@Index('idx_certificate_code_unique', ['certificate_code'], { unique: true })
 export class EnrolledCourseEntity extends AbstractEntity {
   @ManyToOne(() => CourseEntity, (course) => course.enrolled_users)
   @JoinColumn({ name: 'course_id' })
@@ -36,5 +39,18 @@ export class EnrolledCourseEntity extends AbstractEntity {
   rating_comment: string | null;
 
   @Column({ type: 'timestamptz', nullable: true })
+  reviewed_at: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
   last_viewed_at: Date;
+
+  @Column({ type: 'boolean', default: false })
+  is_completed: boolean;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  completed_at: Date | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  @AutoCertificateCode({ prefix: 'CERT', length: 8 })
+  certificate_code: string | null;
 }

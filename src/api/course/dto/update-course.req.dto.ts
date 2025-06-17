@@ -1,4 +1,4 @@
-import { StringField, StringFieldOptional } from '@/decorators';
+import { StringFieldOptional } from '@/decorators';
 import { CreateCourseReq } from './create-course.req.dto';
 
 export class UpdateCourseReq extends CreateCourseReq {
@@ -7,10 +7,4 @@ export class UpdateCourseReq extends CreateCourseReq {
 
   @StringFieldOptional()
   slug?: string;
-
-  @StringField({ nullable: true, each: true, maxLength: 160 })
-  requirements?: string[];
-
-  @StringField({ nullable: true, each: true, maxLength: 160 })
-  outcomes: string[];
 }

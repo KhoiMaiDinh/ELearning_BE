@@ -6,6 +6,7 @@ import {
   StringFieldOptional,
 } from '@/decorators';
 import { CourseLevel } from '../enums/course-level.enum';
+import { CourseOrderBy } from '../enums/course-order-by.enum';
 import { CourseQuery } from './course.query.dto';
 
 export class CoursesQuery extends PageOffsetOptionsDto implements CourseQuery {
@@ -35,4 +36,7 @@ export class CoursesQuery extends PageOffsetOptionsDto implements CourseQuery {
 
   @BooleanFieldOptional()
   include_disabled?: boolean;
+
+  @EnumFieldOptional(() => CourseOrderBy)
+  order_by?: CourseOrderBy;
 }
