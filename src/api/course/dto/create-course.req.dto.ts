@@ -22,6 +22,12 @@ export class CreateCourseReq {
   @EnumField(() => CourseLevel, { nullable: true })
   level?: CourseLevel;
 
-  @NumberField({ nullable: true })
+  @NumberField({ nullable: true, min: 0 })
   price?: number;
+
+  @StringField({ nullable: true, each: true, maxLength: 160 })
+  requirements?: string[];
+
+  @StringField({ nullable: true, each: true, maxLength: 160 })
+  outcomes: string[];
 }

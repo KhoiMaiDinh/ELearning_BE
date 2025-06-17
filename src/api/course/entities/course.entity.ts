@@ -1,11 +1,13 @@
+import { WarningEntity } from '@/api/ban/entities/warning.entity';
 import { CategoryEntity } from '@/api/category/entities/category.entity';
+import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
 import { CourseLevel, CourseStatus } from '@/api/course';
 import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.entity';
 import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { SectionEntity } from '@/api/section/entities/section.entity';
 import { Nanoid, Uuid } from '@/common';
-import { Entity as E, Language } from '@/constants';
+import { ENTITY as E, Language } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
 import {
@@ -20,6 +22,7 @@ import {
   Relation,
   VirtualColumn,
 } from 'typeorm';
+import { CourseUnbanRequestEntity } from './course-unban-request.entity';
 
 @Index('UQ_course_title_per_instructor', ['title', 'instructor_id'], {
   unique: true,
@@ -104,6 +107,9 @@ export class CourseEntity extends AbstractEntity {
 
   @Column({ type: 'enum', enum: CourseStatus, default: CourseStatus.DRAFT })
   status: CourseStatus;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  published_at: Date;
   // relations
 
   @ManyToOne(() => InstructorEntity, (instructor) => instructor.courses)
@@ -121,6 +127,9 @@ export class CourseEntity extends AbstractEntity {
   @OneToMany(() => SectionEntity, (section) => section.course)
   sections?: Relation<SectionEntity[]>;
 
+  @OneToMany(() => CouponEntity, (coupon) => coupon.course)
+  coupons?: Relation<CouponEntity[]>;
+
   @OneToMany(
     () => EnrolledCourseEntity,
     (enrolled_course) => enrolled_course.course,
@@ -135,6 +144,12 @@ export class CourseEntity extends AbstractEntity {
 
   @Column({ type: 'varchar', length: 3, default: 'VND' })
   currency: string;
+
+  @OneToMany(() => WarningEntity, (warning) => warning.course)
+  warnings?: Relation<WarningEntity[]>;
+
+  @OneToMany(() => CourseUnbanRequestEntity, (request) => request.course)
+  unban_requests?: Relation<CourseUnbanRequestEntity[]>;
 
   @VirtualColumn({
     type: 'float',
@@ -155,7 +170,18 @@ export class CourseEntity extends AbstractEntity {
   total_enrolled: number;
 
   @VirtualColumn({
+    type: 'float',
+    query: (alias) => ``,
+  })
+  total_revenue: number;
+
+  @VirtualColumn({
     query: (alias) => ``,
   })
   course_progress: number;
+
+  @VirtualColumn({
+    query: (alias) => ``,
+  })
+  is_favorite: boolean;
 }

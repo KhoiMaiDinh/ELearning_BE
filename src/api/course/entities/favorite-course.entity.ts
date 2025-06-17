@@ -1,6 +1,6 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
-import { Entity as E } from '@/constants';
+import { ENTITY as E } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,

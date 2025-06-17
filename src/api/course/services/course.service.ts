@@ -1,44 +1,57 @@
 import { CategoryService } from '@/api/category/category.service';
 import { CategoryRepository } from '@/api/category/repositories/category.repository';
+import { CouponRepository } from '@/api/coupon/coupon.repository';
+import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
 import {
   CourseQuery,
   CourseRes,
   CoursesQuery,
   CourseStatus,
   CreateCourseReq,
+  CurriculumQuery,
   CurriculumRes,
   PublicCourseReq,
   UpdateCourseReq,
 } from '@/api/course';
-import { LectureRepository } from '@/api/course-item/lecture/lecture.repository';
+import { LectureSeriesEntity } from '@/api/course-item/lecture/entities/lecture-series.entity';
+import { LectureSeriesRepository } from '@/api/course-item/lecture/repositories/lecture-series.repository';
+import { LectureRepository } from '@/api/course-item/lecture/repositories/lecture.repository';
+import { ICourseProgress } from '@/api/course-progress/interfaces';
 import { LessonProgressService } from '@/api/course-progress/lesson-progress.service';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseRepository } from '@/api/course/repositories/course.repository';
 import { InstructorRepository } from '@/api/instructor';
+import { NotificationType } from '@/api/notification/enum/notification-type.enum';
+import { NotificationBuilderService } from '@/api/notification/notification-builder.service';
+import { NotificationService } from '@/api/notification/notification.service';
+import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
+import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { PriceHistoryRepository } from '@/api/price/price-history.repository';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid, OffsetPaginatedDto, Uuid } from '@/common';
 import {
-  Entity,
+  ENTITY,
   ErrorCode,
   KafkaTopic,
   Language,
-  Permission,
+  PERMISSION,
   UploadEntityProperty,
   UploadStatus,
 } from '@/constants';
 import { ForbiddenException, ValidationException } from '@/exceptions';
+import { NotificationGateway } from '@/gateway/notification/notification.gateway';
 import { KafkaProducerService } from '@/kafka';
 import { MinioClientService } from '@/libs/minio';
 import { paginate } from '@/utils';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { FindOptionsRelations } from 'typeorm';
 import { MediaRepository } from '../../media';
 import { MediaEntity } from '../../media/entities/media.entity';
+import { CourseOrderBy } from '../enums';
 import { EnrollCourseService } from './enroll-course.service';
+import { FavoriteCourseService } from './favorite-course.service';
 
 @Injectable()
 export class CourseService {
@@ -56,6 +69,13 @@ export class CourseService {
     private readonly enrollCourseService: EnrollCourseService,
     private readonly lectureRepository: LectureRepository,
     private readonly producerService: KafkaProducerService,
+    private readonly couponRepo: CouponRepository,
+    private readonly lectureSeriesRepo: LectureSeriesRepository,
+    private readonly favoriteService: FavoriteCourseService,
+
+    private readonly notificationService: NotificationService,
+    private readonly notificationBuilder: NotificationBuilderService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
   async create(public_user_id: Nanoid, dto: CreateCourseReq) {
     const {
@@ -69,7 +89,7 @@ export class CourseService {
       await this.instructorRepository.findOneByUserPublicId(public_user_id);
 
     const thumbnail = await this.mediaRepository.findOneById(thumbnail_dto.id);
-    this.isValidThumbnail(thumbnail);
+    this.validateThumbnail(thumbnail);
 
     const course = this.courseRepository.create({
       ...rest,
@@ -85,7 +105,11 @@ export class CourseService {
     return course.toDto(CourseRes);
   }
 
-  async find(query: CoursesQuery, user?: JwtPayloadType) {
+  async findIn(ids: Nanoid[]) {
+    if (!ids.length) {
+      return [];
+    }
+
     const query_builder = this.courseRepository
       .createQueryBuilder('course')
       .leftJoinAndSelect('course.thumbnail', 'thumbnail')
@@ -95,9 +119,58 @@ export class CourseService {
         'course.total_enrolled',
         'course.enrolled_users',
       );
+    query_builder.andWhere('course.id IN (:...ids)', { ids });
+    query_builder
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'user')
+      .leftJoinAndSelect('user.profile_image', 'profile_image')
+      .addSelect('user.username', 'username');
+    query_builder.leftJoinAndSelect(
+      'course.coupons',
+      'coupons',
+      `coupons.is_active = TRUE
+      AND coupons.starts_at <= NOW()
+      AND (coupons.expires_at IS NULL OR coupons.expires_at >= NOW())
+      AND coupons.is_public = TRUE`,
+    );
 
-    if (query.with_category || query.category_slug)
-      query_builder.leftJoinAndSelect('course.category', 'category');
+    const courses = await query_builder.getMany();
+    const fallback_coupon = await this.findMostValuablePublicCoupon();
+    if (fallback_coupon) {
+      for (const course of courses) {
+        if (!course.coupons.length) course.coupons.push(fallback_coupon);
+      }
+    }
+    return courses;
+  }
+
+  async find(query: CoursesQuery, user?: JwtPayloadType) {
+    const query_builder = this.courseRepository
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.thumbnail', 'thumbnail')
+      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect(
+        'category.translations',
+        'translation',
+        'translation.language = :language',
+        { language: Language.VI },
+      )
+      .leftJoin('course.enrolled_users', 'enrolled')
+      .addSelect(this.getAvgRatingSQL('course'), 'course_avg_rating')
+      .loadRelationCountAndMap(
+        'course.total_enrolled',
+        'course.enrolled_users',
+      );
+
+    query_builder.leftJoinAndSelect(
+      'course.coupons',
+      'coupons',
+      `coupons.is_active = TRUE
+      AND coupons.starts_at <= NOW()
+      AND (coupons.expires_at IS NULL OR coupons.expires_at >= NOW())
+      AND coupons.is_public = TRUE`,
+    );
+
     if (query.with_instructor || query.instructor_username) {
       query_builder
         .leftJoinAndSelect('course.instructor', 'instructor')
@@ -134,7 +207,7 @@ export class CourseService {
       query_builder.andWhere('course.status = :status', {
         status: CourseStatus.PUBLISHED,
       });
-    else if (!user?.permissions.includes(Permission.READ_COURSE))
+    else if (!user?.permissions.includes(PERMISSION.READ_COURSE))
       throw new ForbiddenException(ErrorCode.E028);
 
     // **Level Filtering**
@@ -160,6 +233,31 @@ export class CourseService {
       });
     }
 
+    if (query.order_by) {
+      switch (query.order_by) {
+        case CourseOrderBy.RATING:
+          query_builder.orderBy('course_avg_rating', query.order);
+          break;
+        case CourseOrderBy.PRICE:
+          query_builder.orderBy('course.price', query.order);
+          break;
+        case CourseOrderBy.NAME:
+          query_builder.orderBy('course.title', query.order);
+          break;
+        case CourseOrderBy.STUDENT_COUNT:
+          query_builder.orderBy('course.total_enrolled', query.order);
+          break;
+        case CourseOrderBy.CREATED_AT:
+          query_builder.orderBy('course.createdAt', query.order);
+          break;
+        default:
+          query_builder.orderBy('course.createdAt', query.order);
+          break;
+      }
+    } else {
+      query_builder.orderBy('course.createdAt', query.order);
+    }
+
     const [courses, metaDto] = await paginate<CourseEntity>(
       query_builder,
       query,
@@ -169,6 +267,13 @@ export class CourseService {
       },
     );
 
+    const fallback_coupon = await this.findMostValuablePublicCoupon();
+    if (fallback_coupon) {
+      for (const course of courses) {
+        if (!course.coupons.length) course.coupons.push(fallback_coupon);
+      }
+    }
+
     return new OffsetPaginatedDto(plainToInstance(CourseRes, courses), metaDto);
   }
 
@@ -176,12 +281,34 @@ export class CourseService {
     const query_builder = this.courseRepository
       .createQueryBuilder('course')
       .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect(
+        'category.translations',
+        'translation',
+        'translation.language = :language',
+        { language: Language.VI },
+      )
       .leftJoinAndSelect('course.instructor', 'instructor')
       .leftJoinAndSelect('instructor.user', 'user')
+      .leftJoinAndSelect('user.profile_image', 'profile_image')
       .leftJoinAndSelect('course.thumbnail', 'thumbnail')
       .leftJoin('course.enrolled_users', 'enrolled')
       .addSelect(this.getAvgRatingSQL('course'), 'course_avg_rating')
       .loadRelationCountAndMap('course.total_enrolled', 'course.enrolled_users')
+      .leftJoin(
+        (qb) =>
+          qb
+            .select('od.course_id', 'course_id')
+            .addSelect('SUM(od.final_price)', 'total_revenue')
+            .from(OrderDetailEntity, 'od')
+            .innerJoin('od.order', 'o')
+            .where('o.payment_status IN (:...status)', {
+              status: [PaymentStatus.SUCCESS],
+            })
+            .groupBy('od.course_id'),
+        'revenue',
+        'revenue.course_id = course.course_id',
+      )
+      .addSelect('COALESCE(revenue.total_revenue, 0)', 'course_total_revenue')
       .where('user.id = :user_id', { user_id: user.id });
 
     const courses = await query_builder.getMany();
@@ -193,46 +320,79 @@ export class CourseService {
     id_or_slug: Nanoid | string,
     query: CourseQuery = {},
   ): Promise<CourseEntity> {
-    const load_entities: FindOptionsRelations<CourseEntity> = {};
-    load_entities.instructor = { user: true };
+    const qb = this.courseRepository
+      .createQueryBuilder('course')
+      .where('course.id = :id_or_slug OR course.slug = :id_or_slug', {
+        id_or_slug,
+      });
 
-    if (query?.with_sections)
-      load_entities.sections = {
-        lectures: true,
-        quizzes: true,
-        articles: true,
-      };
-    if (query?.with_category)
-      load_entities.category = {
-        translations: true,
-        parent: { translations: true },
-      };
-    if (query?.with_thumbnail) load_entities.thumbnail = true;
+    if (query.with_sections) {
+      qb.leftJoinAndSelect(
+        'course.sections',
+        'sections',
+        'sections.status = :status',
+        { status: CourseStatus.PUBLISHED },
+      )
+        .leftJoinAndSelect('sections.lectures', 'lectures')
+        .leftJoinAndSelect('lectures.series', 'series')
+        .leftJoinAndSelect('series.video', 'video')
+        .leftJoinAndSelect('sections.quizzes', 'quizzes')
+        .leftJoinAndSelect('sections.articles', 'articles');
+    }
 
-    const course = await this.courseRepository.findOne({
-      where: [{ id: id_or_slug as Nanoid }, { slug: id_or_slug }],
-      relations: load_entities,
-    });
+    if (query.with_category) {
+      qb.leftJoinAndSelect('course.category', 'category')
+        .leftJoinAndSelect('category.translations', 'category_translations')
+        .leftJoinAndSelect('category.parent', 'parent')
+        .leftJoinAndSelect('parent.translations', 'parent_translations');
+    }
+
+    if (query.with_thumbnail) {
+      qb.leftJoinAndSelect('course.thumbnail', 'thumbnail');
+    }
+
+    qb.leftJoinAndSelect('course.instructor', 'instructor').leftJoinAndSelect(
+      'instructor.user',
+      'instructor_user',
+    );
+
+    const course = await qb.getOne();
 
     if (!course) throw new NotFoundException(ErrorCode.E025);
+
+    for (const section of course.sections ?? []) {
+      for (const lecture of section.lectures ?? []) {
+        const latestPublishedSeries = lecture.latestPublishedSeries;
+        if (lecture.is_preview) {
+          latestPublishedSeries.video =
+            await this.storageService.getPresignedUrl(
+              latestPublishedSeries.video,
+            );
+        } else {
+          latestPublishedSeries.video = null;
+        }
+        lecture.series = [latestPublishedSeries];
+      }
+    }
 
     const rating_result = await this.enrollCourseService.getAverageRating(
       course.course_id,
     );
     course.avg_rating = rating_result.average_rating ?? 0;
 
-    const enrolledCountResult = await this.enrollCourseService.getEnrolledCount(
-      course.course_id,
-    );
-    course.total_enrolled = enrolledCountResult.count ?? 0;
+    const enrolled_count_result =
+      await this.enrollCourseService.getEnrolledCount(course.course_id);
+    course.total_enrolled = enrolled_count_result.count ?? 0;
 
-    if (query?.with_thumbnail && course.thumbnail)
+    if (query?.with_thumbnail && course.thumbnail) {
       course.thumbnail = await this.storageService.getPresignedUrl(
         course.thumbnail,
       );
+    }
 
-    if (query?.with_category && course.category)
+    if (query?.with_category && course.category) {
       this.categoryService.filterTranslations(course.category, Language.VI);
+    }
 
     return course;
   }
@@ -242,15 +402,21 @@ export class CourseService {
     user: JwtPayloadType,
     dto: UpdateCourseReq,
   ) {
-    const { category: category_dto, price, ...rest } = dto;
+    const {
+      category: category_dto,
+      price,
+      thumbnail: thumbnail_dto,
+      ...rest
+    } = dto;
     const course = await this.courseRepository.findOneByPublicIdOrSlug(id, {
       category: true,
       instructor: { user: true },
+      thumbnail: true,
     });
 
     if (
       user.id !== course.instructor.user.id &&
-      user.permissions.includes(Permission.WRITE_COURSE)
+      user.permissions.includes(PERMISSION.WRITE_COURSE)
     )
       throw new ValidationException(ErrorCode.F002);
 
@@ -263,6 +429,16 @@ export class CourseService {
       );
       if (!category.parent) throw new ForbiddenException(ErrorCode.E017);
       course.category = category;
+    }
+    if (
+      thumbnail_dto != undefined &&
+      thumbnail_dto.id !== course.thumbnail.id
+    ) {
+      const thumbnail = await this.mediaRepository.findOneById(
+        thumbnail_dto.id,
+      );
+      this.validateThumbnail(thumbnail);
+      course.thumbnail = thumbnail;
     }
 
     if (price !== undefined && price != course.price) {
@@ -285,7 +461,7 @@ export class CourseService {
     return course.toDto(CourseRes);
   }
 
-  async changeStatus(
+  async publish(
     id_or_slug: Nanoid | string,
     user: JwtPayloadType,
     dto: PublicCourseReq,
@@ -295,7 +471,7 @@ export class CourseService {
       {
         instructor: { user: true },
         sections: {
-          lectures: { videos: { video: true } },
+          lectures: { series: true },
           quizzes: true,
           articles: true,
         },
@@ -303,96 +479,183 @@ export class CourseService {
     );
 
     // ✅ If user has WRITE_COURSE permission (admin), allow
-    if (user.permissions.includes(Permission.WRITE_COURSE)) {
+    const to_public_series: LectureSeriesEntity[] = [];
+    if (user.permissions.includes(PERMISSION.WRITE_COURSE)) {
       course.status = dto.status;
       await course.save();
       return;
     }
 
-    // ✅ If instructor, they must:
-    // 1. Be the owner of the course (`user.id === course.instructor.user.id`)
-    // 2. The course must not be disabled by admin (`course.updatedBy !== user.id`)
     this.ensureOwnership(course, user.id);
-
-    if (course.status === CourseStatus.BANNED) {
-      throw new ForbiddenException(ErrorCode.E027); // ❌ Course was disabled by admin
-    }
 
     if (dto.status === CourseStatus.BANNED) {
       throw new ForbiddenException(
         ErrorCode.E027,
-        'Instructor cannot disable a course',
+        'Giảng viên không thể vô hiệu hóa khóa học',
       );
     }
 
     if (dto.status === CourseStatus.PUBLISHED) {
-      // check course quality
       if (!course.sections.length) {
-        throw new ForbiddenException(
+        throw new ValidationException(
           ErrorCode.E043,
-          'Invalid Publication: Empty Course Content',
+          'Không thể xuất bản: Khóa học chưa có nội dung',
         );
       }
+
+      const banned_lecture_titles: string[] = [];
+
+      course.sections.forEach((section) => {
+        section.lectures.forEach((lecture) => {
+          const sorted = lecture.series.sort((a, b) => b.version - a.version);
+          const latest = sorted[0];
+          if (latest.status === CourseStatus.BANNED) {
+            banned_lecture_titles.push(
+              `"<strong>${lecture.title}</strong>" (Chương: <strong>${section.title}</strong>)`,
+            );
+          }
+        });
+      });
+
+      if (banned_lecture_titles.length > 0) {
+        throw new ValidationException(
+          ErrorCode.E043,
+          `Không thể xuất bản: Các bài giảng sau vi phạm chính sách và cần được cập nhật: ${banned_lecture_titles.join(', ')}.`,
+        );
+      }
+
+      const has_unpublished_draft = course.sections.some((section) =>
+        section.lectures.some((lecture) =>
+          lecture.series.some(
+            (series) =>
+              series.status === CourseStatus.DRAFT || lecture.is_hidden,
+          ),
+        ),
+      );
+
+      if (!has_unpublished_draft) {
+        throw new ValidationException(
+          ErrorCode.E043,
+          'Không có thay đổi nào mới để xuất bản. Vui lòng cập nhật bài giảng trước khi xuất bản.',
+        );
+      }
+
       course.sections.forEach((section) => {
         if (section.items.length === 0) {
-          throw new ForbiddenException(
+          throw new ValidationException(
             ErrorCode.E043,
-            'Invalid Publication: Empty Section Content',
+            `Không thể xuất bản: Nội dung Chương <strong>${section.title}</strong> trống`,
           );
         }
         section.lectures.forEach((lecture) => {
+          const latest_series = lecture.series.sort(
+            (a, b) => b.version - a.version,
+          )[0];
           if (
-            lecture.videos?.length === 0 ||
-            lecture.video.video.status !== UploadStatus.VALIDATED
+            !latest_series ||
+            latest_series.video.status !== UploadStatus.VALIDATED
           ) {
-            throw new ForbiddenException(
+            throw new ValidationException(
               ErrorCode.E043,
-              `Invalid Publication: Lecture's video is not ready`,
+              `Không thể xuất bản: Video bài giảng "${lecture.title}" trong chương "${section.title}" chưa sẵn sàng để xuất bản`,
             );
           }
-          lecture.status = dto.status;
+          latest_series.status = CourseStatus.PUBLISHED;
+          to_public_series.push(latest_series);
         });
-        section.status = dto.status;
+        section.status = CourseStatus.PUBLISHED;
       });
+      if (to_public_series.length) course.published_at = new Date();
     }
 
-    // ✅ Toggle disable status
+    await this.lectureSeriesRepo.save(to_public_series);
     await this.sectionRepository.save(course.sections);
-    course.status = dto.status;
+    if (course.status === CourseStatus.BANNED) {
+      course.status = CourseStatus.BANNED;
+    } else course.status = dto.status;
+    if (course.status === CourseStatus.PUBLISHED) {
+      await this.sendPublishedNotification(course);
+    }
     await course.save();
     return course.toDto(CourseRes);
+  }
+
+  private async sendPublishedNotification(course: CourseEntity) {
+    const enrolled_users = await this.enrollCourseService.findEnrolledUsers(
+      course.course_id,
+    );
+    const built_notification = this.notificationBuilder.courseUpdated(course);
+    for (const user of enrolled_users) {
+      const notification = await this.notificationService.save(
+        user.user_id,
+        NotificationType.COURSE_UPDATED,
+        {
+          course_id: course.id,
+        },
+        built_notification,
+      );
+      this.notificationGateway.emitToUser(user.id, {
+        ...notification,
+        ...built_notification,
+      });
+    }
   }
 
   async findCurriculums(
     user_payload: JwtPayloadType,
     id_or_slug: Nanoid | string,
+    filter: CurriculumQuery,
   ) {
     let is_enrolled: boolean;
-    const course = await this.courseRepository.findOne({
-      where: [{ id: id_or_slug as Nanoid }, { slug: id_or_slug }],
-      relations: {
-        thumbnail: true,
-        instructor: { user: true },
-        sections: {
-          lectures: {
-            videos: { video: true },
-            resources: { resource_file: true },
-            progresses: true,
-          },
-          quizzes: true,
-          articles: true,
-        },
-        category: {
-          translations: true,
-          parent: { translations: true },
-        },
-      },
-    });
+    const user = await this.userRepository.findOneByPublicId(user_payload.id);
+
+    const query_builder = this.courseRepository
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.thumbnail', 'thumbnail')
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'user')
+      .leftJoinAndSelect('course.sections', 'sections')
+      .leftJoinAndSelect('course.warnings', 'warnings')
+      .leftJoinAndSelect('warnings.report', 'report');
+
+    if (filter.include_deleted_lectures) {
+      query_builder
+        .withDeleted()
+        .leftJoinAndSelect('sections.lectures', 'lectures');
+    } else {
+      query_builder.leftJoinAndSelect(
+        'sections.lectures',
+        'lectures',
+        'lectures.is_hidden = :is_hidden',
+        { is_hidden: false },
+      );
+    }
+
+    query_builder
+      .leftJoinAndSelect('lectures.series', 'series')
+      .orderBy('series.version', 'DESC')
+      .leftJoinAndSelect('series.video', 'video')
+      .leftJoinAndSelect('series.resources', 'resources')
+      .leftJoinAndSelect('resources.resource_file', 'resource_file')
+      .leftJoinAndSelect(
+        'lectures.progresses',
+        'progress',
+        'progress.user_id = :user_id',
+        { user_id: user.user_id },
+      )
+      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect('category.translations', 'category_translations')
+      .leftJoinAndSelect('category.parent', 'parent')
+      .leftJoinAndSelect('parent.translations', 'parent_translations')
+      .where('course.id = :id', { id: id_or_slug })
+      .orWhere('course.slug = :slug', { slug: id_or_slug });
+
+    const course = await query_builder.getOne();
 
     if (!course) throw new NotFoundException(ErrorCode.E025);
     if (
       user_payload.id !== course.instructor.user.id &&
-      !user_payload.permissions.includes(Permission.READ_COURSE)
+      !user_payload.permissions.includes(PERMISSION.READ_COURSE)
     ) {
       is_enrolled = await this.enrollCourseService.isEnrolled(
         course.course_id,
@@ -407,11 +670,6 @@ export class CourseService {
       }
     }
 
-    // get thumbnail access
-    course.thumbnail = await this.storageService.getPresignedUrl(
-      course.thumbnail,
-    );
-
     // get selected language for category
     this.categoryService.filterTranslations(course.category, Language.VI);
 
@@ -420,20 +678,19 @@ export class CourseService {
         await Promise.all(
           section.lectures.map(async (lecture) => {
             await Promise.all(
-              lecture.videos.map(async (video) => {
-                this.addVideoExtension(video.video);
-                video.video = await this.storageService.getPresignedUrl(
-                  video.video,
+              lecture.series.map(async (series) => {
+                this.addVideoExtension(series.video);
+                series.video = await this.storageService.getPresignedUrl(
+                  series.video,
                 );
-              }),
-            );
-
-            await Promise.all(
-              lecture.resources.map(async (resource) => {
-                resource.resource_file =
-                  await this.storageService.getPresignedUrl(
-                    resource.resource_file,
-                  );
+                await Promise.all(
+                  series.resources.map(async (resource) => {
+                    resource.resource_file =
+                      await this.storageService.getPresignedUrl(
+                        resource.resource_file,
+                      );
+                  }),
+                );
               }),
             );
           }),
@@ -451,22 +708,26 @@ export class CourseService {
     );
     course.avg_rating = result.average_rating;
 
-    const res = course.toDto(CurriculumRes);
+    const is_favorite = await this.favoriteService.hasFavorited(
+      user.user_id,
+      course.course_id,
+    );
+    course.is_favorite = is_favorite;
+
+    let course_progress: ICourseProgress;
     if (is_enrolled) {
-      const course_progress =
-        await this.courseProgressService.getCourseProgress(
-          user_payload.id,
-          course.course_id,
-        );
-      res.course_progress = course_progress;
+      course_progress = await this.courseProgressService.getCourseProgress(
+        user_payload.id,
+        course.course_id,
+      );
     }
 
-    return res;
+    return { course, course_progress };
   }
 
   async findEnrolled(user_id: Nanoid): Promise<CourseRes[]> {
     const enrolled_courses =
-      await this.enrollCourseService.findEnrolled(user_id);
+      await this.enrollCourseService.findEnrolledCourses(user_id);
 
     const res = await Promise.all(
       enrolled_courses.map(async (enrolled_course) => {
@@ -498,7 +759,7 @@ export class CourseService {
     }
   }
 
-  private isValidThumbnail(thumbnail: MediaEntity) {
+  private validateThumbnail(thumbnail: MediaEntity) {
     if (!thumbnail) throw new NotFoundException(ErrorCode.E019);
     if (
       thumbnail.status != UploadStatus.VALIDATED &&
@@ -506,7 +767,7 @@ export class CourseService {
     )
       throw new ValidationException(ErrorCode.E042);
     if (
-      thumbnail.entity != Entity.COURSE &&
+      thumbnail.entity != ENTITY.COURSE &&
       thumbnail.entity_property != UploadEntityProperty.THUMBNAIL
     )
       throw new ValidationException(ErrorCode.E034);
@@ -514,7 +775,9 @@ export class CourseService {
 
   private addVideoExtension(video: MediaEntity) {
     if (video.status != UploadStatus.VALIDATED) return video;
-    video.key += '/master.m3u8';
+    if (!video.key.endsWith('.m3u8')) {
+      video.key += '/master.m3u8';
+    }
     return video;
   }
 
@@ -549,9 +812,19 @@ export class CourseService {
       { id: course_id },
       { status: CourseStatus.PUBLISHED },
     );
-    await this.lectureRepository.update(
-      { section: { course: { id: course_id } }, status: CourseStatus.BANNED },
-      { status: CourseStatus.PUBLISHED },
-    );
+  }
+
+  private async findMostValuablePublicCoupon(): Promise<CouponEntity> {
+    const coupon = await this.couponRepo
+      .createQueryBuilder('coupon')
+      .where('coupon.is_public = TRUE')
+      .andWhere('coupon.course_id IS NULL')
+      .andWhere('coupon.is_active = TRUE')
+      .andWhere('coupon.starts_at <= NOW()')
+      .andWhere('(coupon.expires_at IS NULL OR coupon.expires_at >= NOW())')
+      .orderBy('coupon.value', 'DESC')
+      .getOne();
+
+    return coupon;
   }
 }

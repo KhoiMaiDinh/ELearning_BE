@@ -1,3 +1,4 @@
+import { WrapperType } from '@/common';
 import { ClassFieldOptional } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 import { CourseRes } from './course.res.dto';
@@ -14,7 +15,7 @@ export class CourseUnbanResponseDto {
   is_approved: boolean;
   @Expose()
   @ClassFieldOptional(() => CourseRes)
-  course: CourseRes;
+  course: WrapperType<CourseRes>;
   @Expose()
   createdAt: Date;
 }
