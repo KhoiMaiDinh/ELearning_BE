@@ -42,6 +42,6 @@ import { WarningService } from './services/warning.service';
     UserReportService,
     ReportRepository,
   ],
-  exports: [UserBanService, ReportRepository],
+  exports: [UserBanService, WarningService, ReportRepository],
 })
 export class BanModule {}

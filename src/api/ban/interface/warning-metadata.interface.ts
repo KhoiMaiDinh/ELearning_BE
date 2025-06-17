@@ -1,3 +1,5 @@
+import { Nanoid } from '@/common';
+
 interface CourseMetadata {
   course_id: string;
 }
@@ -11,11 +13,11 @@ interface LectureMetadata {
 }
 
 interface ThreadMetadata {
-  thread_id: string;
+  thread_id: Nanoid;
 }
 
 interface ReplyMetadata {
-  reply_id: string;
+  reply_id: Nanoid;
 }
 
 interface ViolatedContentMetadata {

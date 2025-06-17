@@ -44,7 +44,7 @@ export class ReportController {
   }
 
   @ApiAuth({
-    summary: 'Report content',
+    summary: 'Get pending reports',
     statusCode: HttpStatus.OK,
   })
   @Permissions(PERMISSION.READ_REPORT)

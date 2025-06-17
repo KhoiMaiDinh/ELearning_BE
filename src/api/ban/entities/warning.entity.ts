@@ -1,3 +1,4 @@
+import { CourseEntity } from '@/api/course/entities/course.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
@@ -35,4 +36,18 @@ export class WarningEntity extends AbstractEntity {
   report: Relation<UserReportEntity>;
   @Column('uuid', { nullable: true })
   user_report_id: Uuid;
+  // ============ COURSE WARNING ==============
+  @ManyToOne(() => CourseEntity, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'course_id' })
+  course: Relation<CourseEntity>;
+
+  @Column('uuid', { nullable: true })
+  course_id: Uuid;
+
+  @Column('boolean', { nullable: true })
+  is_resolved: boolean;
+
+  @Column('timestamptz', { nullable: true })
+  resolved_at: Date;
+  // ============ COURSE WARNING ==============
 }
