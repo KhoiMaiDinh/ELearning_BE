@@ -1,6 +1,6 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Nanoid, Uuid } from '@/common';
-import { Bucket, Entity as EntityEnum, UploadStatus } from '@/constants';
+import { Bucket, ENTITY as EntityEnum, UploadStatus } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
 import {
