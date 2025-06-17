@@ -1,6 +1,6 @@
 import { JwtPayloadType } from '@/api/token';
-import { Nanoid } from '@/common';
-import { Permission } from '@/constants';
+import { Nanoid, OffsetPaginatedDto } from '@/common';
+import { PERMISSION } from '@/constants';
 import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
 import {
   Body,
@@ -12,13 +12,40 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { CouponService } from './coupon.service';
-import { CouponRes, CreateCouponReq, UpdateCouponReq } from './dto';
+import {
+  CouponRes,
+  CouponsQuery,
+  CreateCouponReq,
+  UpdateCouponReq,
+} from './dto';
 
 @Controller({ path: 'coupons', version: '1' })
 export class CouponController {
   constructor(private readonly couponService: CouponService) {}
+
+  @Get('me')
+  @ApiAuth({
+    type: CouponRes,
+    summary: 'Get all coupons for current user',
+    statusCode: HttpStatus.OK,
+  })
+  async getAllCouponsForCurrentUser(
+    @CurrentUser() user: JwtPayloadType,
+    @Query() query: CouponsQuery,
+  ) {
+    const { coupons, metadata } = await this.couponService.findFromInstructor(
+      user,
+      query,
+    );
+    return new OffsetPaginatedDto(
+      plainToInstance(CouponRes, coupons),
+      metadata,
+    );
+  }
 
   @Post()
   @ApiAuth({
@@ -50,8 +77,8 @@ export class CouponController {
     summary: 'Toggle coupon activation status',
     statusCode: HttpStatus.NO_CONTENT,
   })
-  @Permissions(Permission.WRITE_COUPON)
-  @Post(':code/toggle')
+  @Permissions(PERMISSION.WRITE_COUPON)
+  @Put(':code/toggle')
   @HttpCode(HttpStatus.NO_CONTENT)
   async toggleCouponStatus(@Param('code') code: Nanoid): Promise<void> {
     await this.couponService.toggleStatus(code);
@@ -66,9 +93,10 @@ export class CouponController {
   async update(
     @Param('code') code: Nanoid,
     @CurrentUser() user: JwtPayloadType,
-    @Body() dto: Partial<UpdateCouponReq>,
+    @Body() body: Partial<UpdateCouponReq>,
   ): Promise<CouponRes> {
-    return this.couponService.update(code, user, dto);
+    const coupon = await this.couponService.update(code, user, body);
+    return coupon.toDto(CouponRes);
   }
 
   @Delete(':code')
@@ -83,5 +111,19 @@ export class CouponController {
     @CurrentUser() user: JwtPayloadType,
   ): Promise<void> {
     await this.couponService.delete(code, user);
+  }
+
+  @Get()
+  @ApiAuth({
+    type: CouponRes,
+    summary: 'Get all coupons',
+    statusCode: HttpStatus.OK,
+  })
+  async getAllCoupons(@Query() query: CouponsQuery) {
+    const { coupons, metadata } = await this.couponService.find(query);
+    return new OffsetPaginatedDto(
+      plainToInstance(CouponRes, coupons),
+      metadata,
+    );
   }
 }

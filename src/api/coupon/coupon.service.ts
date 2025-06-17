@@ -1,20 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { Between, In } from 'typeorm';
+import { Between, In, MoreThan } from 'typeorm';
 
 import { CourseService } from '@/api/course/services/course.service';
 import { OrderDetailRepository } from '@/api/order/repositories/order-detail.repository';
 import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { JwtPayloadType } from '@/api/token';
-import { Nanoid, Uuid } from '@/common';
-import { ErrorCode, Permission } from '@/constants';
+import { Nanoid, OffsetPaginationDto, Uuid } from '@/common';
+import { ENTITY, ErrorCode, PERMISSION } from '@/constants';
 import {
   ForbiddenException,
   NotFoundException,
   ValidationException,
 } from '@/exceptions';
 
-import { CouponQuery, CreateCouponReq } from '@/api/coupon/dto';
+import { CouponQuery, CouponsQuery, CreateCouponReq } from '@/api/coupon/dto';
 import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
+import { NotificationGateway } from '@/gateway/notification/notification.gateway';
+import { rawPaginate } from '@/utils/offset-pagination-raw';
+import { FavoriteCourseService } from '../course/services/favorite-course.service';
+import { InstructorRepository } from '../instructor';
+import { NotificationType } from '../notification/enum/notification-type.enum';
+import { NotificationBuilderService } from '../notification/notification-builder.service';
+import { NotificationService } from '../notification/notification.service';
+import { UserService } from '../user/user.service';
 import { CouponRepository } from './coupon.repository';
 
 @Injectable()
@@ -23,6 +31,13 @@ export class CouponService {
     private readonly couponRepo: CouponRepository,
     private readonly orderDetailRepo: OrderDetailRepository,
     private readonly courseService: CourseService,
+    private readonly instructorRepo: InstructorRepository,
+    private readonly favoriteCourseService: FavoriteCourseService,
+    private readonly userService: UserService,
+
+    private readonly notificationService: NotificationService,
+    private readonly notificationBuilder: NotificationBuilderService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async create(
@@ -30,25 +45,44 @@ export class CouponService {
     dto: CreateCouponReq,
   ): Promise<CouponEntity> {
     let course_id: Uuid = null;
-    if (!user.permissions.includes(Permission.WRITE_COUPON)) {
-      if (!dto.course) throw new ForbiddenException(ErrorCode.E062);
+    if (user.permissions.includes(PERMISSION.WRITE_COUPON)) {
+      if (dto.course) {
+        const course = await this.courseService.findOne(dto.course.id);
+        if (!course.published_at) throw new ValidationException(ErrorCode.E083);
+        // await this.validateCourseCouponLimit(course.course_id);
+        course_id = course.course_id;
+      }
+    } else {
+      if (!dto.course) return;
 
       const course = await this.courseService.findOne(dto.course.id);
       this.courseService.ensureOwnership(course, user.id);
-      await this.validateCourseCouponLimit(course.course_id);
+      // await this.validateCourseCouponLimit(course.course_id);
       course_id = course.course_id;
     }
 
+    if (dto.is_public && course_id) {
+      await this.validateOverlapping(course_id, dto.starts_at, dto.expires_at);
+    }
+
+    if (dto.code) await this.validateCode(dto.code);
+
     const coupon = this.couponRepo.create({
+      code: dto?.code,
       type: dto.type,
       value: dto.value,
       starts_at: dto.starts_at,
-      expires_at: dto.expires_at,
+      expires_at: dto?.expires_at,
       usage_limit: dto.usage_limit,
       is_active: true,
+      is_public: dto.is_public,
       course_id: course_id,
       createdBy: user.id,
     });
+
+    if (course_id) {
+      await this.sendCouponForCourseNotification(coupon);
+    }
     return this.couponRepo.save(coupon);
   }
 
@@ -57,7 +91,9 @@ export class CouponService {
     user: JwtPayloadType,
     dto: Partial<CreateCouponReq>,
   ): Promise<CouponEntity> {
-    const coupon = await this.couponRepo.findOne({ where: { code } });
+    const coupon = await this.couponRepo.findOne({
+      where: { code },
+    });
     if (!coupon) throw new NotFoundException(ErrorCode.E065);
 
     const now = new Date();
@@ -66,11 +102,19 @@ export class CouponService {
 
     if (
       coupon.createdBy !== user.id &&
-      !user.permissions.includes(Permission.WRITE_COUPON)
+      !user.permissions.includes(PERMISSION.WRITE_COUPON)
     ) {
       throw new ForbiddenException(
         ErrorCode.F002,
         'You are not allowed to update this coupon',
+      );
+    }
+
+    if (dto.is_public && coupon.course_id) {
+      await this.validateOverlapping(
+        coupon.course_id,
+        dto.starts_at,
+        dto.expires_at,
       );
     }
 
@@ -87,7 +131,7 @@ export class CouponService {
 
     if (
       coupon.createdBy !== user.id &&
-      !user.permissions.includes(Permission.WRITE_COUPON)
+      !user.permissions.includes(PERMISSION.WRITE_COUPON)
     ) {
       throw new ForbiddenException(
         ErrorCode.F002,
@@ -98,6 +142,134 @@ export class CouponService {
     await this.couponRepo.softDelete({ code });
   }
 
+  async findFromInstructor(user: JwtPayloadType, filter: CouponsQuery) {
+    const instructor = await this.instructorRepo.findOneByUserPublicId(user.id);
+    return await this.find(filter, { instructor_id: instructor.instructor_id });
+  }
+
+  async find(
+    filters: CouponsQuery,
+    options?: { instructor_id?: Uuid },
+  ): Promise<{ coupons: CouponEntity[]; metadata: OffsetPaginationDto }> {
+    const query = this.couponRepo.createQueryBuilder('coupon');
+    query.leftJoinAndSelect('coupon.course', 'course');
+    query
+      .leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoin('coupon.order_details', 'order_details')
+      .leftJoin(
+        'order_details.order',
+        'ord',
+        'ord.payment_status = :payment_status',
+        {
+          payment_status: PaymentStatus.SUCCESS,
+        },
+      )
+      .leftJoin('user', 'creator', 'creator.id = coupon.createdBy')
+      .leftJoin('user_roles_role', 'ur', 'ur.userUserId = creator.user_id')
+      .leftJoin('role', 'role', 'role.role_id = ur.roleRoleId')
+      .addSelect('COUNT(ord.order_id)', 'coupon_usage_count')
+      .addSelect([
+        'creator.username AS creator_username',
+        'array_agg(role.role_name) AS creator_roles',
+      ])
+      .addSelect(
+        'SUM(order_details.final_price)::float',
+        'coupon_total_revenue',
+      )
+      .groupBy('coupon.coupon_id')
+      .addGroupBy('course.course_id')
+      .addGroupBy('instructor.instructor_id')
+      .addGroupBy('creator.user_id');
+
+    if (filters.is_active !== undefined) {
+      query.andWhere('coupon.is_active = :is_active', {
+        is_active: filters.is_active,
+      });
+    }
+
+    if (filters.q) {
+      query.andWhere(`(coupon.code ILIKE :q OR course.title ILIKE :q)`, {
+        q: `%${filters.q}%`,
+      });
+    }
+
+    if (filters.from) {
+      query.andWhere(
+        `EXISTS (
+          SELECT 1 FROM user_roles_role ur2
+          JOIN role r2 ON r2.role_id = ur2."roleRoleId"
+          WHERE ur2."userUserId" = creator.user_id AND r2.role_name = :role_name
+        )`,
+        { role_name: filters.from },
+      );
+    }
+
+    if (filters.is_public !== undefined) {
+      query.andWhere('coupon.is_public = :is_public', {
+        is_public: filters.is_public,
+      });
+    }
+
+    if (filters.status) {
+      switch (filters.status) {
+        case 'EXPIRED':
+          query.andWhere('coupon.expires_at < NOW()');
+          break;
+        case 'VALID_NOW':
+          query.andWhere(
+            'coupon.starts_at <= NOW() AND coupon.expires_at >= NOW()',
+          );
+          break;
+        case 'NOT_STARTED':
+          query.andWhere('coupon.starts_at > NOW()');
+          break;
+      }
+    }
+
+    if (filters.usage_exceeded !== undefined) {
+      query.andWhere(
+        `
+          (
+            coupon.usage_limit IS NOT NULL AND
+            (
+              SELECT COUNT(*) FROM "${ENTITY.ORDER_DETAIL}" od 
+              WHERE od.coupon_id = coupon.coupon_id
+            ) >= coupon.usage_limit
+          ) = :exceeded
+        `,
+        { exceeded: filters.usage_exceeded ? 1 : 0 },
+      );
+    }
+
+    if (options?.instructor_id) {
+      query.andWhere('instructor.instructor_id = :instructor_id', {
+        instructor_id: options.instructor_id,
+      });
+    }
+
+    query.orderBy('coupon.createdAt', filters.order);
+
+    const [result, metadata] = await rawPaginate<CouponEntity>(query, filters, {
+      skipCount: false,
+      takeAll: false,
+    });
+
+    console.log(result.entities);
+    const coupons = result.entities.map((coupon, index) => {
+      return {
+        ...coupon,
+        creator_roles: result.raw[index].creator_roles,
+        creator_username: result.raw[index].creator_username,
+      };
+    });
+    return {
+      coupons: coupons.map((coupon) =>
+        Object.assign(new CouponEntity(), coupon),
+      ),
+      metadata,
+    };
+  }
+
   async findByCode(
     code: Nanoid,
     query: CouponQuery = {},
@@ -106,13 +278,29 @@ export class CouponService {
     const coupon = await this.couponRepo.findOne({
       where: {
         code,
-        is_active: true,
         // starts_at: LessThanOrEqual(now),
         // expires_at: MoreThanOrEqual(now),
+      },
+      relations: {
+        course: true,
       },
     });
     if (!coupon) throw new NotFoundException(ErrorCode.E065);
     if (query.check_usability) await this.validateUsability(coupon);
+    return coupon;
+  }
+
+  async findMostValuablePublicOne(): Promise<CouponEntity> {
+    const coupon = await this.couponRepo
+      .createQueryBuilder('coupon')
+      .where('coupon.is_public = TRUE')
+      .andWhere('coupon.course_id IS NULL')
+      .andWhere('coupon.is_active = TRUE')
+      .andWhere('coupon.starts_at <= NOW()')
+      .andWhere('(coupon.expires_at IS NULL OR coupon.expires_at >= NOW())')
+      .orderBy('coupon.value', 'DESC')
+      .getOne();
+
     return coupon;
   }
 
@@ -160,6 +348,61 @@ export class CouponService {
 
     if (count > 2) {
       throw new ValidationException(ErrorCode.E063);
+    }
+  }
+
+  private async validateCode(code: Nanoid): Promise<void> {
+    const coupon = await this.couponRepo.findOne({
+      where: { code, expires_at: MoreThan(new Date()) },
+    });
+    if (coupon) throw new ValidationException(ErrorCode.E082);
+  }
+
+  private async validateOverlapping(
+    course_id: Uuid,
+    starts_at: Date,
+    expires_at: Date,
+  ): Promise<void> {
+    const overlappingCoupon = await this.couponRepo
+      .createQueryBuilder('coupon')
+      .where('coupon.course_id = :course_id', { course_id })
+      .andWhere('coupon.is_public = TRUE')
+      .andWhere('coupon.is_active = TRUE')
+      .andWhere(
+        `(
+        (coupon.starts_at <= :expiresAt AND coupon.expires_at >= :startsAt)
+      )`,
+        {
+          startsAt: starts_at,
+          expiresAt: expires_at,
+        },
+      )
+      .getOne();
+
+    if (overlappingCoupon) {
+      throw new ForbiddenException(ErrorCode.E081);
+    }
+  }
+
+  private async sendCouponForCourseNotification(coupon: CouponEntity) {
+    const favorited_users = await this.favoriteCourseService.findUsers(
+      coupon.course_id,
+    );
+
+    const built_notification = this.notificationBuilder.couponForCourse(coupon);
+    for (const user of favorited_users) {
+      const notification = await this.notificationService.save(
+        user.user_id,
+        NotificationType.COUPON_FOR_COURSE,
+        {
+          coupon_code: coupon.code,
+        },
+        built_notification,
+      );
+      this.notificationGateway.emitToUser(user.id, {
+        ...notification,
+        ...built_notification,
+      });
     }
   }
 }

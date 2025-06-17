@@ -2,7 +2,7 @@ import { CourseEntity } from '@/api/course/entities/course.entity';
 import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
 import { Nanoid, Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
-import { AutoNanoId } from '@/decorators';
+import { AutoCouponCode } from '@/decorators/coupon-code.decorator';
 import {
   Column,
   Entity,
@@ -12,6 +12,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   Relation,
+  VirtualColumn,
 } from 'typeorm';
 import { CouponType } from '../enum/coupon-type.enum';
 
@@ -21,7 +22,7 @@ export class CouponEntity extends AbstractEntity {
   coupon_id: Uuid;
 
   @Column({ type: 'varchar' })
-  @AutoNanoId(13)
+  @AutoCouponCode({ prefix: 'CPN', length: 10 })
   @Index('UQ_coupon_code', { unique: true })
   code: Nanoid;
 
@@ -34,7 +35,7 @@ export class CouponEntity extends AbstractEntity {
   @Column({ type: 'timestamp' })
   starts_at?: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   expires_at?: Date;
 
   @Column({ type: 'int', nullable: true })
@@ -46,11 +47,27 @@ export class CouponEntity extends AbstractEntity {
   @Column({ type: 'uuid', nullable: true })
   course_id?: Uuid;
 
-  @ManyToOne(() => CourseEntity, { nullable: true })
-  @JoinColumn({ name: 'course_id' })
-  course?: CourseEntity;
+  @Column({ type: 'boolean', default: false })
+  is_public: boolean;
 
-  // relation with OrderDetail
+  @ManyToOne(() => CourseEntity, (course) => course.coupons, { nullable: true })
+  @JoinColumn({ name: 'course_id' })
+  course?: Relation<CourseEntity>;
+
   @OneToMany(() => OrderDetailEntity, (orderDetail) => orderDetail.coupon)
   order_details?: Relation<OrderDetailEntity[]>;
+
+  @VirtualColumn({
+    type: 'int',
+    query: (alias) =>
+      `SELECT COUNT(*) FROM "order-detail" WHERE "order-detail"."coupon_id" = "${alias}.coupon_id"`,
+  })
+  usage_count?: number;
+
+  @VirtualColumn({
+    type: 'decimal',
+    query: (alias) =>
+      `SELECT SUM("order-detail"."final_price") FROM "order-detail" WHERE "order-detail"."coupon_id" = "${alias}.coupon_id"`,
+  })
+  total_revenue?: number;
 }
