@@ -6,6 +6,7 @@ import { UserModule } from '@/api/user/user.module';
 import { MinioClientModule } from '@/libs/minio/minio-client.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RoleModule } from '../role/role.module';
 import { InstructorController } from './instructor.controller';
 import { InstructorRepository } from './instructor.repository';
 import { InstructorService } from './instructor.service';
@@ -16,6 +17,7 @@ import { InstructorService } from './instructor.service';
     forwardRef(() => UserModule),
     MediaModule,
     MinioClientModule,
+    RoleModule,
     TypeOrmModule.forFeature([InstructorEntity, CertificateEntity]),
   ],
   controllers: [InstructorController],
