@@ -5,7 +5,7 @@ import {
   GetCategoryQuery,
   UpdateCategoryReq,
 } from '@/api/category';
-import { Permission } from '@/constants';
+import { PERMISSION } from '@/constants';
 import { ApiAuth, ApiPublic, Permissions, Public } from '@/decorators';
 import { SlugParserPipe } from '@/pipes/slug-parse.pipe';
 import {
@@ -28,7 +28,7 @@ export class CategoryController {
 
   @Post()
   @ApiAuth({ type: CategoryRes, statusCode: HttpStatus.CREATED })
-  @Permissions(Permission.WRITE_CATEGORY)
+  @Permissions(PERMISSION.WRITE_CATEGORY)
   async create(@Body() dto: CreateCategoryReq): Promise<CategoryRes> {
     return await this.categoryService.create(dto);
   }
@@ -59,7 +59,7 @@ export class CategoryController {
 
   @Put(':slug')
   @ApiAuth({ type: CategoryRes, statusCode: HttpStatus.OK })
-  @Permissions(Permission.WRITE_CATEGORY)
+  @Permissions(PERMISSION.WRITE_CATEGORY)
   update(
     @Param('slug', SlugParserPipe) slug: string,
     @Body() updateCategoryDto: UpdateCategoryReq,
@@ -69,7 +69,7 @@ export class CategoryController {
 
   @Delete(':slug')
   @ApiAuth({ type: CategoryRes, statusCode: HttpStatus.NO_CONTENT })
-  @Permissions(Permission.DELETE_CATEGORY)
+  @Permissions(PERMISSION.DELETE_CATEGORY)
   async remove(@Param('slug') slug: string) {
     return await this.categoryService.remove(slug);
   }
