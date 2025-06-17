@@ -1,12 +1,11 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
-import { In, Repository } from 'typeorm';
+import { In } from 'typeorm';
 
 import { CursorPaginatedDto, Nanoid, OffsetPaginatedDto } from '@/common';
-import { ErrorCode as EC, JobName, Permission, QueueName } from '@/constants';
+import { ErrorCode as EC, JobName, PERMISSION, QueueName } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { paginate } from '@/utils';
 
@@ -14,6 +13,7 @@ import { CouponService } from '@/api/coupon/coupon.service';
 import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
 import { CourseEntity } from '@/api/course/entities/course.entity';
 import { CourseStatus } from '@/api/course/enums/course-status.enum';
+import { CourseRepository } from '@/api/course/repositories/course.repository';
 import { EnrollCourseService } from '@/api/course/services/enroll-course.service';
 import {
   CreateOrderReq,
@@ -28,18 +28,17 @@ import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { VnpayPaymentService } from '@/api/payment/services/vnpay-payment.service';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
+import { OrderDetailRepository } from '../repositories/order-detail.repository';
+import { OrderRepository } from '../repositories/order.repository';
 
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectRepository(OrderEntity)
-    private readonly orderRepo: Repository<OrderEntity>,
+    private readonly orderRepo: OrderRepository,
 
-    @InjectRepository(OrderDetailEntity)
-    private readonly orderDetailRepo: Repository<OrderDetailEntity>,
+    private readonly orderDetailRepo: OrderDetailRepository,
 
-    @InjectRepository(CourseEntity)
-    private readonly courseRepo: Repository<CourseEntity>,
+    private readonly courseRepo: CourseRepository,
 
     private readonly userRepo: UserRepository,
 
@@ -115,13 +114,13 @@ export class OrderService {
   async markOrderAsPaid(id: Nanoid) {
     const order = await this.orderRepo.findOne({
       where: { id },
-      relations: ['details', 'user'],
+      relations: { details: { course: true }, user: true },
     });
     if (!order) throw new NotFoundException(EC.E045);
 
     await Promise.all(
       order.details.map(async (detail) =>
-        this.enrollCourseService.enroll(detail.course_id, order.user.user_id),
+        this.enrollCourseService.enroll(detail.course, order.user),
       ),
     );
 
@@ -151,13 +150,16 @@ export class OrderService {
   async findOne(user: JwtPayloadType, id: Nanoid): Promise<OrderRes> {
     const order = await this.orderRepo.findOne({
       where: { id },
-      relations: ['details', 'user', 'details.course'],
+      relations: {
+        details: { course: { thumbnail: true } },
+        user: true,
+      },
     });
 
     if (!order) throw new NotFoundException(EC.E045);
     if (
       order.user.id !== user.id &&
-      !user.permissions.includes(Permission.READ_ORDER)
+      !user.permissions.includes(PERMISSION.READ_ORDER)
     )
       throw new ValidationException(EC.F002);
     return order.toDto(OrderRes);
@@ -168,7 +170,10 @@ export class OrderService {
     if (!user) throw new NotFoundException(EC.E002);
 
     const orders = await this.orderRepo.find({
-      where: { user: { id: user.id } },
+      where: {
+        user: { id: user.id },
+        payment_status: In([PaymentStatus.SUCCESS, PaymentStatus.FAILED]),
+      },
       order: { createdAt: 'DESC' },
       relations: { details: { course: { thumbnail: true } } },
     });
@@ -187,6 +192,20 @@ export class OrderService {
       .leftJoinAndSelect('course.thumbnail', 'thumbnail')
       .leftJoinAndSelect('details.coupon', 'coupon')
       .leftJoinAndSelect('order.user', 'user');
+
+    if (filter.payment_status)
+      query_builder.andWhere('order.payment_status = :status', {
+        status: filter.payment_status,
+      });
+
+    switch (filter.order_by) {
+      case 'created_at':
+        query_builder.orderBy('order.createdAt', filter.order);
+        break;
+      case 'total_amount':
+        query_builder.orderBy('order.total_amount', filter.order);
+        break;
+    }
 
     const [orders, metaDto] = await paginate<OrderEntity>(
       query_builder,
@@ -259,6 +278,7 @@ export class OrderService {
         discount,
         final_price,
         platform_fee,
+        coupon,
         // payout_status: PaymentStatus.PENDING,
       });
     });
