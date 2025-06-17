@@ -4,7 +4,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
   HttpStatus,
   Param,
   Post,
@@ -12,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
-  ApproveInstructorDto,
+  ApproveInstructorReq,
   InstructorRes,
   ListInstructorQuery,
   RegisterAsInstructorReq,
@@ -25,8 +24,11 @@ export class InstructorController {
   constructor(private readonly instructorService: InstructorService) {}
 
   @Post()
-  @ApiAuth()
-  @HttpCode(HttpStatus.CREATED)
+  @ApiAuth({
+    statusCode: HttpStatus.CREATED,
+    type: InstructorRes,
+    summary: 'Register as instructor',
+  })
   async registerAsInstructor(
     @CurrentUser('id') user_public_id: Nanoid,
     @Body() dto: RegisterAsInstructorReq,
@@ -41,6 +43,7 @@ export class InstructorController {
     type: InstructorRes,
     summary: 'List instructor',
     isPaginated: true,
+    paginationType: 'offset',
   })
   loadByOffset(@Query() dto: ListInstructorQuery) {
     return this.instructorService.load(dto);
@@ -79,7 +82,7 @@ export class InstructorController {
   async approve(
     @CurrentUser('id') id: Nanoid,
     @Param('username') username: string,
-    @Body() dto: ApproveInstructorDto,
+    @Body() dto: ApproveInstructorReq,
   ): Promise<InstructorRes> {
     return await this.instructorService.approve(username, id, dto);
   }

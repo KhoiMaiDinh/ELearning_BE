@@ -20,7 +20,7 @@ export class RegisterAsInstructorReq {
   @ClassField(() => MediaReq)
   resume: MediaReq;
 
-  @StringField()
+  @StringFieldOptional()
   website_url?: string;
 
   @StringFieldOptional()
