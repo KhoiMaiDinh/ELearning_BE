@@ -1,9 +1,11 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
-import { Uuid } from '@/common';
+import { Nanoid, Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
+import { AutoNanoId } from '@/decorators';
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -15,6 +17,11 @@ import { NotificationType } from '../enum/notification-type.enum';
 export class NotificationEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid')
   notification_id: Uuid;
+
+  @Column('varchar')
+  @Index('EK_NOTIFICATION_ID', { unique: true })
+  @AutoNanoId()
+  id: Nanoid;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
