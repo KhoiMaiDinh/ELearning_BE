@@ -1,5 +1,5 @@
 import { Nanoid } from '@/common';
-import { Bucket, ErrorCode, Permission, UploadStatus } from '@/constants';
+import { Bucket, ErrorCode, PERMISSION, UploadStatus } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { MinioClientService } from '@/libs/minio';
 import { Injectable } from '@nestjs/common';
@@ -14,18 +14,18 @@ import {
 import { ArticleEntity } from '@/api/course-item/article/article.entity';
 import { CourseItemService } from '@/api/course-item/course-item.service';
 import { ResourceReq } from '@/api/course-item/dto/resource.req.dto';
-import {
-  LectureEntity,
-  LectureVideoEntity,
-  ResourceEntity,
-} from '@/api/course-item/lecture/lecture.entity';
+import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity';
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
 
 import { CourseStatus } from '@/api/course/enums/course-status.enum';
 import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
 import { MediaRepository } from '@/api/media';
+import { MediaEntity } from '@/api/media/entities/media.entity';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
+import { LectureSeriesEntity } from './entities/lecture-series.entity';
+import { ResourceEntity } from './entities/resource.entity';
+import { LectureSeriesRepository } from './repositories/lecture-series.repository';
 
 @Injectable()
 export class LectureService extends CourseItemService {
@@ -37,10 +37,11 @@ export class LectureService extends CourseItemService {
     mediaRepository: MediaRepository,
     @InjectRepository(ResourceEntity)
     private readonly resourceRepository: Repository<ResourceEntity>,
-    @InjectRepository(LectureVideoEntity)
-    private readonly videoRepository: Repository<LectureVideoEntity>,
+    // @InjectRepository(LectureVideoEntity)
+    // private readonly videoRepository: Repository<LectureVideoEntity>,
     private readonly storageService: MinioClientService,
     private readonly commentService: LectureCommentService,
+    private readonly lectureSeriesRepo: LectureSeriesRepository,
   ) {
     super(
       sectionRepository,
@@ -52,7 +53,7 @@ export class LectureService extends CourseItemService {
   }
 
   async findOne(user: JwtPayloadType, id: Nanoid) {
-    if (user.permissions.includes(Permission.READ_COURSE_ITEM))
+    if (user.permissions.includes(PERMISSION.READ_COURSE_ITEM))
       return (await this.findOneById(id)).toDto(LectureRes);
     const lecture = await this.lectureRepository.findOne({
       where: [
@@ -63,8 +64,7 @@ export class LectureService extends CourseItemService {
         { id, is_preview: true },
       ],
       relations: {
-        videos: true,
-        resources: true,
+        series: true,
         section: { course: { enrolled_users: { user: true } } },
       },
     });
@@ -80,24 +80,24 @@ export class LectureService extends CourseItemService {
     const lecture = await this.lectureRepository.findOne({
       where: { id },
       relations: {
-        videos: true,
-        resources: { resource_file: true },
+        series: { resources: { resource_file: true } },
         section: true,
       },
       order: {
-        videos: { version: 'DESC' },
+        series: { version: 'DESC' },
       },
     });
     if (!lecture)
       throw new NotFoundException(ErrorCode.E033, 'Lecture not found');
-    lecture.video.video = await this.storageService.getPresignedUrl(
-      lecture.video.video,
-    );
+    lecture.latestPublishedSeries.video =
+      await this.storageService.getPresignedUrl(
+        lecture.latestPublishedSeries.video,
+      );
     return lecture;
   }
 
   async create(user: JwtPayloadType, dto: CreateLectureReq) {
-    const { video: video_dto, ...lecture_dto } = dto;
+    const { video: video_dto, title, description, is_preview } = dto;
     // get section
     const section = await this.sectionRepository.findOne({
       where: { id: dto.section.id },
@@ -112,31 +112,37 @@ export class LectureService extends CourseItemService {
     );
 
     // get medias
-    const media = await this.mediaRepository.findOneById(video_dto.id);
-    const video = this.videoRepository.create({
-      video: media,
-      duration_in_seconds: video_dto.duration_in_seconds,
-    });
+    const video = await this.mediaRepository.findOneById(video_dto.id);
 
     this.isValidVideo(video);
 
     const resources = await this.handleResources([], dto.resources);
 
     const lecture = this.lectureRepository.create({
-      ...lecture_dto,
       position,
-      videos: [video],
-      resources,
       section,
-      status: CourseStatus.DRAFT,
     });
     await this.lectureRepository.save(lecture);
-    lecture.resources = await this.getResourceAccess(lecture.resources);
+
+    const lecture_series = this.lectureSeriesRepo.create({
+      title,
+      description,
+      is_preview,
+      duration_in_seconds: video_dto.duration_in_seconds,
+      video,
+      version: 1,
+      resources,
+      status: CourseStatus.DRAFT,
+      lecture,
+    });
+    await this.lectureSeriesRepo.save(lecture_series);
+    lecture_series.resources = await this.getResourceAccess(lecture.resources);
+    lecture.series = [lecture_series];
     return lecture.toDto(LectureRes);
   }
 
   private async handleResources(
-    resources: ResourceEntity[],
+    resources: ResourceEntity[] = [],
     resources_dto: ResourceReq[],
   ) {
     if (resources_dto == undefined) return resources;
@@ -147,6 +153,7 @@ export class LectureService extends CourseItemService {
     for (const r_dto of resources_dto) {
       const resource = resources_map.get(r_dto.resource_file.id);
       if (resource) {
+        resource.name = r_dto.name;
         new_resources.push(resource);
         continue;
       }
@@ -168,74 +175,146 @@ export class LectureService extends CourseItemService {
 
   async update(user: JwtPayloadType, id: Nanoid, dto: UpdateLectureReq) {
     const lecture = await this.findOneById(id);
+    const { video: video_dto, title, description, is_preview } = dto;
 
-    const {
-      section: section_dto,
-      previous_position,
-      video: video_dto,
-      resources: resources_dto,
-      ...rest
-    } = dto;
-
-    // get section
-    if (section_dto != undefined && section_dto.id !== lecture.section.id) {
-      const section = await this.sectionRepository.findOne({
-        where: { id: dto.section.id },
-        relations: { course: { instructor: { user: true } } },
-      });
-      this.isValidSection(user, section);
-      lecture.section = section;
-    }
-
-    // get position
-    if (previous_position != undefined) {
-      const position = await this.getPosition(
-        dto.previous_position,
-        lecture.section.section_id,
-      );
-      lecture.position = position;
-    }
-
-    // get medias
-    if (video_dto && video_dto?.id !== lecture.videos[0].video.id) {
-      const media = await this.mediaRepository.findOneByKey(video_dto?.id);
-      const video = this.videoRepository.create({
-        video: media,
-        duration_in_seconds: video_dto.duration_in_seconds,
-        version: lecture.videos[0].version + 1,
-      });
-      this.isValidVideo(video);
-      lecture.videos = [...lecture.videos, video];
-    }
-
-    // get resource
-    lecture.resources = await this.handleResources(
-      lecture.resources,
-      resources_dto,
+    let targetSeries = lecture.series.find(
+      (s) => s.status === CourseStatus.DRAFT,
     );
-    Object.assign(lecture, rest);
 
-    await this.lectureRepository.save(lecture);
-    await this.commentService.markAllAsSolved(lecture.id);
+    if (!targetSeries) {
+      targetSeries = this.lectureSeriesRepo.create({
+        title,
+        description,
+        is_preview,
+        duration_in_seconds: video_dto.duration_in_seconds,
+        lecture_id: lecture.lecture_id,
+        version: lecture.series.length + 1,
+      });
+    } else {
+      targetSeries.title = title;
+      targetSeries.description = description;
+      targetSeries.is_preview = is_preview;
+      targetSeries.duration_in_seconds = video_dto.duration_in_seconds;
+    }
 
-    lecture.resources = await this.getResourceAccess(lecture.resources);
+    if (dto.video?.id && dto.video?.id !== targetSeries.video?.id) {
+      const video = await this.mediaRepository.findOneById(dto.video.id);
+      this.isValidVideo(video);
+      targetSeries.video = video;
+    }
+
+    targetSeries.resources = await this.handleResources(
+      targetSeries.resources,
+      dto.resources,
+    );
+    console.log(targetSeries.resources);
+
+    await this.lectureSeriesRepo.save(targetSeries);
+
+    // Optional: mark review comments as resolved
+    // await this.commentService.markAllAsSolved(lecture.lecture_id);
+
+    // Post-processing: signed URLs for resources
+    targetSeries.resources = await this.getResourceAccess(
+      targetSeries.resources,
+    );
+
+    lecture.series = lecture.series.find(
+      (s) => s.lecture_series_id === targetSeries.lecture_series_id,
+    )
+      ? lecture.series.map((s) =>
+          s.lecture_series_id === targetSeries.lecture_series_id
+            ? targetSeries
+            : s,
+        )
+      : [targetSeries, ...lecture.series];
+
     return lecture.toDto(LectureRes);
   }
 
-  private isValidVideo(video: LectureVideoEntity) {
-    if (
-      video.video.bucket !== Bucket.VIDEO &&
-      video.video.bucket !== Bucket.TEMP_VIDEO
-    )
+  async removeDraftVersion(
+    user: JwtPayloadType,
+    lecture_id: Nanoid,
+  ): Promise<void> {
+    const lecture = await this.lectureRepository.findOne({
+      where: { id: lecture_id },
+      relations: { series: true },
+    });
+
+    if (!lecture) {
+      throw new NotFoundException(ErrorCode.E033, 'Lecture not found');
+    }
+
+    const draft_series = lecture.series?.find(
+      (s) => s.status === CourseStatus.DRAFT,
+    );
+    if (!draft_series) {
+      throw new NotFoundException(
+        ErrorCode.E033,
+        'No draft version found for this lecture',
+      );
+    }
+    console.log(draft_series);
+
+    if (draft_series.resources?.length) {
+      await this.lectureSeriesRepo
+        .createQueryBuilder()
+        .relation(LectureSeriesEntity, 'resources')
+        .of(draft_series.lecture_series_id)
+        .remove(draft_series.resources);
+    }
+
+    await this.lectureSeriesRepo.delete({
+      lecture_series_id: draft_series.lecture_series_id,
+    });
+
+    const remaining_series = lecture.series?.filter(
+      (s) => s.lecture_series_id !== draft_series.lecture_series_id,
+    );
+    const has_published = remaining_series?.some(
+      (s) => s.status === CourseStatus.PUBLISHED,
+    );
+
+    if (!has_published) {
+      await this.lectureRepository.delete({
+        id: lecture_id,
+      });
+    }
+  }
+
+  async hide(user: JwtPayloadType, id: Nanoid): Promise<void> {
+    const result = await this.lectureRepository.update(
+      { id },
+      { is_hidden: true },
+    );
+    if (result.affected === 0) {
+      throw new NotFoundException(ErrorCode.E033, 'Lecture not found');
+    }
+  }
+
+  async unhide(user: JwtPayloadType, id: Nanoid): Promise<void> {
+    const result = await this.lectureRepository.update(
+      { id },
+      { is_hidden: false },
+    );
+    if (result.affected === 0) {
+      throw new NotFoundException(ErrorCode.E033, 'Lecture not found');
+    }
+  }
+
+  private isValidVideo(video: MediaEntity) {
+    if (video.bucket !== Bucket.VIDEO && video.bucket !== Bucket.TEMP_VIDEO)
       throw new ValidationException(ErrorCode.E034);
+
     if (
-      video.video.status !== UploadStatus.UPLOADED &&
-      video.video.status !== UploadStatus.VALIDATED
+      video.status !== UploadStatus.UPLOADED &&
+      video.status !== UploadStatus.VALIDATED
     )
       throw new ValidationException(ErrorCode.E042);
   }
 
   private async getResourceAccess(resources: ResourceEntity[]) {
+    if (!resources?.length) return [];
     return Promise.all(
       resources?.map(async (r) => {
         r.resource_file = await this.storageService.getPresignedUrl(

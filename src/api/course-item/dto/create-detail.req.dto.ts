@@ -27,7 +27,7 @@ export class CreateCourseItemReq {
 }
 
 export class LectureVideoReq extends MediaReq {
-  @NumberField({ int: true, isPositive: true })
+  @NumberField({ isPositive: true })
   duration_in_seconds: number;
 }
 
@@ -35,7 +35,7 @@ export class CreateLectureReq extends CreateCourseItemReq {
   @ClassField(() => LectureVideoReq)
   video: LectureVideoReq;
 
-  @StringFieldOptional({ maxLength: 300 })
+  @StringFieldOptional({ maxLength: 1000 })
   description: string;
   @ClassFieldOptional(() => ResourceReq, { each: true })
   resources: ResourceReq[];

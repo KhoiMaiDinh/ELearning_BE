@@ -5,6 +5,6 @@ export class ResourceReq {
   @ClassField(() => MediaReq)
   resource_file: MediaReq;
 
-  @StringField()
+  @StringField({ maxLength: 60 })
   name: string;
 }

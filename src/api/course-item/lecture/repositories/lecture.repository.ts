@@ -1,6 +1,6 @@
+import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { LectureEntity } from './lecture.entity';
 
 @Injectable()
 export class LectureRepository extends Repository<LectureEntity> {

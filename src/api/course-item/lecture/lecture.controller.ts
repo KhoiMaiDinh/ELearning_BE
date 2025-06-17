@@ -1,9 +1,16 @@
-import { CreateLectureReq, LectureRes } from '@/api/course-item';
+import {
+  CreateLectureReq,
+  LectureRes,
+  UpdateLectureReq,
+} from '@/api/course-item';
 import { LectureService } from '@/api/course-item/lecture/lecture.service';
 import { ProgressRes, UpsertWatchTimeReq } from '@/api/course-progress/dto';
 import { LessonProgressService } from '@/api/course-progress/lesson-progress.service';
-import { CreateCommentReq, LectureCommentRes } from '@/api/lecture-comment/dto';
-import { LectureCommentsQuery } from '@/api/lecture-comment/dto/lecture-comment.query.dto';
+import {
+  CreateCommentReq,
+  FindLectureCommentsRes,
+} from '@/api/lecture-comment/dto';
+import { LectureCommentsQuery } from '@/api/lecture-comment/dto/lecture-comments.query.dto';
 import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
 import { ThreadRes } from '@/api/thread/dto';
 import { ThreadService } from '@/api/thread/services/thread.service';
@@ -13,9 +20,11 @@ import { ApiAuth, CurrentUser } from '@/decorators';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -41,6 +50,19 @@ export class LectureController {
     @Body() dto: CreateLectureReq,
   ) {
     return await this.lectureService.create(user, dto);
+  }
+
+  @ApiAuth({
+    summary: 'update course item: Lecture',
+    statusCode: HttpStatus.OK,
+  })
+  @Put(':id')
+  async update(
+    @Param('id') id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+    @Body() dto: UpdateLectureReq,
+  ) {
+    return await this.lectureService.update(user, id, dto);
   }
 
   @ApiAuth({
@@ -88,14 +110,23 @@ export class LectureController {
   @ApiAuth({
     summary: 'Get comments of course item: Lecture',
     statusCode: HttpStatus.OK,
-    type: LectureCommentRes,
+    // type: LectureCommentRes,
   })
   @Get(':id/comments')
   async getComments(
     @Param('id') id: Nanoid,
     @Query() query: LectureCommentsQuery,
   ) {
-    return await this.commentService.findWithAspectStats(id, query);
+    const { comments, statistics } = await this.commentService.findInLecture(
+      id,
+      query,
+    );
+    plainToInstance(FindLectureCommentsRes, { comments, statistics });
+
+    return plainToInstance(FindLectureCommentsRes, {
+      comments,
+      statistics,
+    });
   }
 
   @Get(':lecture_id/threads')
@@ -105,5 +136,44 @@ export class LectureController {
   async findThreads(@Param('lecture_id') lecture_id: Nanoid) {
     const threads = this.threadService.getByLecture(lecture_id);
     return plainToInstance(ThreadRes, threads);
+  }
+
+  @ApiAuth({
+    summary: 'Hide (soft delete) a lecture',
+    statusCode: HttpStatus.NO_CONTENT,
+  })
+  @Patch(':id/hide')
+  async hideLecture(
+    @Param('id') id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    await this.lectureService.hide(user, id);
+    return { message: 'Lecture hidden successfully' };
+  }
+
+  @ApiAuth({
+    summary: 'Unhide a lecture (undo soft delete)',
+    statusCode: HttpStatus.NO_CONTENT,
+  })
+  @Patch(':id/unhide')
+  async unhideLecture(
+    @Param('id') id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    await this.lectureService.unhide(user, id);
+    return { message: 'Lecture restored successfully' };
+  }
+
+  @ApiAuth({
+    summary:
+      'Delete lecture if only draft version exists, else remove draft only',
+    statusCode: HttpStatus.NO_CONTENT,
+  })
+  @Delete(':id')
+  async deleteDraftLecture(
+    @Param('id') id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    await this.lectureService.removeDraftVersion(user, id);
   }
 }

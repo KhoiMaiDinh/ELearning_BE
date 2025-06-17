@@ -1,13 +1,13 @@
 import { ArticleRes, CreateArticleReq } from '@/api/course-item';
 import { ArticleEntity } from '@/api/course-item/article/article.entity';
 import { CourseItemService } from '@/api/course-item/course-item.service';
-import { LectureEntity } from '@/api/course-item/lecture/lecture.entity';
+import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity';
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
 import { MediaRepository } from '@/api/media';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
-import { ErrorCode, Permission } from '@/constants';
+import { ErrorCode, PERMISSION } from '@/constants';
 import { NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
@@ -31,7 +31,7 @@ export class ArticleService extends CourseItemService {
   }
 
   async findOne(user: JwtPayloadType, id: Nanoid) {
-    if (user.permissions.includes(Permission.READ_COURSE_ITEM))
+    if (user.permissions.includes(PERMISSION.READ_COURSE_ITEM))
       return (await this.findOneById(id)).toDto(ArticleRes);
     const article = await this.articleRepository.findOne({
       where: {
