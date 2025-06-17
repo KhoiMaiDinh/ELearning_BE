@@ -1,5 +1,5 @@
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
-import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.entity';
+import { EnrolledCourseRepository } from '@/api/course/repositories/enrolled-course.repository';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
 import { ErrorCode } from '@/constants';
@@ -20,8 +20,7 @@ import {
 @Injectable()
 export class QuizAttemptService {
   constructor(
-    @InjectRepository(EnrolledCourseEntity)
-    private readonly enrolledCourseRepository: Repository<EnrolledCourseEntity>,
+    private readonly enrolledCourseRepository: EnrolledCourseRepository,
     @InjectRepository(QuizEntity)
     private readonly quizRepository: Repository<QuizEntity>,
     @InjectRepository(QuizAttempt)

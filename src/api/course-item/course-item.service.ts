@@ -1,12 +1,12 @@
 import { ArticleEntity } from '@/api/course-item/article/article.entity';
-import { LectureEntity } from '@/api/course-item/lecture/lecture.entity';
+import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity';
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
 import { MediaRepository } from '@/api/media';
 import { SectionEntity } from '@/api/section/entities/section.entity';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid, Uuid } from '@/common';
-import { ErrorCode, Order, Permission } from '@/constants';
+import { ErrorCode, Order, PERMISSION } from '@/constants';
 import { ForbiddenException } from '@/exceptions';
 import { mergeSortedArrays } from '@/utils';
 import { LexoRank } from '@dalet-oss/lexorank';
@@ -44,7 +44,7 @@ export abstract class CourseItemService {
 
     if (
       course_owner_id !== user.id &&
-      !user.permissions.includes(Permission.WRITE_COURSE_ITEM)
+      !user.permissions.includes(PERMISSION.WRITE_COURSE_ITEM)
     )
       throw new ForbiddenException(ErrorCode.E032);
   }
@@ -53,6 +53,7 @@ export abstract class CourseItemService {
     previous_position: string | null,
     section_id: Uuid,
   ): Promise<string> {
+    console.log('previous_position', previous_position);
     const lecture_positions = await this.lectureRepository.find({
       select: ['position'],
       where: { section_id },
@@ -76,6 +77,7 @@ export abstract class CourseItemService {
       article_positions.map(({ position }) => position),
       quiz_positions.map(({ position }) => position),
     );
+    console.log('positions', positions);
 
     if (previous_position === null) {
       if (positions.length === 0) return LexoRank.middle().toString();
