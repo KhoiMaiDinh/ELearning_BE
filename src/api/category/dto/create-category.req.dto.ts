@@ -22,7 +22,7 @@ class CategoryTranslationReq {
 export class CreateCategoryReq {
   @IsArray()
   @ValidateNested({ each: true })
-  @EnsureLanguages(['en', 'vi'])
+  @EnsureLanguages(['vi'])
   @ClassField(() => CategoryTranslationReq, { each: true })
   translations: CategoryTranslationReq[];
 

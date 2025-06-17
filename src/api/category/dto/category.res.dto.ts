@@ -1,5 +1,5 @@
 import { Language } from '@/constants';
-import { ClassField, EnumField, StringField } from '@/decorators';
+import { ClassField, EnumField, NumberField, StringField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
@@ -34,4 +34,8 @@ export class CategoryRes {
   @Expose()
   @ClassField(() => CategoryRes, { each: true })
   children?: CategoryRes[];
+
+  @Expose()
+  @NumberField({ int: true })
+  course_count: number;
 }

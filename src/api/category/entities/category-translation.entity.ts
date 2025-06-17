@@ -30,9 +30,6 @@ export class CategoryTranslationEntity extends AbstractEntity {
   @Column({ type: 'varchar', length: 255 })
   description: string;
 
-  @Column({ type: 'uuid', nullable: true })
-  parent_id?: Uuid;
-
   @Column({ type: 'enum', enum: Language }) // e.g., "en", "vi"
   language: Language;
 
