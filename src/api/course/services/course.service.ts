@@ -14,6 +14,7 @@ import {
   UpdateCourseReq,
 } from '@/api/course';
 import { LectureSeriesEntity } from '@/api/course-item/lecture/entities/lecture-series.entity';
+import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity';
 import { LectureSeriesRepository } from '@/api/course-item/lecture/repositories/lecture-series.repository';
 import { LectureRepository } from '@/api/course-item/lecture/repositories/lecture.repository';
 import { ICourseProgress } from '@/api/course-progress/interfaces';
@@ -471,15 +472,16 @@ export class CourseService {
       {
         instructor: { user: true },
         sections: {
-          lectures: { series: true },
+          lectures: { series: { video: true } },
           quizzes: true,
           articles: true,
         },
       },
+      true,
     );
 
     // ✅ If user has WRITE_COURSE permission (admin), allow
-    const to_public_series: LectureSeriesEntity[] = [];
+
     if (user.permissions.includes(PERMISSION.WRITE_COURSE)) {
       course.status = dto.status;
       await course.save();
@@ -495,6 +497,8 @@ export class CourseService {
       );
     }
 
+    const to_public_series: LectureSeriesEntity[] = [];
+    const to_update_lectures: LectureEntity[] = [];
     if (dto.status === CourseStatus.PUBLISHED) {
       if (!course.sections.length) {
         throw new ValidationException(
@@ -526,19 +530,41 @@ export class CourseService {
 
       const has_unpublished_draft = course.sections.some((section) =>
         section.lectures.some((lecture) =>
-          lecture.series.some(
-            (series) =>
-              series.status === CourseStatus.DRAFT || lecture.is_hidden,
-          ),
+          lecture.series.some((series) => series.status === CourseStatus.DRAFT),
         ),
       );
 
-      if (!has_unpublished_draft) {
+      const has_deletion_changes = course.sections.some((section) =>
+        section.lectures.some(
+          (lecture) =>
+            (lecture.deletedAt == null && lecture.is_hidden == true) ||
+            (lecture.deletedAt !== null && lecture.is_hidden == false),
+        ),
+      );
+
+      if (!has_unpublished_draft && !has_deletion_changes) {
         throw new ValidationException(
           ErrorCode.E043,
           'Không có thay đổi nào mới để xuất bản. Vui lòng cập nhật bài giảng trước khi xuất bản.',
         );
       }
+
+      course.sections.forEach((section) => {
+        section.lectures.forEach((lecture) => {
+          const was_deleted = lecture.deletedAt !== null;
+          const is_now_hidden = lecture.is_hidden;
+
+          if (!was_deleted && is_now_hidden) {
+            lecture.deletedAt = new Date();
+            to_update_lectures.push(lecture);
+          }
+
+          if (was_deleted && !is_now_hidden) {
+            lecture.deletedAt = null;
+            to_update_lectures.push(lecture);
+          }
+        });
+      });
 
       course.sections.forEach((section) => {
         if (section.items.length === 0) {
@@ -548,16 +574,21 @@ export class CourseService {
           );
         }
         section.lectures.forEach((lecture) => {
+          if (lecture.is_hidden) {
+            return;
+          }
+
           const latest_series = lecture.series.sort(
             (a, b) => b.version - a.version,
           )[0];
+          console.log(latest_series);
           if (
             !latest_series ||
             latest_series.video.status !== UploadStatus.VALIDATED
           ) {
             throw new ValidationException(
               ErrorCode.E043,
-              `Không thể xuất bản: Video bài giảng "${lecture.title}" trong chương "${section.title}" chưa sẵn sàng để xuất bản`,
+              `Không thể xuất bản: Video bài giảng "${latest_series.title}" trong chương "${section.title}" chưa sẵn sàng để xuất bản`,
             );
           }
           latest_series.status = CourseStatus.PUBLISHED;
@@ -568,6 +599,7 @@ export class CourseService {
       if (to_public_series.length) course.published_at = new Date();
     }
 
+    await this.lectureRepository.save(to_update_lectures);
     await this.lectureSeriesRepo.save(to_public_series);
     await this.sectionRepository.save(course.sections);
     if (course.status === CourseStatus.BANNED) {
@@ -623,12 +655,15 @@ export class CourseService {
         .withDeleted()
         .leftJoinAndSelect('sections.lectures', 'lectures');
     } else {
-      query_builder.leftJoinAndSelect(
-        'sections.lectures',
-        'lectures',
-        'lectures.is_hidden = :is_hidden',
-        { is_hidden: false },
-      );
+      query_builder
+        .leftJoinAndSelect(
+          'sections.lectures',
+          'lectures',
+          filter.is_show_hidden
+            ? '(lectures.deleted_at IS NULL OR (lectures.deleted_at IS NOT NULL AND lectures.is_hidden = false))'
+            : 'lectures.deleted_at IS NULL',
+        )
+        .withDeleted();
     }
 
     query_builder

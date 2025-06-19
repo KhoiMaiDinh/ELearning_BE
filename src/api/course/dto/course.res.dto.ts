@@ -57,6 +57,10 @@ export class CourseRes {
   description: string;
 
   @Expose()
+  @DateField()
+  published_at: Date;
+
+  @Expose()
   @EnumField(() => Language)
   language: Language;
 
@@ -104,11 +108,15 @@ export class CourseRes {
 
   @Expose()
   @DateField()
-  published_at: Date | null;
+  createdAt: Date;
 
   @Expose()
   @DateField()
   updatedAt: Date;
+
+  @Expose()
+  @DateField()
+  deletedAt: Date;
 
   @Expose()
   @ClassField(() => CourseUnbanResponseDto, { each: true })
