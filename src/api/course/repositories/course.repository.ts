@@ -14,10 +14,12 @@ export class CourseRepository extends Repository<CourseEntity> {
   async findOneByPublicIdOrSlug(
     id: Nanoid | string,
     load_entities: FindOptionsRelations<CourseEntity>,
+    withDeleted: boolean = false,
     throw_exception: boolean = true,
   ): Promise<CourseEntity> {
     const course = await this.findOne({
       where: [{ id: id as Nanoid }, { slug: id }],
+      withDeleted,
       relations: load_entities,
     });
 

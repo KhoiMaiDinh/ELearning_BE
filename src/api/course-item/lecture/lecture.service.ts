@@ -80,7 +80,7 @@ export class LectureService extends CourseItemService {
     const lecture = await this.lectureRepository.findOne({
       where: { id },
       relations: {
-        series: { resources: { resource_file: true } },
+        series: { resources: { resource_file: true }, video: true },
         section: true,
       },
       order: {
@@ -254,7 +254,6 @@ export class LectureService extends CourseItemService {
         'No draft version found for this lecture',
       );
     }
-    console.log(draft_series);
 
     if (draft_series.resources?.length) {
       await this.lectureSeriesRepo
