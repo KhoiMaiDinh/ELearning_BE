@@ -32,9 +32,11 @@ export class PreferenceService {
         slug: In(category_slugs),
       },
     });
+    console.log(categories);
     const preference =
       await this.preferenceRepository.getPreferenceByUserId(user_public_id);
-    Object.assign(preference, rest, categories);
+    Object.assign(preference, rest, { categories });
+    console.log(preference);
     await this.preferenceRepository.save(preference);
 
     return preference.toDto(PreferenceRes);
