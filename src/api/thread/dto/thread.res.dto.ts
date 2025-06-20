@@ -1,6 +1,6 @@
 import { LectureRes } from '@/api/course-item';
 import { UserRes } from '@/api/user';
-import { Nanoid } from '@/common';
+import { Nanoid, WrapperType } from '@/common';
 import { ClassField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 import { ReplyRes } from './reply.res.dto';
@@ -26,5 +26,5 @@ export class ThreadRes {
 
   @Expose()
   @ClassField(() => ReplyRes)
-  replies: ReplyRes[];
+  replies: WrapperType<ReplyRes[]>;
 }

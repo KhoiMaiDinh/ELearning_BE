@@ -3,6 +3,7 @@ import { CourseModule } from '@/api/course/course.module';
 import { UserModule } from '@/api/user/user.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { InstructorModule } from '../instructor/instructor.module';
 import { ReplyVoteController } from './controllers/reply.controller';
 import { ThreadController } from './controllers/thread.controller';
 import { ReplyVoteEntity } from './entities/reply-vote.entity';
@@ -20,6 +21,7 @@ import { VoteService } from './services/vote.service';
     forwardRef(() => UserModule),
     forwardRef(() => CourseItemModule),
     forwardRef(() => CourseModule),
+    InstructorModule,
   ],
   controllers: [ThreadController, ReplyVoteController],
   providers: [

@@ -1,6 +1,7 @@
 // replies/reply.entity.ts
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Nanoid, Uuid } from '@/common';
+import { ENTITY as E } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
 import {
@@ -16,7 +17,7 @@ import {
 import { ReplyVoteEntity } from './reply-vote.entity';
 import { ThreadEntity } from './thread.entity';
 
-@Entity('reply')
+@Entity(E.REPLY)
 export class ReplyEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid')
   reply_id: Uuid;
