@@ -38,7 +38,7 @@ export const VALID_UPLOAD_TYPES: Record<ENTITY, UploadEntityProperty[]> = {
   course: [UploadEntityProperty.THUMBNAIL],
   lecture: [],
   certificate: [UploadEntityProperty.CERTIFICATE_FILE],
-  'lecture-video': [UploadEntityProperty.VIDEO],
+  'lecture-series': [UploadEntityProperty.VIDEO],
   resource: [UploadEntityProperty.RESOURCE_FILE],
   category: [],
   post: [],
@@ -53,6 +53,7 @@ export const VALID_UPLOAD_TYPES: Record<ENTITY, UploadEntityProperty[]> = {
   favorite_courses: [],
   reply: [],
   payout: [UploadEntityProperty.EVIDENCE],
+  'order-detail': [],
 };
 
 export const UPLOAD_TYPE_RESOURCE: Record<

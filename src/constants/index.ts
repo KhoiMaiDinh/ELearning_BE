@@ -6,6 +6,7 @@ export * from './entity.constant';
 export * from './error-code.constant';
 export * from './job.constant';
 export * from './kafka-topic.constant';
+export * from './label.constant';
 export * from './permission.constant';
 export * from './preference.constant';
 export * from './register-method.enum';
