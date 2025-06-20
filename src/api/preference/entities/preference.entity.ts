@@ -1,7 +1,7 @@
 import { CategoryEntity } from '@/api/category/entities/category.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
-import { Entity as E, Language, Theme } from '@/constants';
+import { ENTITY as E, Language, Theme } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,

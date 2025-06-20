@@ -4,7 +4,7 @@ import { Body, Controller, Get, HttpStatus, Put } from '@nestjs/common';
 import { PreferenceRes, UpdatePreferenceReq } from './dto';
 import { PreferenceService } from './preference.service';
 
-@Controller('preference')
+@Controller({ path: 'preferences', version: '1' })
 export class PreferenceController {
   constructor(private readonly preferenceService: PreferenceService) {}
 
