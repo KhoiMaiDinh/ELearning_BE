@@ -1,5 +1,8 @@
 import { PayoutService } from '@/api/payment/services/payout.service';
-import { IPayoutJob } from '@/common/interfaces/job.interface';
+import {
+  IPayoutFinalizeJob,
+  IPayoutJob,
+} from '@/common/interfaces/job.interface';
 import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
@@ -10,5 +13,9 @@ export class PayoutQueueService {
 
   async payoutInstructor(data: IPayoutJob) {
     await this.payoutService.initForInstructor(data.instructor_id);
+  }
+
+  async finalizePayout(data: IPayoutFinalizeJob) {
+    await this.payoutService.finalize(data);
   }
 }
