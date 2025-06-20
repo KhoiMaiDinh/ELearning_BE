@@ -17,6 +17,7 @@ import { CouponQuery, CouponsQuery, CreateCouponReq } from '@/api/coupon/dto';
 import { CouponEntity } from '@/api/coupon/entities/coupon.entity';
 import { NotificationGateway } from '@/gateway/notification/notification.gateway';
 import { rawPaginate } from '@/utils/offset-pagination-raw';
+import { CourseEntity } from '../course/entities/course.entity';
 import { FavoriteCourseService } from '../course/services/favorite-course.service';
 import { InstructorRepository } from '../instructor';
 import { NotificationType } from '../notification/enum/notification-type.enum';
@@ -44,25 +45,26 @@ export class CouponService {
     user: JwtPayloadType,
     dto: CreateCouponReq,
   ): Promise<CouponEntity> {
-    let course_id: Uuid = null;
+    let course: CourseEntity = null;
     if (user.permissions.includes(PERMISSION.WRITE_COUPON)) {
       if (dto.course) {
-        const course = await this.courseService.findOne(dto.course.id);
+        course = await this.courseService.findOne(dto.course.id);
         if (!course.published_at) throw new ValidationException(ErrorCode.E083);
-        // await this.validateCourseCouponLimit(course.course_id);
-        course_id = course.course_id;
       }
     } else {
       if (!dto.course) return;
 
-      const course = await this.courseService.findOne(dto.course.id);
+      course = await this.courseService.findOne(dto.course.id);
       this.courseService.ensureOwnership(course, user.id);
       // await this.validateCourseCouponLimit(course.course_id);
-      course_id = course.course_id;
     }
 
-    if (dto.is_public && course_id) {
-      await this.validateOverlapping(course_id, dto.starts_at, dto.expires_at);
+    if (dto.is_public && course != null) {
+      await this.validateOverlapping(
+        course.course_id,
+        dto.starts_at,
+        dto.expires_at,
+      );
     }
 
     if (dto.code) await this.validateCode(dto.code);
@@ -76,11 +78,11 @@ export class CouponService {
       usage_limit: dto.usage_limit,
       is_active: true,
       is_public: dto.is_public,
-      course_id: course_id,
+      course: course,
       createdBy: user.id,
     });
 
-    if (course_id) {
+    if (course != null) {
       await this.sendCouponForCourseNotification(coupon);
     }
     return this.couponRepo.save(coupon);
