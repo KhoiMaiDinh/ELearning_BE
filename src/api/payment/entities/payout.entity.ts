@@ -2,9 +2,11 @@ import { MediaEntity } from '@/api/media/entities/media.entity';
 import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Nanoid, Uuid } from '@/common';
+import { ENTITY } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
 import {
+  BeforeInsert,
   Column,
   Entity,
   Index,
@@ -17,7 +19,8 @@ import {
 } from 'typeorm';
 import { PayoutStatus } from '../enums/payment-status.enum';
 
-@Entity('payout')
+@Entity(ENTITY.PAYOUT)
+@Index(['payee_id', 'year', 'month'], { unique: true })
 export class PayoutEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid')
   payout_id: Uuid;
@@ -34,15 +37,15 @@ export class PayoutEntity extends AbstractEntity {
   payee: Relation<UserEntity>;
 
   @Column({ type: 'varchar', nullable: true })
-  transfer_id: string;
+  transaction_code: string;
 
   @Column({ type: 'timestamptz', nullable: true })
-  paid_out_sent_at: Date | null;
+  issued_at: Date | null;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   bank_account_number: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   bank_code: string;
 
   @Column('decimal', { precision: 15, scale: 2 })
@@ -62,4 +65,17 @@ export class PayoutEntity extends AbstractEntity {
 
   @OneToMany(() => OrderDetailEntity, (detail) => detail.payout)
   details: Relation<OrderDetailEntity[]>;
+
+  @Column({ type: 'int' })
+  year: number;
+
+  @Column({ type: 'int' })
+  month: number;
+
+  @BeforeInsert()
+  setPayoutPeriod() {
+    const now = new Date();
+    this.year = now.getFullYear();
+    this.month = now.getMonth() + 1; // getMonth() returns 0–11
+  }
 }

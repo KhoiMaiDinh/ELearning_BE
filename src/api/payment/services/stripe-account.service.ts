@@ -3,7 +3,7 @@ import { JwtPayloadType } from '@/api/token';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid } from '@/common';
-import { ErrorCode, Permission } from '@/constants';
+import { ErrorCode, PERMISSION } from '@/constants';
 import { ForbiddenException, ValidationException } from '@/exceptions';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -137,7 +137,7 @@ export class StripeAccountService {
 
     if (accounts.length === 0) return [];
 
-    this.assertPermission(accounts[0], user, [Permission.READ_ACCOUNT]);
+    this.assertPermission(accounts[0], user, [PERMISSION.READ_ACCOUNT]);
 
     return plainToInstance(AccountRes, accounts);
   }
@@ -172,7 +172,7 @@ export class StripeAccountService {
   private assertPermission(
     account: AccountEntity,
     user: JwtPayloadType,
-    permissions: Permission[],
+    permissions: PERMISSION[],
   ): void {
     const is_owner = account.user.id === user.id;
     const has_permission = permissions.some((permission) =>
