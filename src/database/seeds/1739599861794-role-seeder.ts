@@ -1,6 +1,6 @@
 import { PermissionEntity } from '@/api/role/entities/permission.entity';
 import { RoleEntity } from '@/api/role/entities/role.entity';
-import { Permission } from '@/constants/permission.constant';
+import { PERMISSION } from '@/constants/permission.constant';
 import { DefaultRole } from '@/constants/role.constant';
 import { DataSource, In } from 'typeorm';
 import { Seeder } from 'typeorm-extension';
@@ -15,7 +15,7 @@ export class RoleSeeder1739599861794 implements Seeder {
     const default_roles = [
       DefaultRole.ADMIN,
       DefaultRole.STUDENT,
-      DefaultRole.TEACHER,
+      DefaultRole.INSTRUCTOR,
     ];
 
     for (const role of default_roles) {
@@ -27,33 +27,38 @@ export class RoleSeeder1739599861794 implements Seeder {
         permissions = await permissionRepo.find({
           where: {
             permission_key: In([
-              Permission.WRITE_ROLE,
-              Permission.READ_ROLE,
-              Permission.WRITE_USER,
-              Permission.CREATE_USER,
-              Permission.WRITE_COURSE_ITEM,
-              Permission.WRITE_SECTION,
-              Permission.WRITE_CATEGORY,
-              Permission.READ_COURSE_ITEM,
-              Permission.READ_ORDER,
-              Permission.READ_REPORT,
-              Permission.READ_COURSE,
-              Permission.READ_ACCOUNT,
-              Permission.READ_BAN,
-              Permission.WRITE_BAN,
+              PERMISSION.WRITE_ROLE,
+              PERMISSION.READ_ROLE,
+              PERMISSION.WRITE_USER,
+              PERMISSION.CREATE_USER,
+              PERMISSION.WRITE_COURSE,
+              PERMISSION.WRITE_COURSE_ITEM,
+              PERMISSION.WRITE_SECTION,
+              PERMISSION.WRITE_CATEGORY,
+              PERMISSION.READ_COURSE_ITEM,
+              PERMISSION.READ_ORDER,
+              PERMISSION.READ_REPORT,
+              PERMISSION.READ_COURSE,
+              PERMISSION.READ_ACCOUNT,
+              PERMISSION.READ_BAN,
+              PERMISSION.WRITE_BAN,
+              PERMISSION.WRITE_COUPON,
+              PERMISSION.READ_REPLY,
+              PERMISSION.READ_PAYOUT,
+              PERMISSION.WRITE_PAYOUT,
             ]),
           },
         });
       } else if (role === DefaultRole.STUDENT) {
         permissions = await permissionRepo.find({
           where: {
-            permission_key: In([Permission.HOME]),
+            permission_key: In([PERMISSION.HOME]),
           },
         });
-      } else if (role === DefaultRole.TEACHER) {
+      } else if (role === DefaultRole.INSTRUCTOR) {
         permissions = await permissionRepo.find({
           where: {
-            permission_key: In([Permission.HOME]),
+            permission_key: In([PERMISSION.HOME]),
           },
         });
       }
