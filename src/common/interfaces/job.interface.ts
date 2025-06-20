@@ -1,3 +1,4 @@
+import { PayoutBatchMetadata } from '@/api/notification/interfaces/metadata.interface';
 import { Nanoid, Uuid } from '../types/common.type';
 
 export interface IEmailJob {
@@ -11,6 +12,13 @@ export interface IStripeEventJob {
 
 export interface IPayoutJob {
   instructor_id: Uuid;
+}
+
+export type IPayoutFinalizeJob = PayoutBatchMetadata;
+
+export interface IProgressJob {
+  user_id: Nanoid;
+  course_id: Uuid;
 }
 
 export interface IHandleOrderExpirationJob {

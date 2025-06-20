@@ -1,5 +1,6 @@
 import { MediaRepository } from '@/api/media';
-import { Bucket, KafkaTopic, UploadStatus } from '@/constants';
+import { Bucket, KafkaTopic, UploadResource, UploadStatus } from '@/constants';
+import { VALID_EXTENSIONS } from '@/decorators';
 import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 
@@ -21,7 +22,11 @@ export class VideoProcessConsumer {
       media.rejection_reason = rejection_reason;
     if (status == UploadStatus.VALIDATED) {
       media.bucket = Bucket.VIDEO;
-      media.key = key.replace(/\.mp3|\.mov$/, '/master.m3u8');
+      const extensions = VALID_EXTENSIONS[UploadResource.VIDEO].join('|');
+      media.key = key.replace(
+        new RegExp(`\\.(${extensions})$`),
+        '/master.m3u8',
+      );
     }
 
     await this.mediaRepository.save(media);

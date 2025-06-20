@@ -113,6 +113,9 @@ export enum ErrorCode {
   E068 = 'coupon.error.not_valid_yet',
   E069 = 'coupon.error.cannot_modify',
   E070 = 'coupon.error.unapplicable',
+  E081 = 'coupon.error.overlapping',
+  E082 = 'coupon.error.same_code',
+  E083 = 'coupon.error.unpublished_course',
 
   // Thread
   E040 = 'thread.error.not_found',
@@ -136,4 +139,11 @@ export enum ErrorCode {
   E074 = 'course_unban_request.error.existed',
   E075 = 'course_unban_request.error.not_found',
   E076 = 'course_unban_request.error.invalid_author',
+
+  // Notification
+  E080 = 'notification.error.not_found',
+  E085 = 'notification.error.invalid_metadata',
+
+  // Certificate
+  E084 = 'certificate.error.not_found',
 }

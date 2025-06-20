@@ -12,11 +12,12 @@ export enum ENTITY {
   CATEGORY_TRANSLATION = 'category-translation',
   LECTURE = 'lecture',
   CERTIFICATES = 'certificate',
-  LECTURE_VIDEO = 'lecture-video',
   LECTURE_RESOURCE = 'resource',
   USER_LESSON_PROGRESS = 'user-course-progress',
   LECTURE_COMMENT = 'lecture-comment',
   FAVORITE_COURSE = 'favorite_courses',
   REPLY = 'reply',
   PAYOUT = 'payout',
+  ORDER_DETAIL = 'order-detail',
+  LECTURE_SERIES = 'lecture-series',
 }
