@@ -1,14 +1,11 @@
-import {
-  IPayoutFinalizeJob,
-  IPayoutJob,
-} from '@/common/interfaces/job.interface';
+import { IProgressJob } from '@/common/interfaces/job.interface';
 import { JobName, QueueName } from '@/constants/job.constant';
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { PayoutQueueService } from './payout-queue.service';
+import { ProgressQueueService } from './progress-queue.service';
 
-@Processor(QueueName.PAYOUT, {
+@Processor(QueueName.PROGRESS, {
   concurrency: 5,
   drainDelay: 300,
   stalledInterval: 300000,
@@ -21,13 +18,13 @@ import { PayoutQueueService } from './payout-queue.service';
     duration: 150,
   },
 })
-export class PayoutProcessor extends WorkerHost {
-  private readonly logger = new Logger(PayoutProcessor.name);
-  constructor(private readonly payoutQueueService: PayoutQueueService) {
+export class ProgressProcessor extends WorkerHost {
+  private readonly logger = new Logger(ProgressProcessor.name);
+  constructor(private readonly progressQueueService: ProgressQueueService) {
     super();
   }
   async process(
-    job: Job<IPayoutJob | IPayoutFinalizeJob, any, string>,
+    job: Job<IProgressJob, any, string>,
     _token?: string,
   ): Promise<any> {
     this.logger.debug(
@@ -35,14 +32,8 @@ export class PayoutProcessor extends WorkerHost {
     );
 
     switch (job.name) {
-      case JobName.PAYOUT_INSTRUCTOR:
-        return await this.payoutQueueService.payoutInstructor(
-          job.data as IPayoutJob,
-        );
-      case JobName.PAYOUT_FINALIZE:
-        return await this.payoutQueueService.finalizePayout(
-          job.data as IPayoutFinalizeJob,
-        );
+      case JobName.CHECK_PROGRESS:
+        return await this.progressQueueService.checkCourseCompletion(job.data);
       default:
         throw new Error(`Unknown job name: ${job.name}`);
     }
