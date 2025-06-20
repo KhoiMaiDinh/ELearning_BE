@@ -25,7 +25,7 @@ export class SectionController {
   @Put(':id')
   @ApiAuth({
     statusCode: HttpStatus.OK,
-    summary: 'Create a new section',
+    summary: 'Update',
     type: SectionRes,
   })
   async update(

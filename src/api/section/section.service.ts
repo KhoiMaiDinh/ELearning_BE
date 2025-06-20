@@ -4,7 +4,7 @@ import { SectionEntity } from '@/api/section/entities/section.entity';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid, Uuid } from '@/common';
-import { ErrorCode, Permission } from '@/constants';
+import { ErrorCode, PERMISSION } from '@/constants';
 import { ForbiddenException } from '@/exceptions';
 import { LexoRank } from '@dalet-oss/lexorank';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -16,6 +16,7 @@ export class SectionService {
     private readonly sectionRepository: SectionRepository,
     private readonly courseRepository: CourseRepository,
   ) {}
+
   async create(
     user: JwtPayloadType,
     dto: CreateSectionReq,
@@ -35,7 +36,7 @@ export class SectionService {
     if (!course_id) throw new NotFoundException(ErrorCode.E025);
     if (
       course_owner_id !== user.id &&
-      !user.permissions.includes(Permission.WRITE_SECTION)
+      !user.permissions.includes(PERMISSION.WRITE_SECTION)
     )
       throw new ForbiddenException(ErrorCode.E029);
 
@@ -84,7 +85,7 @@ export class SectionService {
     } = section;
     if (
       owner_id !== user.id &&
-      !user.permissions.includes(Permission.WRITE_SECTION)
+      !user.permissions.includes(PERMISSION.WRITE_SECTION)
     )
       throw new ForbiddenException(ErrorCode.E029);
 
@@ -104,6 +105,8 @@ export class SectionService {
     await update_section.save();
     return update_section.toDto(SectionRes);
   }
+
+  async delete(user: JwtPayloadType, section_id: Nanoid): Promise<void> {}
 
   private async getPosition(
     previous_section_id: Nanoid,

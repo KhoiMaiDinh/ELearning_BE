@@ -1,8 +1,8 @@
-import { CourseStatus } from '@/api/course';
 import { ArticleEntity } from '@/api/course-item/article/article.entity';
-import { LectureEntity } from '@/api/course-item/lecture/lecture.entity';
+import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity';
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
 import { CourseEntity } from '@/api/course/entities/course.entity';
+import { CourseStatus } from '@/api/course/enums/course-status.enum';
 import { Nanoid, Uuid } from '@/common';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { AutoNanoId } from '@/decorators';
