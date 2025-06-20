@@ -1,5 +1,6 @@
+import { CourseRes } from '@/api/course';
 import { CourseItemDetailRes, CourseItemRes } from '@/api/course-item/dto';
-import { Nanoid } from '@/common';
+import { Nanoid, WrapperType } from '@/common';
 import { ClassField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
 
@@ -20,6 +21,10 @@ export class SectionRes {
   @Expose()
   @ClassField(() => CourseItemRes, { each: true })
   items?: CourseItemRes[];
+
+  @Expose()
+  @ClassField(() => CourseRes)
+  course: WrapperType<CourseRes>;
 }
 
 @Exclude()
@@ -39,4 +44,8 @@ export class SectionDetailRes {
   @Expose()
   @ClassField(() => CourseItemDetailRes, { each: true })
   items?: CourseItemDetailRes[];
+
+  @Expose()
+  @ClassField(() => CourseRes)
+  course: WrapperType<CourseRes>;
 }
