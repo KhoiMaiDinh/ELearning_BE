@@ -1,13 +1,26 @@
 // reply-vote.controller.ts
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid } from '@/common';
-import { ApiAuth, CurrentUser } from '@/decorators';
-import { Controller, Delete, HttpStatus, Param, Post } from '@nestjs/common';
+import { PERMISSION } from '@/constants';
+import { ApiAuth, CurrentUser, Permissions } from '@/decorators';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
+import { ReplyRes } from '../dto';
+import { ReplyService } from '../services/reply.service';
 import { VoteService } from '../services/vote.service';
 
 @Controller({ path: 'replies', version: '1' })
 export class ReplyVoteController {
-  constructor(private readonly voteService: VoteService) {}
+  constructor(
+    private readonly voteService: VoteService,
+    private readonly replyService: ReplyService,
+  ) {}
 
   @Post(':reply_id/upvote')
   @ApiAuth({ summary: 'Upvote a reply', statusCode: HttpStatus.NO_CONTENT })
@@ -28,5 +41,13 @@ export class ReplyVoteController {
     @CurrentUser() user: JwtPayloadType,
   ) {
     await this.voteService.removeUpvote(reply_id, user);
+  }
+
+  @Get(':reply_id')
+  @ApiAuth({ summary: 'Get overview', statusCode: HttpStatus.OK })
+  @Permissions(PERMISSION.READ_REPLY)
+  async getReply(@Param('reply_id') reply_id: Nanoid) {
+    const reply = await this.replyService.findOne(reply_id);
+    return reply.toDto(ReplyRes);
   }
 }

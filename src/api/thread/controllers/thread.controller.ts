@@ -1,9 +1,15 @@
 import { JwtPayloadType } from '@/api/token';
-import { Nanoid } from '@/common';
-import { ApiAuth, CurrentUser } from '@/decorators';
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { CursorPaginatedDto, Nanoid } from '@/common';
+import { ApiAuth, ApiPublic, CurrentUser } from '@/decorators';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { CreateReplyReq, CreateThreadDto, ReplyRes, ThreadRes } from '../dto';
+import {
+  CreateReplyReq,
+  CreateThreadDto,
+  CursorThreadsQuery,
+  ReplyRes,
+  ThreadRes,
+} from '../dto';
 import { ReplyService } from '../services/reply.service';
 import { ThreadService } from '../services/thread.service';
 
@@ -13,6 +19,23 @@ export class ThreadController {
     private readonly threadService: ThreadService,
     private readonly replyService: ReplyService,
   ) {}
+
+  @Get('instructors')
+  @ApiAuth({
+    summary: 'Get threads of instructors',
+    type: ThreadRes,
+  })
+  async getInstructorThreads(
+    @CurrentUser() user: JwtPayloadType,
+    @Query() query: CursorThreadsQuery,
+  ) {
+    const { threads, metaDto } = await this.threadService.getFromInstructor(
+      user,
+      query,
+    );
+
+    return new CursorPaginatedDto(plainToInstance(ThreadRes, threads), metaDto);
+  }
 
   @Post()
   @ApiAuth({
@@ -24,6 +47,19 @@ export class ThreadController {
     @CurrentUser() user: JwtPayloadType,
   ) {
     const thread = await this.threadService.create(user, dto);
+    return thread.toDto(ThreadRes);
+  }
+
+  @Get(':thread_id')
+  @ApiPublic({
+    summary: 'Get a thread',
+    type: ThreadRes,
+  })
+  async getThread(
+    @Param('thread_id') thread_id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    const thread = await this.threadService.getOne(thread_id);
     return thread.toDto(ThreadRes);
   }
 

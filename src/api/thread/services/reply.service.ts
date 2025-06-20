@@ -1,8 +1,12 @@
 import { EnrolledCourseRepository } from '@/api/course/repositories/enrolled-course.repository';
+import { NotificationType } from '@/api/notification/enum/notification-type.enum';
+import { NotificationBuilderService } from '@/api/notification/notification-builder.service';
+import { NotificationService } from '@/api/notification/notification.service';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid } from '@/common';
 import { ErrorCode } from '@/constants';
+import { NotificationGateway } from '@/gateway/notification/notification.gateway';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateReplyReq } from '../dto';
 import { ReplyEntity } from '../entities/reply.entity';
@@ -17,6 +21,10 @@ export class ReplyService {
     private readonly threadRepo: ThreadRepository,
     private readonly enrolledRepo: EnrolledCourseRepository,
     private readonly userRepo: UserRepository,
+
+    private readonly notificationBuilder: NotificationBuilderService,
+    private readonly notificationService: NotificationService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async create(
@@ -44,7 +52,9 @@ export class ReplyService {
       author: enrolled.user,
     });
 
-    return this.replyRepo.save(reply);
+    const savedReply = await this.replyRepo.save(reply);
+    await this.sendNewReplyNotification(savedReply);
+    return savedReply;
   }
 
   async getByThread(
@@ -83,5 +93,37 @@ export class ReplyService {
       });
 
     return replies as unknown as ReplyEntity[];
+  }
+
+  async findOne(reply_id: Nanoid): Promise<ReplyEntity> {
+    const reply = await this.replyRepo.findOne({
+      where: { id: reply_id },
+      relations: {
+        author: { profile_image: true },
+        thread: { lecture: { section: { course: true } } },
+      },
+      withDeleted: true,
+    });
+    if (!reply) throw new NotFoundException(ErrorCode.E040);
+    return reply;
+  }
+
+  private async sendNewReplyNotification(reply: ReplyEntity) {
+    const built_notification = await this.notificationBuilder.newReply(reply);
+    const notification = await this.notificationService.save(
+      reply.thread.author.user_id,
+      NotificationType.NEW_REPLY,
+      {
+        course_id: reply.thread.lecture.section.id,
+        lecture_id: reply.thread.lecture.id,
+        thread_id: reply.thread.id,
+        reply_id: reply.id,
+      },
+      built_notification,
+    );
+    this.notificationGateway.emitToUser(reply.thread.author.id, {
+      ...notification,
+      ...built_notification,
+    });
   }
 }

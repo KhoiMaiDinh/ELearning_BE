@@ -1,6 +1,9 @@
 import { UserRes } from '@/api/user';
 
+import { WrapperType } from '@/common';
+import { ClassField } from '@/decorators';
 import { Exclude, Expose } from 'class-transformer';
+import { ThreadRes } from './thread.res.dto';
 
 @Exclude()
 export class ReplyRes {
@@ -12,6 +15,10 @@ export class ReplyRes {
 
   @Expose()
   author: UserRes;
+
+  @Expose()
+  @ClassField(() => ThreadRes)
+  thread: WrapperType<ThreadRes>;
 
   @Expose()
   createdAt: Date;
