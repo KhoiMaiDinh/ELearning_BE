@@ -2,7 +2,7 @@ import { AccountEntity } from '@/api/payment/entities/account.entity';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid } from '@/common';
-import { ErrorCode, Permission } from '@/constants';
+import { ErrorCode, PERMISSION } from '@/constants';
 import { ForbiddenException, NotFoundException } from '@/exceptions';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,7 +32,7 @@ export class AccountService {
 
     if (!account) throw new NotFoundException(ErrorCode.E049);
 
-    this.assertPermission(account, user_payload, [Permission.READ_ACCOUNT]);
+    this.assertPermission(account, user_payload, [PERMISSION.READ_ACCOUNT]);
 
     return account.toDto(AccountRes);
   }
@@ -70,7 +70,7 @@ export class AccountService {
     if (!account)
       throw new NotFoundException(ErrorCode.E049, 'Account not registered yet');
 
-    this.assertPermission(account, user_payload, [Permission.WRITE_ACCOUNT]);
+    this.assertPermission(account, user_payload, [PERMISSION.WRITE_ACCOUNT]);
 
     const { name, bank_code, bank_account_number } = data;
     await this.paymentService.validateBankCode(bank_code);
@@ -86,7 +86,7 @@ export class AccountService {
   private assertPermission(
     account: AccountEntity,
     user: JwtPayloadType,
-    permissions: Permission[],
+    permissions: PERMISSION[],
   ): void {
     const is_owner = account.user.id === user.id;
     const has_permission = permissions.some((permission) =>
