@@ -6,7 +6,7 @@ import { OrderDetailRepository } from '@/api/order/repositories/order-detail.rep
 import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { JwtPayloadType } from '@/api/token';
 import { Nanoid, OffsetPaginationDto, Uuid } from '@/common';
-import { ENTITY, ErrorCode, PERMISSION } from '@/constants';
+import { ENTITY, ErrorCode, Order, PERMISSION } from '@/constants';
 import {
   ForbiddenException,
   NotFoundException,
@@ -144,6 +144,36 @@ export class CouponService {
     await this.couponRepo.softDelete({ code });
   }
 
+  async findFromCourse(user: JwtPayloadType, course_id: Nanoid) {
+    const course = await this.courseService.findOne(course_id, {
+      with_instructor: true,
+    });
+    const is_course_owner = course.instructor.user.id == user.id;
+    const has_permission = user.permissions.includes(PERMISSION.READ_COUPON);
+    if (!(is_course_owner || has_permission)) {
+      throw new ForbiddenException(
+        ErrorCode.F002,
+        'Bạn không có quyền truy cập danh sách mã khuyễn mãi của khóa học này',
+      );
+    }
+
+    const { coupons } = await this.find(
+      {
+        limit: 100,
+        offset: 0,
+        order: Order.DESC,
+        is_active: true,
+        is_public: true,
+      },
+      {
+        course_id: course.course_id,
+      },
+    );
+    return {
+      coupons,
+    };
+  }
+
   async findFromInstructor(user: JwtPayloadType, filter: CouponsQuery) {
     const instructor = await this.instructorRepo.findOneByUserPublicId(user.id);
     return await this.find(filter, { instructor_id: instructor.instructor_id });
@@ -151,7 +181,7 @@ export class CouponService {
 
   async find(
     filters: CouponsQuery,
-    options?: { instructor_id?: Uuid },
+    options?: { instructor_id?: Uuid; course_id?: Uuid },
   ): Promise<{ coupons: CouponEntity[]; metadata: OffsetPaginationDto }> {
     const query = this.couponRepo.createQueryBuilder('coupon');
     query.leftJoinAndSelect('coupon.course', 'course');
@@ -182,6 +212,12 @@ export class CouponService {
       .addGroupBy('course.course_id')
       .addGroupBy('instructor.instructor_id')
       .addGroupBy('creator.user_id');
+
+    if (options.course_id) {
+      query.andWhere('course.course_id = :course_id', {
+        course_id: options.course_id,
+      });
+    }
 
     if (filters.is_active !== undefined) {
       query.andWhere('coupon.is_active = :is_active', {
@@ -256,7 +292,6 @@ export class CouponService {
       takeAll: false,
     });
 
-    console.log(result.entities);
     const coupons = result.entities.map((coupon, index) => {
       return {
         ...coupon,
