@@ -1,0 +1,127 @@
+[
+  {
+    "category_id": "6e151363-72ca-4b48-b8a1-dc6edf7fdb73",
+    "slug": "development",
+    "parent_id": null
+  },
+  {
+    "category_id": "fbf60584-8638-4a24-8192-176b5f575664",
+    "slug": "web-dev",
+    "parent_id": "6e151363-72ca-4b48-b8a1-dc6edf7fdb73"
+  },
+  {
+    "category_id": "212ca116-856e-4838-b004-89e6a04d10ca",
+    "slug": "mobile-dev",
+    "parent_id": "6e151363-72ca-4b48-b8a1-dc6edf7fdb73"
+  },
+  {
+    "category_id": "be84e56d-d331-4232-8e49-b0784387e46f",
+    "slug": "game-dev",
+    "parent_id": "6e151363-72ca-4b48-b8a1-dc6edf7fdb73"
+  },
+  {
+    "category_id": "755d9892-c9dc-40cf-a4d7-8c89c62a1e35",
+    "slug": "software-tools",
+    "parent_id": "6e151363-72ca-4b48-b8a1-dc6edf7fdb73"
+  },
+  {
+    "category_id": "dc6388f2-7432-4764-b5ba-f6797174ce33",
+    "slug": "data-science",
+    "parent_id": null
+  },
+  {
+    "category_id": "e7f7ac89-7325-4c77-9e26-4cd45f8f8e1f",
+    "slug": "machine-learning",
+    "parent_id": "dc6388f2-7432-4764-b5ba-f6797174ce33"
+  },
+  {
+    "category_id": "98fd2fdd-1e89-4176-b8f7-67f07b8f62f9",
+    "slug": "deep-learning",
+    "parent_id": "dc6388f2-7432-4764-b5ba-f6797174ce33"
+  },
+  {
+    "category_id": "f15d118b-8c21-47c2-88ff-d3b524c3e0fc",
+    "slug": "data-engineering",
+    "parent_id": "dc6388f2-7432-4764-b5ba-f6797174ce33"
+  },
+  {
+    "category_id": "984210de-0996-4ab8-8c64-2b36abd3a780",
+    "slug": "business",
+    "parent_id": null
+  },
+  {
+    "category_id": "b8795d8e-c869-4f43-b18d-f34b7e772b61",
+    "slug": "entrepreneurship",
+    "parent_id": "984210de-0996-4ab8-8c64-2b36abd3a780"
+  },
+  {
+    "category_id": "14d03ea1-5a30-4e90-90ab-16a273a7f6ac",
+    "slug": "finance",
+    "parent_id": "984210de-0996-4ab8-8c64-2b36abd3a780"
+  },
+  {
+    "category_id": "452b1e9d-d3b7-4e24-9e77-2c0a2c6faad6",
+    "slug": "project-management",
+    "parent_id": "984210de-0996-4ab8-8c64-2b36abd3a780"
+  },
+  {
+    "category_id": "1ab6043f-94b1-45c2-a4f7-ac17bf360f69",
+    "slug": "design",
+    "parent_id": null
+  },
+  {
+    "category_id": "56b7f70e-31c0-490b-9f17-3cb1671a9f9b",
+    "slug": "ui-ux-design",
+    "parent_id": "1ab6043f-94b1-45c2-a4f7-ac17bf360f69"
+  },
+  {
+    "category_id": "4237a07c-55fd-42de-bf77-fc39b4f6f50f",
+    "slug": "graphic-design",
+    "parent_id": "1ab6043f-94b1-45c2-a4f7-ac17bf360f69"
+  },
+  {
+    "category_id": "62b144e6-6277-4d77-bf7a-173a0a9d4df8",
+    "slug": "product-design",
+    "parent_id": "1ab6043f-94b1-45c2-a4f7-ac17bf360f69"
+  },
+  {
+    "category_id": "dc38571f-56db-4953-86e3-9aabc2641bf7",
+    "slug": "marketing",
+    "parent_id": null
+  },
+  {
+    "category_id": "adf8d7f6-9837-4757-a470-64d93f4767ae",
+    "slug": "digital-marketing",
+    "parent_id": "dc38571f-56db-4953-86e3-9aabc2641bf7"
+  },
+  {
+    "category_id": "f015a8fd-fef5-4f79-8f13-2ff0535b7b2e",
+    "slug": "seo",
+    "parent_id": "dc38571f-56db-4953-86e3-9aabc2641bf7"
+  },
+  {
+    "category_id": "752b2a8a-b07d-4fbb-bd33-58604e85c7e0",
+    "slug": "content-marketing",
+    "parent_id": "dc38571f-56db-4953-86e3-9aabc2641bf7"
+  },
+  {
+    "category_id": "c70884f3-b7ba-430c-92c7-d9caaee1cc33",
+    "slug": "personal-development",
+    "parent_id": null
+  },
+  {
+    "category_id": "34b4d19e-bf8e-4a9a-bd24-5940381a04f3",
+    "slug": "time-management",
+    "parent_id": "c70884f3-b7ba-430c-92c7-d9caaee1cc33"
+  },
+  {
+    "category_id": "827f8a84-11c1-4590-bf57-6cb83535f5d5",
+    "slug": "leadership",
+    "parent_id": "c70884f3-b7ba-430c-92c7-d9caaee1cc33"
+  },
+  {
+    "category_id": "521ba89c-d7b9-46e4-9758-3f95b089c567",
+    "slug": "emotional-intelligence",
+    "parent_id": "c70884f3-b7ba-430c-92c7-d9caaee1cc33"
+  }
+]

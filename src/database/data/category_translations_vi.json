@@ -1,0 +1,177 @@
+[
+  {
+    "category_translation_id": "d0fb6020-69a4-471c-8f63-887ae150e1d1",
+    "category_id": "6e151363-72ca-4b48-b8a1-dc6edf7fdb73",
+    "name": "Phát triển",
+    "description": "Các khóa học về phát triển phần mềm, công nghệ và các kỹ năng lập trình.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "b291f537-3283-4e4b-9b63-54a5737b9085",
+    "category_id": "fbf60584-8638-4a24-8192-176b5f575664",
+    "name": "Phát triển Web",
+    "description": "Học cách xây dựng và phát triển các ứng dụng web sử dụng các công nghệ tiên tiến.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "cdbd9a2b-d9a3-468f-bd6f-cc7f87f97b85",
+    "category_id": "212ca116-856e-4838-b004-89e6a04d10ca",
+    "name": "Phát triển di động",
+    "description": "Khám phá các công nghệ và công cụ cần thiết để phát triển ứng dụng di động.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "a4c2e7fa-3851-4fd0-9f66-ea6a4b91c774",
+    "category_id": "be84e56d-d331-4232-8e49-b0784387e46f",
+    "name": "Phát triển Game",
+    "description": "Tạo ra các trò chơi điện tử với các công cụ và kỹ thuật hiện đại.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "f57d7b59-f513-46e3-9470-b8598a5b07e3",
+    "category_id": "755d9892-c9dc-40cf-a4d7-8c89c62a1e35",
+    "name": "Công cụ phần mềm",
+    "description": "Khám phá và học sử dụng các công cụ phần mềm giúp tăng hiệu suất làm việc.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "dc623cdc-8088-4209-b3f4-d595b6ae8e18",
+    "category_id": "dc6388f2-7432-4764-b5ba-f6797174ce33",
+    "name": "Khoa học dữ liệu",
+    "description": "Học về phân tích và xử lý dữ liệu lớn với các phương pháp khoa học.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "913fb227-6a51-4e0d-8575-327a57bcfc70",
+    "category_id": "e7f7ac89-7325-4c77-9e26-4cd45f8f8e1f",
+    "name": "Học máy",
+    "description": "Khám phá các thuật toán và ứng dụng của học máy trong xử lý dữ liệu.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "472fbb52-1a25-4266-bfd0-8b020d04260b",
+    "category_id": "98fd2fdd-1e89-4176-b8f7-67f07b8f62f9",
+    "name": "Học sâu",
+    "description": "Nâng cao kiến thức về học sâu và cách áp dụng trong các dự án thực tế.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "4d5c53c9-6092-40b0-84c4-f1a9f6dfaf5f",
+    "category_id": "f15d118b-8c21-47c2-88ff-d3b524c3e0fc",
+    "name": "Kỹ thuật dữ liệu",
+    "description": "Nắm vững các kỹ thuật và công cụ để xử lý và lưu trữ dữ liệu hiệu quả.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "cc2e2fe5-92be-4680-bf5b-68b46a6f9821",
+    "category_id": "984210de-0996-4ab8-8c64-2b36abd3a780",
+    "name": "Kinh doanh",
+    "description": "Chiến lược, quản trị, khởi nghiệp và phân tích kinh doanh.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "f6c7a179-92b1-478f-8be2-651adfed9d34",
+    "category_id": "b8795d8e-c869-4f43-b18d-f34b7e772b61",
+    "name": "Khởi nghiệp",
+    "description": "Khám phá các chiến lược và kỹ năng cần thiết để bắt đầu một doanh nghiệp.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "c28e4316-d377-4c57-b930-c290bde4a22b",
+    "category_id": "14d03ea1-5a30-4e90-90ab-16a273a7f6ac",
+    "name": "Tài chính",
+    "description": "Tìm hiểu các khái niệm cơ bản và các công cụ tài chính quan trọng trong kinh doanh.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "d2a46042-0dfe-4df6-bcfa-925cbf22be0f",
+    "category_id": "452b1e9d-d3b7-4e24-9e77-2c0a2c6faad6",
+    "name": "Quản lý dự án",
+    "description": "Các phương pháp và kỹ thuật quản lý dự án hiệu quả trong môi trường công việc.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "19b574ae-730f-4068-8d66-2f29b36e6b34",
+    "category_id": "1ab6043f-94b1-45c2-a4f7-ac17bf360f69",
+    "name": "Thiết kế",
+    "description": "Các khóa học về thiết kế sản phẩm, đồ họa và giao diện người dùng.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "d43cc50f-913a-4c4a-bc75-130ce6f255fe",
+    "category_id": "56b7f70e-31c0-490b-9f17-3cb1671a9f9b",
+    "name": "Thiết kế UI/UX",
+    "description": "Các khóa học về thiết kế giao diện người dùng và trải nghiệm người dùng.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "62d8a19a-463a-4295-a21f-205540d04d45",
+    "category_id": "4237a07c-55fd-42de-bf77-fc39b4f6f50f",
+    "name": "Thiết kế đồ họa",
+    "description": "Học cách tạo ra các thiết kế đồ họa đẹp mắt và hiệu quả cho nhiều loại phương tiện.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "25131b35-8237-48c1-ae70-89e5cc38f60b",
+    "category_id": "62b144e6-6277-4d77-bf7a-173a0a9d4df8",
+    "name": "Thiết kế sản phẩm",
+    "description": "Khám phá các phương pháp thiết kế sản phẩm sáng tạo từ ý tưởng đến thực thi.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "fd9be85c-e529-493f-b577-47b518d8d17a",
+    "category_id": "dc38571f-56db-4953-86e3-9aabc2641bf7",
+    "name": "Tiếp thị",
+    "description": "Các chiến lược tiếp thị để phát triển và duy trì doanh nghiệp.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "b6e0f09a-9d64-4327-b5a4-cc9c86b7d1c6",
+    "category_id": "adf8d7f6-9837-4757-a470-64d93f4767ae",
+    "name": "Tiếp thị kỹ thuật số",
+    "description": "Học các chiến lược tiếp thị trực tuyến hiệu quả.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "01f69a91-99e2-4026-94d5-2203b320b902",
+    "category_id": "f015a8fd-fef5-4f79-8f13-2ff0535b7b2e",
+    "name": "SEO",
+    "description": "Tối ưu hóa công cụ tìm kiếm để nâng cao sự hiện diện trực tuyến.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "aaed5777-5a6e-44d3-989e-42b2c19e0a72",
+    "category_id": "752b2a8a-b07d-4fbb-bd33-58604e85c7e0",
+    "name": "Tiếp thị nội dung",
+    "description": "Tạo và chia sẻ nội dung để thu hút và giữ chân khách hàng.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "a56b0c30-4a90-49cc-8578-ffab7b456772",
+    "category_id": "c70884f3-b7ba-430c-92c7-d9caaee1cc33",
+    "name": "Phát triển bản thân",
+    "description": "Nâng cao các kỹ năng cá nhân và quản lý thời gian hiệu quả.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "d28f95ed-0225-4c57-bcb6-560a0ae4a05d",
+    "category_id": "34b4d19e-bf8e-4a9a-bd24-5940381a04f3",
+    "name": "Quản lý thời gian",
+    "description": "Các chiến lược và phương pháp quản lý thời gian hiệu quả.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "7cb5fbd7-8d38-4b79-b5cf-2ea12a7e17f9",
+    "category_id": "827f8a84-11c1-4590-bf57-6cb83535f5d5",
+    "name": "Lãnh đạo",
+    "description": "Xây dựng kỹ năng lãnh đạo và quản lý đội nhóm hiệu quả.",
+    "language": "vi"
+  },
+  {
+    "category_translation_id": "ac0ca5e8-5f58-4974-bb07-80f0d50435e0",
+    "category_id": "521ba89c-d7b9-46e4-9758-3f95b089c567",
+    "name": "Trí tuệ cảm xúc",
+    "description": "Khám phá các phương pháp và kỹ năng để phát triển trí tuệ cảm xúc.",
+    "language": "vi"
+  }
+]

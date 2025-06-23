@@ -10,7 +10,7 @@ export class PermissionSeeder1739636388516 implements Seeder {
   public async run(dataSource: DataSource): Promise<any> {
     const permissionRepository = dataSource.getRepository(PermissionEntity);
 
-    const permissionGroupMap: Record<PERMISSION, PERMISSION_GROUP> = {
+    const permission_group_map: Record<PERMISSION, PERMISSION_GROUP> = {
       [PERMISSION.CREATE_USER]: PERMISSION_GROUP.USER,
       [PERMISSION.WRITE_USER]: PERMISSION_GROUP.USER,
       [PERMISSION.WRITE_ROLE]: PERMISSION_GROUP.ROLE,
@@ -28,6 +28,7 @@ export class PermissionSeeder1739636388516 implements Seeder {
       [PERMISSION.READ_ACCOUNT]: PERMISSION_GROUP.ACCOUNT,
       [PERMISSION.READ_PAYOUT]: PERMISSION_GROUP.PAYOUT,
       [PERMISSION.WRITE_PAYOUT]: PERMISSION_GROUP.PAYOUT,
+      [PERMISSION.READ_COUPON]: PERMISSION_GROUP.COUPON,
       [PERMISSION.WRITE_COUPON]: PERMISSION_GROUP.COUPON,
       [PERMISSION.READ_REPORT]: PERMISSION_GROUP.BAN,
       [PERMISSION.WRITE_BAN]: PERMISSION_GROUP.BAN,
@@ -37,7 +38,7 @@ export class PermissionSeeder1739636388516 implements Seeder {
 
     const permissions = Object.values(PERMISSION).map((permission_key) => ({
       permission_key,
-      permission_group: permissionGroupMap[permission_key],
+      permission_group: permission_group_map[permission_key],
       description: permission_key.replace(':', ' ').replace('_', ' '),
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
