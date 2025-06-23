@@ -48,4 +48,10 @@ export class CouponRes {
 
   @Expose()
   creator_username?: string;
+
+  @Expose()
+  usage_count?: number;
+
+  @Expose()
+  total_revenue?: number;
 }

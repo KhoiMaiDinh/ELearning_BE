@@ -47,6 +47,23 @@ export class CouponController {
     );
   }
 
+  @Get('courses/:course_id')
+  @ApiAuth({
+    type: CouponRes,
+    summary: 'Get all coupons for a course',
+    statusCode: HttpStatus.OK,
+  })
+  async getAllCouponsForCourse(
+    @Param('course_id') course_id: Nanoid,
+    @CurrentUser() user: JwtPayloadType,
+  ) {
+    const { coupons } = await this.couponService.findFromCourse(
+      user,
+      course_id,
+    );
+    return plainToInstance(CouponRes, coupons);
+  }
+
   @Post()
   @ApiAuth({
     type: CouponRes,
