@@ -243,7 +243,7 @@ export class EnrollCourseService {
       .andWhere('enrolled.rating IS NOT NULL')
       .getRawOne<{ avg: string }>();
 
-    const average_rating = avg ? parseFloat(avg) : 0;
+    const average_rating = avg ? parseFloat(avg) : null;
 
     return {
       course_id,

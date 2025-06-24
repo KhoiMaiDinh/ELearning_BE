@@ -58,8 +58,8 @@ export class LectureRes extends CourseItemRes {
   description: string;
 
   @Expose()
-  @ClassFieldOptional(() => LectureResourceRes, { each: true })
-  resource: LectureResourceRes;
+  @ClassField(() => LectureResourceRes, { each: true })
+  resources: LectureResourceRes;
 
   @Expose()
   @DateField()
