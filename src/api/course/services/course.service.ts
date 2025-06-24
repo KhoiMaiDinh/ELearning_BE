@@ -337,6 +337,8 @@ export class CourseService {
         .leftJoinAndSelect('sections.lectures', 'lectures')
         .leftJoinAndSelect('lectures.series', 'series')
         .leftJoinAndSelect('series.video', 'video')
+        .leftJoinAndSelect('series.resources', 'resources')
+        .leftJoinAndSelect('resources.resource_file', 'resource_file')
         .leftJoinAndSelect('sections.quizzes', 'quizzes')
         .leftJoinAndSelect('sections.articles', 'articles');
     }
@@ -352,10 +354,9 @@ export class CourseService {
       qb.leftJoinAndSelect('course.thumbnail', 'thumbnail');
     }
 
-    qb.leftJoinAndSelect('course.instructor', 'instructor').leftJoinAndSelect(
-      'instructor.user',
-      'instructor_user',
-    );
+    qb.leftJoinAndSelect('course.instructor', 'instructor')
+      .leftJoinAndSelect('instructor.user', 'instructor_user')
+      .leftJoinAndSelect('instructor_user.profile_image', 'profile_image');
 
     const course = await qb.getOne();
 
