@@ -25,6 +25,9 @@ export class ThreadRes {
   lecture: LectureRes;
 
   @Expose()
-  @ClassField(() => ReplyRes)
+  @ClassField(() => ReplyRes, { each: true })
   replies: WrapperType<ReplyRes[]>;
+
+  @Expose()
+  createdAt: Date;
 }

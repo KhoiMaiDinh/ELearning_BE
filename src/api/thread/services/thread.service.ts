@@ -65,6 +65,7 @@ export class ThreadService {
       order: { createdAt: 'DESC' },
       relations: {
         author: { profile_image: true },
+        replies: true,
       },
     });
   }
