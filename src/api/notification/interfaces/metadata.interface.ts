@@ -1,3 +1,7 @@
+import {
+  ReplyMetadata,
+  ThreadMetadata,
+} from '@/api/ban/interface/warning-metadata.interface';
 import { Nanoid } from '@/common';
 
 interface CourseMetadata {
@@ -68,6 +72,23 @@ function isPayoutBatchMetadata(data: any): data is PayoutBatchMetadata {
   return typeof data?.month === 'number' && typeof data?.year === 'number';
 }
 
+function isThreadMetadata(data: any): data is ThreadMetadata {
+  return (
+    typeof data?.thread_id === 'string' &&
+    typeof data?.course_id === 'string' &&
+    typeof data?.lecture_id === 'string'
+  );
+}
+
+function isReplyMetadata(data: any): data is ReplyMetadata {
+  return (
+    typeof data?.reply_id === 'string' &&
+    typeof data?.thread_id === 'string' &&
+    typeof data?.course_id === 'string' &&
+    typeof data?.lecture_id === 'string'
+  );
+}
+
 export {
   CommentMetadata,
   CouponMetadata,
@@ -79,6 +100,8 @@ export {
   isPayoutBatchMetadata,
   isPayoutMetadata,
   isReasonMetadata,
+  isReplyMetadata,
+  isThreadMetadata,
   isUserMetadata,
   LectureMetadata,
   PayoutBatchMetadata,
