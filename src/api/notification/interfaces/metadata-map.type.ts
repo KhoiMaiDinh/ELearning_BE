@@ -41,7 +41,10 @@ export type NotificationMetadataMap = {
   [NotificationType.NEW_THREAD]: CourseMetadata &
     LectureMetadata &
     ThreadMetadata;
-
+  [NotificationType.NEW_REPLY]: CourseMetadata &
+    LectureMetadata &
+    ThreadMetadata &
+    ReplyMetadata;
   [NotificationType.NEW_COMMENT]: CommentMetadata &
     CourseMetadata &
     LectureMetadata;

@@ -8,7 +8,7 @@ import { CouponRepository } from '@/api/coupon/coupon.repository';
 import { LectureRepository } from '@/api/course-item/lecture/repositories/lecture.repository';
 import { CourseRepository } from '@/api/course/repositories/course.repository';
 import { EnrolledCourseRepository } from '@/api/course/repositories/enrolled-course.repository';
-import { LectureCommentRepository } from '@/api/lecture-comment/lecture-comment.repository';
+import { LectureCommentRepository } from '@/api/lecture-comment/repositories/lecture-comment.repository';
 import { PayoutRepository } from '@/api/payment/repositories/payout.repository';
 import { UserRepository } from '@/api/user/user.repository';
 
@@ -27,11 +27,14 @@ import {
 import { NotificationType } from './enum/notification-type.enum';
 import {
   isCommentMetadata,
+  isCouponMetadata,
   isCourseMetadata,
   isLectureMetadata,
   isPayoutBatchMetadata,
   isPayoutMetadata,
   isReasonMetadata,
+  isReplyMetadata,
+  isThreadMetadata,
   isUserMetadata,
 } from './interfaces/metadata.interface';
 import { NotificationBuilderService } from './notification-builder.service';
@@ -193,10 +196,14 @@ export class NotificationService {
   ): void {
     const isValid = (() => {
       switch (type) {
+        case NotificationType.COUPON_FOR_ALL:
+          return;
+        case NotificationType.COUPON_FOR_COURSE:
+          return isCouponMetadata(metadata);
         case NotificationType.NEW_REPLY:
-          return;
+          return isReplyMetadata(metadata);
         case NotificationType.NEW_THREAD:
-          return;
+          return isThreadMetadata(metadata);
         case NotificationType.COURSE_UNBANNED:
           return isCourseMetadata(metadata);
         case NotificationType.UNBAN_APPROVED:
@@ -312,7 +319,7 @@ export class NotificationService {
       where: { id: metadata.thread_id },
       relations: {
         author: true,
-        lecture: true,
+        lecture: { series: true },
       },
     });
     if (!thread) throw new NotFoundException(ErrorCode.E080);
