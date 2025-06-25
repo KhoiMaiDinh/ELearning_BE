@@ -18,7 +18,7 @@ import { LectureEntity } from '@/api/course-item/lecture/entities/lecture.entity
 import { QuizEntity } from '@/api/course-item/quiz/entities/quiz.entity';
 
 import { CourseStatus } from '@/api/course/enums/course-status.enum';
-import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
+import { LectureCommentService } from '@/api/lecture-comment/services/lecture-comment.service';
 import { MediaRepository } from '@/api/media';
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { SectionRepository } from '@/api/section/section.repository';
