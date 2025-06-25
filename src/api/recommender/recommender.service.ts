@@ -3,9 +3,9 @@ import { PreferenceRepository } from '@/api/preference/preference.repository';
 import { UserRepository } from '@/api/user/user.repository';
 import { Nanoid, Uuid } from '@/common';
 import { AllConfigType } from '@/config';
-import { Entity as E } from '@/constants';
+import { ENTITY as E } from '@/constants';
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { DataSource } from 'typeorm';
@@ -13,6 +13,7 @@ import { RecommendCourseQuery } from './dto';
 
 @Injectable()
 export class RecommenderService {
+  private readonly logger = new Logger(RecommenderService.name);
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService<AllConfigType>,
@@ -24,7 +25,6 @@ export class RecommenderService {
 
   async findSimilarCourses(course_id: Nanoid) {
     const course_ids = await this.fetchRecommendations([course_id], 5);
-    console.log(course_ids);
   }
 
   async recommendCoursesForUser(user_id: Nanoid, query: RecommendCourseQuery) {
@@ -121,17 +121,22 @@ export class RecommenderService {
   }
 
   private async fetchRecommendations(course_ids: Nanoid[], top_k: number) {
-    const url = this.configService.get('third_party.base_url', {
-      infer: true,
-    });
+    try {
+      const url = this.configService.get('third_party.base_url', {
+        infer: true,
+      });
 
-    const params = {
-      courses: course_ids,
-      top_k,
-    };
-    const response = await firstValueFrom(
-      this.httpService.get(url, { params }),
-    );
-    return response.data;
+      const params = {
+        courses: course_ids,
+        top_k,
+      };
+      const response = await firstValueFrom(
+        this.httpService.get(url, { params }),
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error(error);
+      return [];
+    }
   }
 }
