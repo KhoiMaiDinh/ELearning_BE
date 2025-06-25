@@ -33,7 +33,9 @@ export class ReplyService {
   ): Promise<ReplyEntity> {
     const thread = await this.threadRepo.findOne({
       where: { id: dto.thread_id },
-      relations: { lecture: { section: true } },
+      relations: {
+        lecture: { section: { course: { instructor: { user: true } } } },
+      },
     });
     if (!thread) throw new NotFoundException(ErrorCode.E040);
 
@@ -44,12 +46,18 @@ export class ReplyService {
       },
       relations: { course: true, user: true },
     });
-    if (!enrolled) throw new NotFoundException(ErrorCode.E038);
+
+    const is_instructor =
+      thread.lecture.section.course.instructor.user.id === author.id;
+    if (!(enrolled || is_instructor))
+      throw new NotFoundException(ErrorCode.E038);
 
     const reply = this.replyRepo.create({
       content: dto.content,
       thread,
-      author: enrolled.user,
+      author: is_instructor
+        ? thread.lecture.section.course.instructor.user
+        : enrolled.user,
     });
 
     const savedReply = await this.replyRepo.save(reply);
@@ -109,7 +117,7 @@ export class ReplyService {
   }
 
   private async sendNewReplyNotification(reply: ReplyEntity) {
-    const built_notification = await this.notificationBuilder.newReply(reply);
+    const built_notification = this.notificationBuilder.newReply(reply);
     const notification = await this.notificationService.save(
       reply.thread.author.user_id,
       NotificationType.NEW_REPLY,
