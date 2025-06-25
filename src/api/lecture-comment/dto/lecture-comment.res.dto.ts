@@ -1,3 +1,4 @@
+import { LectureRes } from '@/api/course-item';
 import { UserRes } from '@/api/user';
 import { ClassField, DateField, StringField } from '@/decorators';
 
@@ -10,4 +11,7 @@ export class LectureCommentRes {
 
   @ClassField(() => UserRes)
   user: UserRes;
+
+  @ClassField(() => LectureRes)
+  lecture: LectureRes;
 }

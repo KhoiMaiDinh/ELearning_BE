@@ -9,18 +9,18 @@ import { NotificationGateway } from '@/gateway/notification/notification.gateway
 import { KafkaProducerService } from '@/kafka';
 import { buildPaginator } from '@/utils';
 import { Injectable } from '@nestjs/common';
-import { NotificationType } from '../notification/enum/notification-type.enum';
-import { NotificationBuilderService } from '../notification/notification-builder.service';
-import { NotificationService } from '../notification/notification.service';
-import { CreateCommentReq, LectureCommentRes } from './dto';
+import { NotificationType } from '../../notification/enum/notification-type.enum';
+import { NotificationBuilderService } from '../../notification/notification-builder.service';
+import { NotificationService } from '../../notification/notification.service';
+import { CreateCommentReq, LectureCommentRes } from '../dto';
 import {
   LectureCommentsQuery,
   PaginateLectureCommentsQuery,
-} from './dto/lecture-comments.query.dto';
-import { CommentAspectEntity } from './entities/comment-aspect.entity';
-import { LectureCommentEntity } from './entities/lecture-comment.entity';
-import { Aspect, Emotion } from './enum';
-import { LectureCommentRepository } from './lecture-comment.repository';
+} from '../dto/lecture-comments.query.dto';
+import { CommentAspectEntity } from '../entities/comment-aspect.entity';
+import { LectureCommentEntity } from '../entities/lecture-comment.entity';
+import { Aspect, Emotion } from '../enum';
+import { LectureCommentRepository } from '../repositories/lecture-comment.repository';
 
 @Injectable()
 export class LectureCommentService {
@@ -123,6 +123,7 @@ export class LectureCommentService {
             positive: 0,
             neutral: 0,
             negative: 0,
+            conflict: 0,
             none: 0,
           };
         }

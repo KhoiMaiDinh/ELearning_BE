@@ -11,7 +11,7 @@ import {
   FindLectureCommentsRes,
 } from '@/api/lecture-comment/dto';
 import { LectureCommentsQuery } from '@/api/lecture-comment/dto/lecture-comments.query.dto';
-import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
+import { LectureCommentService } from '@/api/lecture-comment/services/lecture-comment.service';
 import { ThreadRes } from '@/api/thread/dto';
 import { ThreadService } from '@/api/thread/services/thread.service';
 import { JwtPayloadType } from '@/api/token';

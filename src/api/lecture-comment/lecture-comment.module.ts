@@ -7,8 +7,10 @@ import { InstructorModule } from '../instructor/instructor.module';
 import { CommentAspectEntity } from './entities/comment-aspect.entity';
 import { LectureCommentEntity } from './entities/lecture-comment.entity';
 import { LectureCommentController } from './lecture-comment.controller';
-import { LectureCommentRepository } from './lecture-comment.repository';
-import { LectureCommentService } from './lecture-comment.service';
+import { CommentAspectRepository } from './repositories/comment-aspect.repository';
+import { LectureCommentRepository } from './repositories/lecture-comment.repository';
+import { LectureCommentAnalyzer } from './services/lecture-comment.analyzer';
+import { LectureCommentService } from './services/lecture-comment.service';
 
 @Module({
   imports: [
@@ -19,7 +21,12 @@ import { LectureCommentService } from './lecture-comment.service';
     TypeOrmModule.forFeature([LectureCommentEntity, CommentAspectEntity]),
   ],
   controllers: [LectureCommentController],
-  providers: [LectureCommentService, LectureCommentRepository],
+  providers: [
+    LectureCommentService,
+    LectureCommentAnalyzer,
+    LectureCommentRepository,
+    CommentAspectRepository,
+  ],
   exports: [LectureCommentService, LectureCommentRepository],
 })
 export class LectureCommentModule {}
