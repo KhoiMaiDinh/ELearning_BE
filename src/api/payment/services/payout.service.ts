@@ -66,7 +66,6 @@ export class PayoutService {
       await this.orderDetailService.findPayableByInstructor(instructor_id);
 
     if (items.length === 0) throw new NotFoundException(ErrorCode.V000);
-    console.log(items[0]);
 
     const instructor = items[0].course.instructor;
     const account = instructor.user.account;

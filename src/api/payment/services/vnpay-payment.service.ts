@@ -31,9 +31,17 @@ export class VnpayPaymentService {
       infer: true,
     });
 
+    const toVietnamTime = (d: Date) => {
+      const vnOffset = 7 * 60 * 60 * 1000;
+      return new Date(d.getTime() + vnOffset);
+    };
+
+    const created_VN = toVietnamTime(new Date());
+    const expired_VN = toVietnamTime(expired_at);
+
     const data: BuildPaymentUrl = {
       vnp_Amount: amount,
-      vnp_CreateDate: dateFormat(new Date(), 'yyyyMMddHHmmss'),
+      vnp_CreateDate: dateFormat(created_VN, 'yyyyMMddHHmmss'),
       vnp_CurrCode: VnpCurrCode.VND,
       vnp_IpAddr: client_ip,
       vnp_Locale: VnpLocale.VN,
@@ -41,7 +49,7 @@ export class VnpayPaymentService {
       vnp_OrderType: ProductCode.Pay,
       vnp_ReturnUrl: return_url,
       vnp_TxnRef: order_id,
-      vnp_ExpireDate: dateFormat(expired_at, 'yyyyMMddHHmmss'),
+      vnp_ExpireDate: dateFormat(expired_VN, 'yyyyMMddHHmmss'),
     };
 
     const vnpay_url = this.vnpayService.buildPaymentUrl(data);

@@ -29,7 +29,6 @@ export class AccountService {
       where: { user: { id: user_id } },
       relations: { user: true },
     });
-
     if (!account) throw new NotFoundException(ErrorCode.E049);
 
     this.assertPermission(account, user_payload, [PERMISSION.READ_ACCOUNT]);

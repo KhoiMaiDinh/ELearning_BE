@@ -7,6 +7,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
   Put,
   Query,
@@ -56,7 +57,7 @@ export class PaymentController {
   })
   async getUserAccount(
     @CurrentUser() user: JwtPayloadType,
-    @Query('id') id: Nanoid,
+    @Param('id') id: Nanoid,
   ) {
     return await this.accountService.findFromUser(user, id);
   }
