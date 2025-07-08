@@ -26,9 +26,13 @@ export class VnpIpnHandler {
     }
 
     const txnRef = query.vnp_TxnRef;
+    const transaction_code = query.vnp_TransactionNo;
     let response: IpnResponse;
     try {
-      await this.orderService.markOrderAsPaid(txnRef as Nanoid);
+      await this.orderService.markOrderAsPaid(
+        txnRef as Nanoid,
+        transaction_code.toString(),
+      );
       response = IpnSuccess;
     } catch (error) {
       switch (error.errorCode) {

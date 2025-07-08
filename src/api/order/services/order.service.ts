@@ -111,7 +111,7 @@ export class OrderService {
     });
   }
 
-  async markOrderAsPaid(id: Nanoid) {
+  async markOrderAsPaid(id: Nanoid, transaction_code: string | null) {
     const order = await this.orderRepo.findOne({
       where: { id },
       relations: { details: { course: true }, user: true },
@@ -129,6 +129,7 @@ export class OrderService {
     order.details.forEach((detail) => {
       detail.payout_due_at = payout_due_at;
     });
+    order.transaction_id = transaction_code;
     await this.orderRepo.save(order);
   }
 
