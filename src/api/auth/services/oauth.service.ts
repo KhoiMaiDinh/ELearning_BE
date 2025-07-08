@@ -8,6 +8,7 @@ import { OAuth2Client } from 'google-auth-library';
 
 type FacebookID = string;
 type GoogleID = string;
+
 interface InputTokenValidateResponse {
   data: {
     user_id: string;
@@ -24,10 +25,21 @@ interface GetAccessTokenResponse {
 
 @Injectable()
 export class OAuthService {
+  private google_client: OAuth2Client;
   constructor(
     private readonly _configService: ConfigService<AllConfigType>,
     private readonly _httpService: HttpService,
-  ) {}
+  ) {
+    this.google_client = new OAuth2Client({
+      clientId: this._configService.getOrThrow('auth.googleClientID', {
+        infer: true,
+      }),
+      clientSecret: this._configService.getOrThrow('auth.googleClientSecret', {
+        infer: true,
+      }),
+      redirectUri: 'postmessage',
+    });
+  }
 
   async verifyFacebookInputToken(input_token: string): Promise<FacebookID> {
     const url = 'https://graph.facebook.com/v20.0/debug_token';
@@ -87,7 +99,17 @@ export class OAuthService {
     return facebookResponse.data.access_token;
   }
 
-  async verifyGoggleIDToken(id_token: string): Promise<GoogleID> {
+  async getIdToken(
+    code: string,
+  ): Promise<{ id_token: string; access_token: string }> {
+    const { tokens } = await this.google_client.getToken(code);
+    return {
+      id_token: tokens.id_token,
+      access_token: tokens.access_token,
+    };
+  }
+
+  async verifyGoggleIDToken(id_token: string) {
     const client = new OAuth2Client();
     try {
       const ticket = await client.verifyIdToken({
@@ -96,7 +118,7 @@ export class OAuthService {
           infer: true,
         }),
       });
-      return ticket.getAttributes().payload.sub;
+      return ticket.getAttributes().payload;
     } catch (error) {
       if (error.message.startsWith('Wrong number of segments in token'))
         throw new UnauthorizedException(

@@ -106,9 +106,8 @@ export class RegistrationService {
     });
   }
 
-  async googleRegister(dto: DTO.GoogleRegisterReq): Promise<DTO.RegisterRes> {
-    const { email, google_id, first_name, last_name, username } = dto;
-    // Check if the user already exists
+  async googleRegister(dto: DTO.GoogleRegisterReq) {
+    const { email, google_id, first_name, last_name } = dto;
     const is_exist_user = await UserEntity.exists({
       where: { google_id: google_id },
     });
@@ -127,7 +126,6 @@ export class RegistrationService {
       google_id: google_id,
       first_name: first_name,
       last_name: last_name,
-      username: username,
       register_method: CONST.RegisterMethod.GOOGLE,
       roles: [role],
       is_verified: true,
@@ -135,12 +133,10 @@ export class RegistrationService {
       updatedBy: CONST.SYSTEM_USER_ID,
     });
 
-    await user.save();
+    await this.userRepository.save(user);
     await this.createPreference(user);
 
-    return plainToInstance(DTO.RegisterRes, {
-      user_id: user.id,
-    });
+    return user;
   }
 
   private async createPreference(user: UserEntity): Promise<void> {
