@@ -12,7 +12,4 @@ export class GoogleRegisterReq {
 
   @StringField({ maxLength: 60 })
   last_name!: string;
-
-  @StringField({ maxLength: 16, minLength: 3 })
-  username!: string;
 }

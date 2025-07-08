@@ -32,6 +32,7 @@ import crypto from 'crypto';
 import ms from 'ms';
 import * as DTO from '../dto';
 import { OAuthService } from './oauth.service';
+import { RegistrationService } from './registration.service';
 
 @Injectable()
 export class AuthService {
@@ -45,6 +46,7 @@ export class AuthService {
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
     private readonly banService: UserBanService,
+    private readonly registrationService: RegistrationService,
   ) {}
 
   async resetPassword(dto: DTO.ResetPasswordReq): Promise<void> {
@@ -160,13 +162,22 @@ export class AuthService {
   }
 
   async googleLogIn(dto: DTO.GoogleLoginReq): Promise<DTO.LoginRes> {
-    const { id_token } = dto;
-
-    const google_id = await this.OAuthService.verifyGoggleIDToken(id_token);
-    const user = await this.userRepository.findOne({
-      where: { google_id: google_id },
+    const { id_token: code } = dto;
+    const { id_token } = await this.OAuthService.getIdToken(code);
+    const token_payload = await this.OAuthService.verifyGoggleIDToken(id_token);
+    let user = await this.userRepository.findOne({
+      where: { google_id: token_payload.sub },
       relations: ['roles', 'roles.permissions'],
     });
+
+    if (!user) {
+      user = await this.registrationService.googleRegister({
+        email: token_payload.email,
+        google_id: token_payload.sub,
+        first_name: token_payload.given_name,
+        last_name: token_payload.family_name,
+      });
+    }
 
     return await this.afterLogIn(user);
   }
@@ -185,7 +196,7 @@ export class AuthService {
 
     const permission_set = new Set<PERMISSION>();
 
-    const roles = user.roles.map((role) => {
+    const roles = user.roles?.map((role) => {
       role.permissions.forEach((permission) => {
         permission_set.add(permission.permission_key);
       });
