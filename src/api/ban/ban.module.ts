@@ -14,6 +14,7 @@ import { UserBanEntity } from './entities/user-ban.entity';
 import { UserReportEntity } from './entities/user-report.entity';
 import { WarningEntity } from './entities/warning.entity';
 import { ReportRepository } from './repositories/report.repository';
+import { WarningRepository } from './repositories/warning.repository';
 import { UserBanService } from './services/ban.service';
 import { UserReportService } from './services/user-report.service';
 import { WarningService } from './services/warning.service';
@@ -25,7 +26,13 @@ import { WarningService } from './services/warning.service';
     forwardRef(() => ThreadModule),
     forwardRef(() => CourseItemModule),
     forwardRef(() => CouponModule),
-    TypeOrmModule.forFeature([WarningEntity, UserBanEntity, UserReportEntity]),
+    forwardRef(() =>
+      TypeOrmModule.forFeature([
+        WarningEntity,
+        UserBanEntity,
+        UserReportEntity,
+      ]),
+    ),
     BullModule.registerQueue({
       name: QueueName.EMAIL,
       streams: {
@@ -41,6 +48,7 @@ import { WarningService } from './services/warning.service';
     UserBanService,
     UserReportService,
     ReportRepository,
+    WarningRepository,
   ],
   exports: [UserBanService, WarningService, ReportRepository],
 })
