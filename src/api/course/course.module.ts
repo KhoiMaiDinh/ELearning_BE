@@ -69,6 +69,7 @@ import { BanModule } from '../ban/ban.module';
     CourseRepository,
     EnrollCourseService,
     CourseService,
+    CourseModerationService,
     FavoriteCourseService,
     EnrolledCourseRepository,
     FavoriteCourseRepository,

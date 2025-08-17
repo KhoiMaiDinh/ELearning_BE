@@ -5,6 +5,7 @@ import {
   CreateCourseReq,
   CurriculumQuery,
   CurriculumRes,
+  EnrollUsersRes,
   FavoriteCourseRes,
   PublicCourseReq,
   RequestCourseUnbanReq,
@@ -13,7 +14,12 @@ import {
   UpdateCourseReq,
 } from '@/api/course';
 import { JwtPayloadType } from '@/api/token';
-import { Nanoid, OffsetPaginatedDto, SuccessBasicDto } from '@/common';
+import {
+  Nanoid,
+  OffsetPaginatedDto,
+  PageOffsetOptionsDto,
+  SuccessBasicDto,
+} from '@/common';
 import { PERMISSION } from '@/constants';
 import { ApiAuth, ApiPublic, CurrentUser, Permissions } from '@/decorators';
 import {
@@ -180,6 +186,22 @@ export class CourseController {
       user.id,
       course_id,
       dto,
+    );
+  }
+
+  @Get(':course_id/enrolled')
+  @ApiAuth({
+    statusCode: HttpStatus.OK,
+    summary: `Get course's enrolled users`,
+    type: EnrollUsersRes,
+  })
+  async getEnrolledUsers(
+    @Param('course_id') course_id: Nanoid,
+    @Query() query: PageOffsetOptionsDto,
+  ) {
+    return await this.enrollCourseService.findUsersWithProgress(
+      course_id,
+      query,
     );
   }
 

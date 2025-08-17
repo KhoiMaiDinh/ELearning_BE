@@ -31,7 +31,9 @@ export class RatingService {
     filter: RatingQuery | CursorPaginateRatingQuery,
     options: { instructor_id: Uuid },
   ) {
-    const query_builder = this.enrolledRepo.createQueryBuilder('enrolled');
+    const query_builder = this.enrolledRepo
+      .createQueryBuilder('enrolled')
+      .where('enrolled.rating IS NOT NULL');
 
     query_builder
       .leftJoinAndSelect('enrolled.course', 'course')
@@ -40,8 +42,6 @@ export class RatingService {
       .leftJoinAndSelect('course.instructor', 'instructor')
       .leftJoinAndSelect('instructor.user', 'user_profile')
       .leftJoinAndSelect('user.profile_image', 'profile_image');
-
-    query_builder.andWhere('enrolled.rating IS NOT NULL');
 
     if (filter.rating != undefined) {
       query_builder.andWhere('enrolled.rating =:rating', {

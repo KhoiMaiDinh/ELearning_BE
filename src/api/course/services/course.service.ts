@@ -28,6 +28,7 @@ import { NotificationService } from '@/api/notification/notification.service';
 import { OrderDetailEntity } from '@/api/order/entities/order-detail.entity';
 import { PaymentStatus } from '@/api/payment/enums/payment-status.enum';
 import { PriceHistoryRepository } from '@/api/price/price-history.repository';
+import { SectionEntity } from '@/api/section/entities/section.entity';
 import { SectionRepository } from '@/api/section/section.repository';
 import { JwtPayloadType } from '@/api/token';
 import { UserRepository } from '@/api/user/user.repository';
@@ -46,7 +47,7 @@ import { NotificationGateway } from '@/gateway/notification/notification.gateway
 import { KafkaProducerService } from '@/kafka';
 import { MinioClientService } from '@/libs/minio';
 import { paginate } from '@/utils';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { MediaRepository } from '../../media';
 import { MediaEntity } from '../../media/entities/media.entity';
@@ -56,6 +57,7 @@ import { FavoriteCourseService } from './favorite-course.service';
 
 @Injectable()
 export class CourseService {
+  private readonly logger = new Logger(CourseService.name);
   constructor(
     private readonly userRepository: UserRepository,
     private readonly courseRepository: CourseRepository,
@@ -335,7 +337,12 @@ export class CourseService {
         { status: CourseStatus.PUBLISHED },
       )
         .leftJoinAndSelect('sections.lectures', 'lectures')
-        .leftJoinAndSelect('lectures.series', 'series')
+        .innerJoinAndSelect(
+          'lectures.series',
+          'series',
+          'series.status = :series_status',
+          { series_status: CourseStatus.PUBLISHED },
+        )
         .leftJoinAndSelect('series.video', 'video')
         .leftJoinAndSelect('series.resources', 'resources')
         .leftJoinAndSelect('resources.resource_file', 'resource_file')
@@ -361,7 +368,6 @@ export class CourseService {
     const course = await qb.getOne();
 
     if (!course) throw new NotFoundException(ErrorCode.E025);
-
     for (const section of course.sections ?? []) {
       for (const lecture of section.lectures ?? []) {
         const latestPublishedSeries = lecture.latestPublishedSeries;
@@ -500,6 +506,7 @@ export class CourseService {
 
     const to_public_series: LectureSeriesEntity[] = [];
     const to_update_lectures: LectureEntity[] = [];
+    const to_delete_sections: SectionEntity[] = [];
     if (dto.status === CourseStatus.PUBLISHED) {
       if (!course.sections.length) {
         throw new ValidationException(
@@ -543,7 +550,22 @@ export class CourseService {
         ),
       );
 
-      if (!has_unpublished_draft && !has_deletion_changes) {
+      course.sections.forEach((section) => {
+        if (section.items.length === 0) {
+          to_delete_sections.push(section);
+          section.deletedAt = new Date();
+          // throw new ValidationException(
+          //   ErrorCode.E043,
+          //   `Không thể xuất bản: Nội dung Chương <strong>${section.title}</strong> trống`,
+          // );
+        }
+      });
+
+      if (
+        !has_unpublished_draft &&
+        !has_deletion_changes &&
+        !to_delete_sections
+      ) {
         throw new ValidationException(
           ErrorCode.E043,
           'Không có thay đổi nào mới để xuất bản. Vui lòng cập nhật bài giảng trước khi xuất bản.',
@@ -568,12 +590,13 @@ export class CourseService {
       });
 
       course.sections.forEach((section) => {
-        if (section.items.length === 0) {
-          throw new ValidationException(
-            ErrorCode.E043,
-            `Không thể xuất bản: Nội dung Chương <strong>${section.title}</strong> trống`,
-          );
-        }
+        // if (section.items.length === 0) {
+        //   to_delete_sections.push(section);
+        //   // throw new ValidationException(
+        //   //   ErrorCode.E043,
+        //   //   `Không thể xuất bản: Nội dung Chương <strong>${section.title}</strong> trống`,
+        //   // );
+        // }
         section.lectures.forEach((lecture) => {
           if (lecture.is_hidden) {
             return;
@@ -582,7 +605,6 @@ export class CourseService {
           const latest_series = lecture.series.sort(
             (a, b) => b.version - a.version,
           )[0];
-          console.log(latest_series);
           if (
             !latest_series ||
             latest_series.video.status !== UploadStatus.VALIDATED
@@ -603,6 +625,7 @@ export class CourseService {
     await this.lectureRepository.save(to_update_lectures);
     await this.lectureSeriesRepo.save(to_public_series);
     await this.sectionRepository.save(course.sections);
+    // await this.sectionRepository.remove(to_delete_sections);
     if (course.status === CourseStatus.BANNED) {
       course.status = CourseStatus.BANNED;
     } else course.status = dto.status;
@@ -750,12 +773,21 @@ export class CourseService {
     );
     course.is_favorite = is_favorite;
 
-    let course_progress: ICourseProgress;
+    let course_progress: ICourseProgress & { certificate_code?: string | null };
     if (is_enrolled) {
-      course_progress = await this.courseProgressService.getCourseProgress(
-        user_payload.id,
-        course.course_id,
-      );
+      const [progress, certificate_code] = await Promise.all([
+        this.courseProgressService.getCourseProgress(
+          user_payload.id,
+          course.course_id,
+        ),
+        this.enrollCourseService.getCertificateCode(
+          user_payload.id,
+          course.course_id,
+        ),
+      ]);
+
+      course_progress = progress;
+      course_progress.certificate_code = certificate_code;
     }
 
     return { course, course_progress };
