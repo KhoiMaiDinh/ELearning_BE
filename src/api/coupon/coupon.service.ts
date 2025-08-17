@@ -112,7 +112,7 @@ export class CouponService {
       );
     }
 
-    if (dto.is_public && coupon.course_id) {
+    if (dto.is_public && coupon?.course_id) {
       await this.validateOverlapping(
         coupon.course_id,
         dto.starts_at,
@@ -148,14 +148,14 @@ export class CouponService {
     const course = await this.courseService.findOne(course_id, {
       with_instructor: true,
     });
-    const is_course_owner = course.instructor.user.id == user.id;
-    const has_permission = user.permissions.includes(PERMISSION.READ_COUPON);
-    if (!(is_course_owner || has_permission)) {
-      throw new ForbiddenException(
-        ErrorCode.F002,
-        'Bạn không có quyền truy cập danh sách mã khuyễn mãi của khóa học này',
-      );
-    }
+    // const is_course_owner = course.instructor.user.id == user.id;
+    // const has_permission = user.permissions.includes(PERMISSION.READ_COUPON);
+    // if (!(is_course_owner || has_permission)) {
+    //   throw new ForbiddenException(
+    //     ErrorCode.F002,
+    //     'Bạn không có quyền truy cập danh sách mã khuyễn mãi của khóa học này',
+    //   );
+    // }
 
     const { coupons } = await this.find(
       {
@@ -213,7 +213,7 @@ export class CouponService {
       .addGroupBy('instructor.instructor_id')
       .addGroupBy('creator.user_id');
 
-    if (options.course_id) {
+    if (options?.course_id) {
       query.andWhere('course.course_id = :course_id', {
         course_id: options.course_id,
       });
