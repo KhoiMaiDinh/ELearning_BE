@@ -5,6 +5,7 @@ export * from './courses.query.dto';
 export * from './create-course.req.dto';
 export * from './curriculum.query';
 export * from './curriculum.res.dto';
+export * from './enroll-users.res.dto';
 export * from './favorite-course.res.dto';
 export * from './public-course.req.dto';
 export * from './rating.query.dto';

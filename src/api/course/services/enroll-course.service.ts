@@ -1,23 +1,38 @@
+import { LectureRepository } from '@/api/course-item/lecture/repositories/lecture.repository';
 import { NotificationType } from '@/api/notification/enum/notification-type.enum';
 import { NotificationBuilderService } from '@/api/notification/notification-builder.service';
 import { NotificationService } from '@/api/notification/notification.service';
 import { UserEntity } from '@/api/user/entities/user.entity';
-import { Nanoid, Uuid } from '@/common';
+import {
+  Nanoid,
+  OffsetPaginatedDto,
+  PageOffsetOptionsDto,
+  Uuid,
+} from '@/common';
 import { ErrorCode, Language } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import { NotificationGateway } from '@/gateway/notification/notification.gateway';
-import { Injectable } from '@nestjs/common';
+import { rawPaginate } from '@/utils/offset-pagination-raw';
+import { Injectable, Logger } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { IsNull, Not } from 'typeorm';
+import { EnrollUserRes, EnrollUsersRes } from '../dto';
 import { CourseReviewRes } from '../dto/review.res.dto';
 import { SubmitReviewReq } from '../dto/submit-review.req.dto';
 import { CourseEntity } from '../entities/course.entity';
 import { EnrolledCourseEntity } from '../entities/enrolled-course.entity';
+import { CourseStatus } from '../enums';
+import { CourseRepository } from '../repositories/course.repository';
 import { EnrolledCourseRepository } from '../repositories/enrolled-course.repository';
 
 @Injectable()
 export class EnrollCourseService {
+  private logger = new Logger(EnrollCourseService.name);
   constructor(
     private readonly enrolledRepo: EnrolledCourseRepository,
+    private readonly lectureRepo: LectureRepository,
+    private readonly courseRepo: CourseRepository,
+
     private readonly notificationService: NotificationService,
     private readonly notificationBuilder: NotificationBuilderService,
     private readonly notificationGateway: NotificationGateway,
@@ -63,8 +78,18 @@ export class EnrollCourseService {
     }
   }
 
-  async markCourseCompleted(user_id: Nanoid, course_id: Uuid) {
+  async getCertificateCode(user_id: Nanoid, course_id: Uuid) {
     const enrolled = await this.enrolledRepo.findOne({
+      where: {
+        user: { id: user_id },
+        course_id: course_id,
+      },
+    });
+    return enrolled.certificate_code;
+  }
+
+  async markCourseCompleted(user_id: Nanoid, course_id: Uuid) {
+    let enrolled = await this.enrolledRepo.findOne({
       where: {
         user: { id: user_id },
         course_id: course_id,
@@ -83,7 +108,7 @@ export class EnrollCourseService {
       enrolled.is_completed = true;
       enrolled.completed_at = new Date();
 
-      await this.enrolledRepo.save(enrolled);
+      enrolled = await this.enrolledRepo.save(enrolled);
     }
 
     const built_notification = this.notificationBuilder.courseCompleted(
@@ -94,6 +119,7 @@ export class EnrollCourseService {
       NotificationType.COURSE_COMPLETED,
       {
         course_id: enrolled.course.id,
+        certificate_code: enrolled.certificate_code,
       },
       built_notification,
     );
@@ -127,6 +153,65 @@ export class EnrollCourseService {
       .getMany();
 
     return enrolled_courses.map((enrolled_course) => enrolled_course.user);
+  }
+
+  async findUsersWithProgress(
+    course_id: Nanoid,
+    filter: PageOffsetOptionsDto,
+  ): Promise<EnrollUsersRes> {
+    const course = await this.courseRepo.findOne({
+      where: { id: course_id },
+    });
+    const total_lectures = await this.lectureRepo.countTotalPublicLectures(
+      course.course_id,
+    );
+    const query_builder = this.enrolledRepo
+      .createQueryBuilder('enrolled')
+      .leftJoinAndSelect('enrolled.user', 'user')
+      .leftJoinAndSelect('user.profile_image', 'profile_image')
+      .leftJoin('user.lesson_progresses', 'progress')
+      .leftJoin('progress.lecture', 'lecture')
+      .innerJoin(
+        'lecture.section',
+        'section',
+        'section.course_id = :course_id',
+        {
+          course_id: course.course_id,
+        },
+      )
+      .innerJoin('lecture.series', 'series', 'series.status = :status', {
+        status: CourseStatus.PUBLISHED,
+      })
+      .where('enrolled.course_id = :course_id', { course_id: course.course_id })
+      // .andWhere('progress.completed = true')
+      .groupBy(
+        'enrolled.user_id, enrolled.course_id, user.user_id, profile_image.media_id, progress.user_lesson_progress_id',
+      )
+      .addSelect(
+        `COUNT(DISTINCT CASE WHEN progress.completed = true THEN progress.user_lesson_progress_id END)`,
+        'completed',
+      )
+      .addSelect('progress');
+
+    const [{ entities, raw }, meta] = await rawPaginate<EnrolledCourseEntity>(
+      query_builder,
+      filter,
+    );
+
+    const data = entities.map((entity, i) => {
+      const completed = parseInt(raw[i].completed, 10);
+      const progress = Math.round((completed / total_lectures) * 100);
+      return {
+        ...entity,
+        progress: {
+          completed,
+          progress,
+          total: total_lectures,
+        },
+      };
+    });
+
+    return new OffsetPaginatedDto(plainToInstance(EnrollUserRes, data), meta);
   }
 
   async findEnrolledCourses(ex_user_id: Nanoid): Promise<CourseEntity[]> {
@@ -216,7 +301,10 @@ export class EnrollCourseService {
 
   async getCourseReviews(course_id: Nanoid) {
     const reviews = await this.enrolledRepo.find({
-      where: { course: { id: course_id } },
+      where: {
+        course: { id: course_id },
+        rating_comment: Not(IsNull()),
+      },
       relations: { user: { profile_image: true } },
       order: { createdAt: 'DESC' },
     });
