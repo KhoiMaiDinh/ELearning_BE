@@ -1,5 +1,6 @@
 import { InstructorRes } from '@/api/instructor';
 import { MediaRes } from '@/api/media';
+import { AccountRes } from '@/api/payment/dto/account.res.dto';
 import { PostResDto } from '@/api/post/dto/post.res.dto';
 import { RoleRes } from '@/api/role';
 import { WrapperType } from '@/common';
@@ -43,4 +44,10 @@ export class UserRes {
   @ClassField(() => InstructorRes)
   @Expose()
   instructor_profile?: WrapperType<InstructorRes>;
+
+  @ClassField(() => AccountRes)
+  account?: AccountRes;
+
+  @Expose()
+  createdAt: Date;
 }

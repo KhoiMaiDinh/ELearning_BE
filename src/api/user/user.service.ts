@@ -9,12 +9,13 @@ import {
   OffsetPaginatedDto,
 } from '@/common';
 import {
+  DefaultRole,
   ErrorCode,
   Language,
   RegisterMethod,
   SYSTEM_USER_ID,
 } from '@/constants';
-import { ValidationException } from '@/exceptions';
+import { InternalServerException, ValidationException } from '@/exceptions';
 import { MinioClientService } from '@/libs/minio';
 import { buildPaginator, paginate, verifyPassword } from '@/utils';
 import { Injectable, Logger } from '@nestjs/common';
@@ -208,5 +209,18 @@ export class UserService {
     user.updatedBy = SYSTEM_USER_ID;
 
     await this.userRepository.save(user);
+  }
+
+  async findAdmins() {
+    const admins = await this.userRepository.find({
+      where: { roles: { role_name: DefaultRole.ADMIN } },
+      relations: {
+        roles: true,
+      },
+    });
+    if (!admins) {
+      throw new InternalServerException(ErrorCode.V000, 'No admin found');
+    }
+    return admins;
   }
 }

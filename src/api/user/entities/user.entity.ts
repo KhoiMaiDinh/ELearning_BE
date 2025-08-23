@@ -1,3 +1,4 @@
+import { UserLessonProgressEntity } from '@/api/course-progress/entities/lesson-progress.entity';
 import { EnrolledCourseEntity } from '@/api/course/entities/enrolled-course.entity';
 import { InstructorEntity } from '@/api/instructor/entities/instructor.entity';
 import { MediaEntity } from '@/api/media/entities/media.entity';
@@ -27,7 +28,6 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   Relation,
-  Unique,
 } from 'typeorm';
 
 type RequiredUserProps = Pick<
@@ -38,7 +38,6 @@ type OptionalUserProps = Partial<UserEntity>;
 
 type UserProps = RequiredUserProps & OptionalUserProps;
 
-@Unique(['email', 'register_method'])
 @Entity(E.USER)
 export class UserEntity extends AbstractEntity {
   constructor(data?: UserProps) {
@@ -71,7 +70,7 @@ export class UserEntity extends AbstractEntity {
   username: string;
 
   @Column()
-  @Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })
+  @Index('IDX_email_method', ['email', 'register_method'])
   email!: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -109,7 +108,7 @@ export class UserEntity extends AbstractEntity {
   @OneToMany(() => PostEntity, (post) => post.user)
   posts: Relation<PostEntity[]>;
 
-  @ManyToMany(() => RoleEntity, (role) => role.users)
+  @ManyToMany(() => RoleEntity, (role) => role.users, { cascade: true })
   @JoinTable()
   roles: Relation<RoleEntity[]>;
 
@@ -130,6 +129,9 @@ export class UserEntity extends AbstractEntity {
     (enrolled_course) => enrolled_course.user,
   )
   enrolled_courses?: Relation<EnrolledCourseEntity[]>;
+
+  @OneToMany(() => UserLessonProgressEntity, (progress) => progress.user)
+  lesson_progresses?: Relation<UserLessonProgressEntity[]>;
 
   @OneToMany(() => OrderEntity, (order) => order.user)
   orders?: Relation<OrderEntity[]>;
