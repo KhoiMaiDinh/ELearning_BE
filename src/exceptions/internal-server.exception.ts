@@ -1,5 +1,5 @@
 import { ErrorCode } from '@/constants';
-import { ForbiddenException as BaseException } from '@nestjs/common';
+import { InternalServerErrorException as BaseException } from '@nestjs/common';
 
 /**
  * InternalServerException used to throw forbidden errors with a custom error code and message.
