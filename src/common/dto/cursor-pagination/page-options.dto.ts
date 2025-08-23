@@ -1,8 +1,9 @@
-import { DEFAULT_PAGE_LIMIT } from '../../../constants';
 import {
+  EnumFieldOptional,
   NumberFieldOptional,
   StringFieldOptional,
-} from '../../../decorators/field.decorators';
+} from '@/decorators/field.decorators';
+import { DEFAULT_PAGE_LIMIT, Order } from '../../../constants';
 
 export class PageCursorOptionsDto {
   @StringFieldOptional()
@@ -17,6 +18,9 @@ export class PageCursorOptionsDto {
     int: true,
   })
   readonly limit?: number = DEFAULT_PAGE_LIMIT;
+
+  @EnumFieldOptional(() => Order, { default: Order.DESC })
+  readonly order: Order;
 
   @StringFieldOptional()
   readonly q?: string;
