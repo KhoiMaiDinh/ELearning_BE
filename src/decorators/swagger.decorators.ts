@@ -24,7 +24,7 @@ export const ApiPaginatedResponse = <T extends Type<any>>(options: {
       description:
         options.description || `Paginated list of ${options.type.name}`,
       schema: {
-        title: `PaginatedResponseOf${options.type.name}`,
+        title: `PaginatedResponseOf${options.type?.name}`,
         allOf: [
           {
             $ref: getSchemaPath(
