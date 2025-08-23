@@ -16,6 +16,7 @@ export enum PERMISSION {
   READ_ACCOUNT = 'read:account',
   READ_PAYOUT = 'read:payout',
   WRITE_PAYOUT = 'write:payout',
+  READ_COUPON = 'read:coupon',
   WRITE_COUPON = 'write:coupon',
   READ_REPORT = 'read:report',
   READ_BAN = 'read:ban',
