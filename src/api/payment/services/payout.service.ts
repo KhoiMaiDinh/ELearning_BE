@@ -68,7 +68,9 @@ export class PayoutService {
     if (items.length === 0) throw new NotFoundException(ErrorCode.V000);
 
     const instructor = items[0].course.instructor;
+
     const account = instructor.user.account;
+    if (!account) return;
 
     const total_amount = items.reduce(
       (sum, item) => sum + Math.round(item.final_price - item.platform_fee),
