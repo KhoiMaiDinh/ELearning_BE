@@ -9,7 +9,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { In } from 'typeorm';
 import { CourseEntity } from '../course/entities/course.entity';
-import { CourseStatus } from '../course/enums/course-status.enum';
 import { ICourseProgress } from './interfaces/progress.interface';
 import { LessonProgressRepository } from './lesson-progress.repository';
 
@@ -80,14 +79,8 @@ export class LessonProgressService {
     user_id: Nanoid,
     course_id: Uuid,
   ): Promise<ICourseProgress> {
-    // Step 1: Get total lectures in this course
-    const total_public_lectures = await this.lectureRepo
-      .createQueryBuilder('lecture')
-      .innerJoin('lecture.series', 'series')
-      .innerJoin('lecture.section', 'section')
-      .where('section.course_id = :course_id', { course_id })
-      .andWhere('series.status = :status', { status: CourseStatus.PUBLISHED })
-      .getCount();
+    const total_public_lectures =
+      await this.lectureRepo.countTotalPublicLectures(course_id);
 
     if (total_public_lectures === 0) {
       return {
@@ -97,7 +90,6 @@ export class LessonProgressService {
       };
     }
 
-    // Step 2: Get how many lectures this user has completed
     const completed_lectures = await this.progressRepo.count({
       where: {
         user: { id: user_id },
