@@ -18,6 +18,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { CourseStatus } from '../course';
 import { MediaEntity } from '../media/entities/media.entity';
 import { NotificationType } from '../notification/enum/notification-type.enum';
 import { NotificationBuilderService } from '../notification/notification-builder.service';
@@ -197,7 +198,15 @@ export class InstructorService {
     const query_builder = InstructorEntity.createQueryBuilder('instructor')
       .leftJoinAndSelect('instructor.user', 'user')
       .leftJoinAndSelect('user.profile_image', 'profile_image')
-      .loadRelationCountAndMap('instructor.total_courses', 'instructor.courses')
+      .loadRelationCountAndMap(
+        'instructor.total_courses',
+        'instructor.courses',
+        'courses',
+        (qb) =>
+          qb.where('courses.status = :status', {
+            status: CourseStatus.PUBLISHED,
+          }),
+      )
       .addSelect(this.buildAvgRatingSubQuery(), 'instructor_avg_rating')
       .addSelect(this.buildTotalStudentsSubQuery(), 'instructor_total_students')
       .leftJoinAndSelect('instructor.category', 'category')
@@ -256,7 +265,15 @@ export class InstructorService {
           language: Language.VI,
         },
       )
-      .loadRelationCountAndMap('instructor.total_courses', 'instructor.courses')
+      .loadRelationCountAndMap(
+        'instructor.total_courses',
+        'instructor.courses',
+        'courses',
+        (qb) =>
+          qb.where('courses.status = :status', {
+            status: CourseStatus.PUBLISHED,
+          }),
+      )
       .addSelect(this.buildAvgRatingSubQuery(), 'instructor_avg_rating')
       .addSelect(this.buildTotalStudentsSubQuery(), 'instructor_total_students')
       .leftJoinAndSelect('instructor.user', 'user')
