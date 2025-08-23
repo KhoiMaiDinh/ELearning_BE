@@ -38,6 +38,14 @@ interface PayoutBatchMetadata {
   year: number;
 }
 
+interface CertificateMetadata {
+  certificate_code: string;
+}
+
+function isCertificateMetadata(data: any): data is CertificateMetadata {
+  return typeof data?.certificate_code === 'string';
+}
+
 function isCourseMetadata(data: any): data is CourseMetadata {
   return typeof data?.course_id === 'string';
 }
@@ -90,9 +98,11 @@ function isReplyMetadata(data: any): data is ReplyMetadata {
 }
 
 export {
+  CertificateMetadata,
   CommentMetadata,
   CouponMetadata,
   CourseMetadata,
+  isCertificateMetadata,
   isCommentMetadata,
   isCouponMetadata,
   isCourseMetadata,

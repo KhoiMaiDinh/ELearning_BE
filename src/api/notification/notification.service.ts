@@ -26,6 +26,7 @@ import {
 } from './dto';
 import { NotificationType } from './enum/notification-type.enum';
 import {
+  isCertificateMetadata,
   isCommentMetadata,
   isCouponMetadata,
   isCourseMetadata,
@@ -196,54 +197,59 @@ export class NotificationService {
   ): void {
     const isValid = (() => {
       switch (type) {
+        case NotificationType.INSTRUCTOR_REGISTERED:
+          return isUserMetadata(metadata);
+        case NotificationType.COURSE_ENROLLED:
+          return isCourseMetadata(metadata);
+        case NotificationType.COURSE_COMPLETED:
+          return isCourseMetadata(metadata) && isCertificateMetadata(metadata);
+        case NotificationType.NEW_LECTURE_ADDED:
+          return isLectureMetadata(metadata);
+        case NotificationType.COURSE_UPDATED:
+          return isCourseMetadata(metadata);
+        case NotificationType.COURSE_UNBANNED:
+          return isCourseMetadata(metadata);
         case NotificationType.COUPON_FOR_ALL:
           return;
         case NotificationType.COUPON_FOR_COURSE:
           return isCouponMetadata(metadata);
         case NotificationType.NEW_REPLY:
           return isReplyMetadata(metadata);
-        case NotificationType.NEW_THREAD:
-          return isThreadMetadata(metadata);
-        case NotificationType.COURSE_UNBANNED:
+        case NotificationType.COURSE_ANNOUNCEMENT:
+          return isCourseMetadata(metadata);
+
+        // instructor
+        case NotificationType.PROFILE_APPROVED:
+          return isUserMetadata(metadata);
+        case NotificationType.COURSE_BANNED:
           return isCourseMetadata(metadata);
         case NotificationType.UNBAN_APPROVED:
           return isCourseMetadata(metadata);
         case NotificationType.UNBAN_REJECTED:
           return isCourseMetadata(metadata);
-        case NotificationType.INSTRUCTOR_REGISTERED:
-          return isUserMetadata(metadata);
-
-        case NotificationType.PROFILE_APPROVED:
-          return isUserMetadata(metadata);
         case NotificationType.PROFILE_REJECTED:
           return isUserMetadata(metadata) && isReasonMetadata(metadata);
-        case NotificationType.COURSE_ENROLLED:
-        case NotificationType.COURSE_COMPLETED:
-        case NotificationType.COURSE_UPDATED:
         case NotificationType.COURSE_APPROVED:
           return isCourseMetadata(metadata);
-
-        case NotificationType.NEW_LECTURE_ADDED:
-          return isLectureMetadata(metadata);
+        case NotificationType.PAYOUT_PROCESSED:
+          return isPayoutMetadata(metadata);
 
         case NotificationType.NEW_ENROLLMENT:
+          return isCourseMetadata(metadata) && isUserMetadata(metadata);
         case NotificationType.COURSE_REVIEW_RECEIVED:
           return isCourseMetadata(metadata) && isUserMetadata(metadata);
 
         case NotificationType.COURSE_REJECTED:
           return isCourseMetadata(metadata) && isReasonMetadata(metadata);
-
-        case NotificationType.PAYOUT_PROCESSED:
-          return isPayoutMetadata(metadata);
-
+        case NotificationType.NEW_THREAD:
+          return isThreadMetadata(metadata);
         case NotificationType.NEW_COMMENT:
           return isCommentMetadata(metadata);
-
+        // admin
         case NotificationType.INSTRUCTOR_APPROVAL_REQUEST:
           return isUserMetadata(metadata);
-
         case NotificationType.UNBAN_REQUEST:
-          return isUserMetadata(metadata);
+          return isCourseMetadata(metadata);
         case NotificationType.PAYOUT_GENERATED:
           return isPayoutBatchMetadata(metadata);
 
@@ -280,6 +286,8 @@ export class NotificationService {
       this.buildCouponForCourseContent.bind(this),
     [NotificationType.COUPON_FOR_ALL]: this.buildCouponForAllContent.bind(this),
     [NotificationType.NEW_REPLY]: this.buildNewReplyContent.bind(this),
+    [NotificationType.COURSE_ANNOUNCEMENT]:
+      this.buildCourseAnnouncementContent.bind(this),
     // To instructor
     [NotificationType.NEW_ENROLLMENT]:
       this.buildNewEnrollmentContent.bind(this),
@@ -296,6 +304,7 @@ export class NotificationService {
       this.buildInstructorApprovedContent.bind(this),
     [NotificationType.PROFILE_REJECTED]:
       this.buildInstructorRejectedContent.bind(this),
+    [NotificationType.COURSE_BANNED]: this.buildCourseBannedContent.bind(this),
     [NotificationType.UNBAN_APPROVED]:
       this.buildUnbanApprovedContent.bind(this),
     [NotificationType.UNBAN_REJECTED]:
@@ -308,6 +317,22 @@ export class NotificationService {
     [NotificationType.PAYOUT_GENERATED]:
       this.buildPayoutGeneratedContent.bind(this),
   };
+
+  private async buildCourseAnnouncementContent(
+    notification: NotificationEntity,
+    lang: Language,
+  ) {
+    const metadata =
+      notification.metadata as MetadataMap[NotificationType.COURSE_ANNOUNCEMENT];
+    const course = await this.courseRepo.findOne({
+      where: { id: metadata.course_id },
+      relations: {
+        instructor: true,
+      },
+    });
+    if (!course) throw new NotFoundException(ErrorCode.E080);
+    return this.notiBuilderService.courseAnnouncement(course, lang);
+  }
 
   private async buildNewThreadContent(
     notification: NotificationEntity,
@@ -341,6 +366,18 @@ export class NotificationService {
     });
     if (!reply) throw new NotFoundException(ErrorCode.E080);
     return this.notiBuilderService.newReply(reply, lang);
+  }
+
+  private async buildCourseBannedContent(
+    notification: NotificationEntity,
+    lang: Language,
+  ) {
+    const metadata =
+      notification.metadata as MetadataMap[NotificationType.COURSE_BANNED];
+    const course = await this.courseRepo.findOne({
+      where: { id: metadata.course_id },
+    });
+    return this.notiBuilderService.courseBanned(course, lang);
   }
 
   private async buildUnbanApprovedContent(

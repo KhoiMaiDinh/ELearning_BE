@@ -13,6 +13,18 @@ import { UserEntity } from '../user/entities/user.entity';
 
 @Injectable()
 export class NotificationBuilderService {
+  courseAnnouncement(course: CourseEntity, lang?: Language) {
+    let title: string, body: string;
+    if (lang === Language.VI) {
+      title = `Thông báo từ giảng viên `;
+      body = `Thông báo mới từ khóa ${course.title}`;
+    } else {
+      title = `Announcement from your instructor for ${course.title}`;
+      body = `New announcement for ${course.title}`;
+    }
+    return { title, body, image: course.thumbnail };
+  }
+
   instructorRegistered(user: UserEntity, lang: Language = Language.VI) {
     let title: string, body: string;
     if (lang === Language.VI) {
@@ -366,5 +378,17 @@ export class NotificationBuilderService {
       body = `You have a new question from ${thread.author.last_name} about lecture ${thread.lecture.title}.`;
     }
     return { title, body, image };
+  }
+
+  courseBanned(course: CourseEntity, lang: Language = Language.VI) {
+    let title: string, body: string;
+    if (lang === Language.VI) {
+      title = `Khóa học bị cấm`;
+      body = `Khóa học ${course.title} của bạn đã bị cấm.`;
+    } else {
+      title = `Course Banned`;
+      body = `Your course ${course.title} has been banned.`;
+    }
+    return { title, body, image: course.thumbnail };
   }
 }

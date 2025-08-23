@@ -1,7 +1,8 @@
 import { TokenModule } from '@/api/token';
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway';
 
+@Global()
 @Module({
   imports: [TokenModule],
   providers: [NotificationGateway],

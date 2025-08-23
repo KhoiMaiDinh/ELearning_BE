@@ -4,6 +4,7 @@ import {
 } from '@/api/ban/interface/warning-metadata.interface';
 import { NotificationType } from '../enum/notification-type.enum';
 import {
+  CertificateMetadata,
   CommentMetadata,
   CouponMetadata,
   CourseMetadata,
@@ -17,9 +18,10 @@ import {
 export type NotificationMetadataMap = {
   [NotificationType.INSTRUCTOR_REGISTERED]: UserMetadata;
   [NotificationType.COURSE_ENROLLED]: CourseMetadata;
-  [NotificationType.COURSE_COMPLETED]: CourseMetadata;
+  [NotificationType.COURSE_COMPLETED]: CourseMetadata & CertificateMetadata;
   [NotificationType.NEW_LECTURE_ADDED]: LectureMetadata;
   [NotificationType.COURSE_UPDATED]: CourseMetadata;
+  [NotificationType.COURSE_BANNED]: CourseMetadata;
   [NotificationType.COURSE_UNBANNED]: CourseMetadata;
   [NotificationType.COUPON_FOR_COURSE]: CouponMetadata;
   [NotificationType.COUPON_FOR_ALL]: CouponMetadata;
@@ -27,6 +29,7 @@ export type NotificationMetadataMap = {
     LectureMetadata &
     ThreadMetadata &
     ReplyMetadata;
+  [NotificationType.COURSE_ANNOUNCEMENT]: CourseMetadata;
 
   // Instructors
   [NotificationType.NEW_ENROLLMENT]: CourseMetadata & UserMetadata;
@@ -48,6 +51,7 @@ export type NotificationMetadataMap = {
   [NotificationType.NEW_COMMENT]: CommentMetadata &
     CourseMetadata &
     LectureMetadata;
+
   [NotificationType.INSTRUCTOR_APPROVAL_REQUEST]: UserMetadata;
   [NotificationType.UNBAN_REQUEST]: CourseMetadata;
   [NotificationType.PAYOUT_GENERATED]: PayoutBatchMetadata;
