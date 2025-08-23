@@ -2,7 +2,7 @@ import { CourseRepository } from '@/api/course';
 import { LessonProgressRepository } from '@/api/course-progress/lesson-progress.repository';
 import { EnrolledCourseRepository } from '@/api/course/repositories/enrolled-course.repository';
 import { Uuid } from '@/common';
-import { ENTITY, MONTHLY_LABELS } from '@/constants';
+import { MONTHLY_LABELS } from '@/constants';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -48,41 +48,14 @@ export class CourseAnalyzer {
     const qb = this.courseRepo
       .createQueryBuilder('course')
       .leftJoin('course.enrolled_users', 'enrolled')
-      .leftJoin('course.sections', 'section')
-      .leftJoin('section.lectures', 'lecture')
-      .leftJoin(
-        'lecture.progresses',
-        'progress',
-        'progress.user_id = enrolled.user_id',
-      )
       .select('course.title', 'title')
-      .addSelect('COUNT(DISTINCT enrolled.user_id)', 'total_students')
+      .addSelect('COUNT(enrolled.user_id)', 'total_students')
       .addSelect(
-        `
-        COUNT(DISTINCT CASE 
-          WHEN (
-            SELECT COUNT(*) 
-            FROM lecture l2 
-            JOIN section s2 ON l2.section_id = s2.section_id 
-            WHERE s2.course_id = course.course_id
-          ) = (
-            SELECT COUNT(DISTINCT progress2.lecture_id)
-            FROM "${ENTITY.USER_LESSON_PROGRESS}" progress2 
-            WHERE progress2.user_id = enrolled.user_id
-            AND progress2.completed = true
-            AND progress2.lecture_id IN (
-              SELECT l3.lecture_id
-              FROM lecture l3
-              JOIN section s3 ON l3.section_id = s3.section_id
-              WHERE s3.course_id = course.course_id
-            )
-          )
-          THEN enrolled.user_id 
-        END)
-      `,
+        `COUNT(CASE WHEN enrolled.is_completed = true THEN 1 END)`,
         'completed_students',
       )
       .where('course.instructor_id = :instructor_id', { instructor_id })
+      .andWhere('course.published_at IS NOT NULL')
       .groupBy('course.course_id');
 
     const raw_results = await qb.getRawMany();
