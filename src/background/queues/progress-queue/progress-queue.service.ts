@@ -18,7 +18,6 @@ export class ProgressQueueService {
       user_id,
       course_id,
     );
-    this.logger.debug(course_progress);
     if (course_progress.progress == 100) {
       await this.enrollCourseService.markCourseCompleted(user_id, course_id);
     }
