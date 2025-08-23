@@ -7,4 +7,5 @@ export type MinioConfig = {
   presigned_url_expires: string;
   path: string;
   use_ssl: boolean;
+  region: string;
 };

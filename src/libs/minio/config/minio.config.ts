@@ -47,6 +47,10 @@ class EnvironmentVariablesValidator {
   @IsBoolean()
   @IsNotEmpty()
   STORAGE_USE_SSL: boolean;
+
+  @IsString()
+  @IsNotEmpty()
+  STORAGE_REGION: string;
 }
 
 export default registerAs<MinioConfig>('storage', () => {
@@ -66,5 +70,6 @@ export default registerAs<MinioConfig>('storage', () => {
     presigned_url_expires: process.env.STORAGE_URL_EXPIRES_IN,
     path: process.env.STORAGE_PATH,
     use_ssl: process.env.STORAGE_USE_SSL === 'true',
+    region: process.env.STORAGE_REGION,
   };
 });

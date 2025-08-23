@@ -1,6 +1,6 @@
 import { MediaEntity } from '@/api/media/entities/media.entity';
 import { AllConfigType } from '@/config';
-import { Bucket, Entity, ErrorCode, UploadStatus } from '@/constants';
+import { ENTITY, ErrorCode, UploadStatus } from '@/constants';
 import { NotFoundException, ValidationException } from '@/exceptions';
 import {
   HttpException,
@@ -34,8 +34,15 @@ export class MinioClientService implements OnModuleInit {
 
   public async onModuleInit(): Promise<void> {
     this.logger.log('MinioClient initialized');
-    await this.createBucket(this.image_bucket);
-    await this.createBucket(Bucket.DOCUMENT);
+
+    // Only create buckets in development environment
+    // if (
+    //   this.configService.get('app.nodeEnv', { infer: true }) !==
+    //   Environment.PRODUCTION
+    // ) {
+    //   await this.createBucket(this.image_bucket);
+    //   await this.createBucket(Bucket.DOCUMENT);
+    // }
   }
 
   private async createBucket(name: string): Promise<void> {
@@ -106,7 +113,7 @@ export class MinioClientService implements OnModuleInit {
   }
 
   public async getPostPresignedUrl(
-    entity: Entity,
+    entity: ENTITY,
     object_name: string,
     bucket: string = this.image_bucket,
     max_file_size_bytes: number = 5 * 1024 * 1024, // 5MB limit
@@ -133,18 +140,34 @@ export class MinioClientService implements OnModuleInit {
     expiry_ms: number = 60 * 60 * 24,
   ): Promise<MediaEntity> {
     const { bucket, key, status } = media;
-    if (status != UploadStatus.VALIDATED) {
+
+    if (status !== UploadStatus.VALIDATED && status !== UploadStatus.UPLOADED) {
       media.key = '';
       return media;
     }
-    const presigned_url = await this.client.presignedGetObject(
-      bucket,
-      key,
-      expiry_ms,
-    );
 
-    const url = new URL(presigned_url);
-    media.key = key + '?' + url.searchParams;
+    // Handle HLS master file case
+    if (key.endsWith('master.m3u8')) {
+      // const folderPrefix = key.substring(0, key.lastIndexOf('/') + 1);
+      // // Sign the folder instead of a single file
+      // const presigned_folder_url = await this.client.presignedGetObject(
+      //   bucket,
+      //   folderPrefix,
+      //   expiry_ms,
+      // );
+      // const signed = new URL(presigned_folder_url);
+      // media.key = key + '?' + signed.searchParams.toString();
+    } else {
+      // Sign just the object
+      const presigned_url = await this.client.presignedGetObject(
+        bucket,
+        key,
+        expiry_ms,
+      );
+      const url = new URL(presigned_url);
+      media.key = key + '?' + url.searchParams.toString();
+    }
+
     return media;
   }
 
