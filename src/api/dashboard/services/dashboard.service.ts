@@ -16,6 +16,21 @@ export class DashboardService {
     private readonly orderAnalyzer: OrderAnalyzer,
     private readonly instructorAnalyzer: InstructorAnalyzer,
   ) {}
+
+  async getUserOverview() {
+    const begin = new Date(0);
+    const end = new Date();
+    const instructor_count = await this.instructorAnalyzer.count(begin, end);
+    const student_count = await this.userAnalyzer.count(begin, end);
+    const course_count = await this.courseAnalyzer.count(begin, end);
+
+    return {
+      instructor_count,
+      student_count,
+      course_count,
+    };
+  }
+
   async getOverview(query: GetOverviewQuery) {
     const begin = this.begin;
     const month_end = new Date(query.year, query.month, 0, 23, 59, 59, 999);

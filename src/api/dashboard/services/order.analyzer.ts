@@ -20,7 +20,10 @@ export class OrderAnalyzer {
   async calculateRevenue(start?: Date, end?: Date): Promise<number> {
     const qb = this.orderRepo
       .createQueryBuilder('order')
-      .select('SUM(order.total_amount)', 'sum');
+      .select('SUM(order.total_amount)', 'sum')
+      .where('order.payment_status = :status', {
+        status: PaymentStatus.SUCCESS,
+      });
 
     if (start) qb.andWhere('order.updatedAt >= :start', { start });
     if (end) qb.andWhere('order.updatedAt <= :end', { end });

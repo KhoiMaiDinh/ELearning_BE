@@ -25,12 +25,11 @@ export class LectureCommentAnalyzer {
       .createQueryBuilder('comment')
       .select(['lecture.lecture_id', 'course.course_id'])
       .innerJoin('comment.lecture', 'lecture')
-      .leftJoinAndSelect('lecture.section', 'section')
-      .leftJoinAndSelect('section.course', 'course')
-      .leftJoinAndSelect('course.instructor', 'instructor')
-      .leftJoinAndSelect('instructor.user', 'user', 'user.id = :user_id', {
-        user_id,
-      })
+      .innerJoinAndSelect('lecture.section', 'section')
+      .innerJoinAndSelect('section.course', 'course')
+      .innerJoinAndSelect('course.instructor', 'instructor')
+      .innerJoinAndSelect('instructor.user', 'user')
+      .where('user.id =:user_id', { user_id })
       .distinct(true);
 
     if (period) {

@@ -14,6 +14,15 @@ export class DashboardController {
     private readonly categoryAnalyzer: CategoryAnalyzer,
   ) {}
 
+  @Get('users/overview')
+  @ApiPublic({
+    summary: 'Get overview',
+    statusCode: HttpStatus.OK,
+  })
+  getUsersOverview() {
+    return this.dashboardService.getUserOverview();
+  }
+
   @Get('overview')
   @ApiAuth({
     summary: 'Get overview',
