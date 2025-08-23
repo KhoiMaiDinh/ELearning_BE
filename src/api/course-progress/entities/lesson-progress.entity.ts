@@ -18,7 +18,7 @@ export class UserLessonProgressEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid')
   user_lesson_progress_id: Uuid;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, (user) => user.lesson_progresses)
   @JoinColumn({ name: 'user_id' })
   user: Relation<UserEntity>;
   @Column('uuid')

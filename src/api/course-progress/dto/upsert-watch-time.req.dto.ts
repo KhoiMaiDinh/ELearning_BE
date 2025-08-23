@@ -1,6 +1,6 @@
 import { NumberField } from '@/decorators';
 
 export class UpsertWatchTimeReq {
-  @NumberField({ int: true })
+  @NumberField({ min: 1, max: 100 })
   watch_time: number;
 }
