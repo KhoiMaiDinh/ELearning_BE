@@ -41,7 +41,7 @@ export class TokenService {
       ) {
         throw new UnauthorizedException(ErrorCode.E009);
       }
-      this.logger.debug('Verify token error', error);
+      this.logger.error(error);
       throw new UnauthorizedException(ErrorCode.V000);
     }
 
@@ -88,11 +88,12 @@ export class TokenService {
 
   verifyRefreshToken(token: string): JwtRefreshPayloadType {
     try {
-      return this.jwtService.verify(token, {
+      const payload = this.jwtService.verify(token, {
         secret: this.configService.getOrThrow('auth.refreshSecret', {
           infer: true,
         }),
       });
+      return payload;
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
         throw new UnauthorizedException(ErrorCode.E010);
@@ -103,8 +104,6 @@ export class TokenService {
       ) {
         throw new UnauthorizedException(ErrorCode.E009);
       }
-      this.logger.debug('Verify token error', error);
-      throw new UnauthorizedException(ErrorCode.V000);
     }
   }
 
@@ -130,6 +129,7 @@ export class TokenService {
     permissions: PERMISSION[];
     session_id: string;
     hash: string;
+    is_verified: boolean;
     banned_until?: Date;
   }): Promise<Token> {
     const tokenExpiresIn = this.configService.getOrThrow('auth.expires', {
@@ -144,6 +144,7 @@ export class TokenService {
           permissions: data.permissions,
           session_id: data.session_id,
           banned_until: data?.banned_until,
+          is_verified: data.is_verified,
         } as JwtPayloadType,
         {
           secret: this.configService.getOrThrow('auth.secret', { infer: true }),
