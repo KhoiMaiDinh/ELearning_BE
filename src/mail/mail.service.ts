@@ -12,7 +12,7 @@ export class MailService {
 
   async sendEmailVerification(email: string, token: string) {
     // Please replace the URL with your own frontend URL
-    const url = `${this.configService.get('app.url', { infer: true })}/api/v1/auth/verify/email?token=${token}`;
+    const url = `${this.configService.get('app.url', { infer: true })}/verify/email?token=${token}`;
 
     await this.mailerService.sendMail({
       to: email,
@@ -27,7 +27,7 @@ export class MailService {
 
   async sendForgotPassword(email: string, token: string) {
     // Please replace the URL with your own frontend URL
-    const url = `${this.configService.get('app.url', { infer: true })}/api/v1/auth/reset-password?token=${token}`;
+    const url = `${this.configService.get('app.url', { infer: true })}/reset-password?token=${token}`;
 
     await this.mailerService.sendMail({
       to: email,
