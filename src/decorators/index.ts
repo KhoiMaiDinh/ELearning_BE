@@ -1,5 +1,6 @@
 export * from './after-date-field.decorator';
 export * from './auth-optional.decorator';
+export * from './certificate-code.decorator';
 export * from './cookie.decorator';
 export * from './current-user.decorator';
 export * from './field.decorators';

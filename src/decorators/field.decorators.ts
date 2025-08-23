@@ -162,7 +162,11 @@ export function StringField(
 export function TokenField(
   options: Omit<ApiPropertyOptions, 'type'> & ITokenFieldOptions = {},
 ): PropertyDecorator {
-  const decorators = [Type(() => String), IsJWT({ each: options.each })];
+  const decorators = [
+    Type(() => String),
+    IsString({ each: options.each }),
+    IsJWT({ each: options.each }),
+  ];
 
   if (options.nullable) {
     decorators.push(IsNullable({ each: options.each }));

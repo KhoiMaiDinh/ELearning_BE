@@ -28,7 +28,7 @@ export function AfterDateField(
           const comparisonDate = new Date(relatedValue);
           comparisonDate.setDate(comparisonDate.getDate() + offset);
 
-          return value > comparisonDate;
+          return value >= comparisonDate;
         },
         defaultMessage(args: ValidationArguments) {
           const [relatedField, offset] = args.constraints;
