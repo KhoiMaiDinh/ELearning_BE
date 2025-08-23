@@ -24,6 +24,7 @@ export class NotificationGateway {
   server: Server;
 
   async emitToUser(user_id: Nanoid, payload: any) {
+    this.logger.debug('Emitting to user', user_id);
     this.server.to(user_id).emit('notification', payload);
   }
 
@@ -47,10 +48,12 @@ export class NotificationGateway {
     const user = client.data?.user;
 
     if (user) {
-      this.logger.log(`User ${user.id} disconnected [Socket ID: ${client.id}]`);
+      this.logger.debug(
+        `User ${user.id} disconnected [Socket ID: ${client.id}]`,
+      );
       client.leave(user.id);
     } else {
-      console.log(`Client disconnected: ${client.id} (unauthenticated)`);
+      this.logger.debug(`Client disconnected: ${client.id} (unauthenticated)`);
     }
   }
 
