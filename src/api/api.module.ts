@@ -19,6 +19,8 @@ import { UserModule } from '@/api/user/user.module';
 import { WebhookModule } from '@/api/webhook/webhook.module';
 import { Module } from '@nestjs/common';
 import { BanModule } from './ban/ban.module';
+import { CourseNotificationModule } from './course-notification/course-notification.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { LectureCommentModule } from './lecture-comment/lecture-comment.module';
 import { NotificationModule } from './notification/notification.module';
 import { RecommenderModule } from './recommender/recommender.module';
@@ -26,6 +28,9 @@ import { ThreadModule } from './thread/thread.module';
 
 @Module({
   imports: [
+    LectureCommentModule,
+    CourseNotificationModule,
+    CourseModule,
     UserModule,
     HealthModule,
     AuthModule,
@@ -36,7 +41,6 @@ import { ThreadModule } from './thread/thread.module';
     MediaModule,
     CategoryModule,
     PreferenceModule,
-    CourseModule,
     CourseItemModule,
     SectionModule,
     PriceModule,
@@ -45,11 +49,11 @@ import { ThreadModule } from './thread/thread.module';
     WebhookModule.forRootAsync(),
     CouponModule,
     CourseProgressModule,
-    LectureCommentModule,
     NotificationModule,
     ThreadModule,
     BanModule,
     RecommenderModule,
+    DashboardModule,
   ],
 })
 export class ApiModule {}

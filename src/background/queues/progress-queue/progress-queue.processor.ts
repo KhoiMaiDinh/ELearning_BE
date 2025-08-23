@@ -6,7 +6,7 @@ import { Job } from 'bullmq';
 import { ProgressQueueService } from './progress-queue.service';
 
 @Processor(QueueName.PROGRESS, {
-  concurrency: 5,
+  concurrency: 1,
   drainDelay: 300,
   stalledInterval: 300000,
   removeOnComplete: {
@@ -14,7 +14,7 @@ import { ProgressQueueService } from './progress-queue.service';
     count: 100,
   },
   limiter: {
-    max: 1,
+    max: 5,
     duration: 150,
   },
 })
