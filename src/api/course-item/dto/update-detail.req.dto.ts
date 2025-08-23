@@ -14,9 +14,10 @@ import {
 } from './create-detail.req.dto';
 
 export class UpdateLectureReq extends PartialType(CreateLectureReq) {}
+
 export class UpdateArticleReq extends CreateArticleReq {}
 export class UpdateQuizReq extends OmitType(CreateQuizReq, ['questions']) {
-  @ClassFieldOptional(() => UpdateQuizQuestionReq, { each: true }) // Not provide -> Not change
+  @ClassFieldOptional(() => UpdateQuizQuestionReq, { each: true })
   questions: UpdateQuizQuestionReq[];
 }
 
@@ -29,6 +30,6 @@ export class UpdateQuizQuestionReq extends CreateQuizQuestionReq {
 }
 
 export class UpdateQuizAnswerReq extends CreateQuizAnswerReq {
-  @StringFieldOptional() // Optional to support new answers without an ID
+  @StringFieldOptional()
   id?: Nanoid;
 }

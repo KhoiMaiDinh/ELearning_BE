@@ -89,10 +89,11 @@ export class LectureService extends CourseItemService {
     });
     if (!lecture)
       throw new NotFoundException(ErrorCode.E033, 'Lecture not found');
-    lecture.latestPublishedSeries.video =
-      await this.storageService.getPresignedUrl(
-        lecture.latestPublishedSeries.video,
-      );
+    if (lecture.latestPublishedSeries)
+      lecture.latestPublishedSeries.video =
+        await this.storageService.getPresignedUrl(
+          lecture.latestPublishedSeries.video,
+        );
     return lecture;
   }
 
@@ -175,14 +176,19 @@ export class LectureService extends CourseItemService {
 
   async update(user: JwtPayloadType, id: Nanoid, dto: UpdateLectureReq) {
     const lecture = await this.findOneById(id);
-    const { video: video_dto, title, description, is_preview } = dto;
+    const {
+      video: video_dto = undefined,
+      title,
+      description,
+      is_preview,
+    } = dto;
 
-    let targetSeries = lecture.series.find(
+    let target_series = lecture.series.find(
       (s) => s.status === CourseStatus.DRAFT,
     );
 
-    if (!targetSeries) {
-      targetSeries = this.lectureSeriesRepo.create({
+    if (!target_series) {
+      target_series = this.lectureSeriesRepo.create({
         title,
         description,
         is_preview,
@@ -191,43 +197,44 @@ export class LectureService extends CourseItemService {
         version: lecture.series.length + 1,
       });
     } else {
-      targetSeries.title = title;
-      targetSeries.description = description;
-      targetSeries.is_preview = is_preview;
-      targetSeries.duration_in_seconds = video_dto.duration_in_seconds;
+      target_series.title = title;
+      target_series.description = description;
+      target_series.is_preview = is_preview;
+      target_series.duration_in_seconds = video_dto
+        ? video_dto.duration_in_seconds
+        : target_series.duration_in_seconds;
     }
 
-    if (dto.video?.id && dto.video?.id !== targetSeries.video?.id) {
+    if (video_dto?.id && video_dto?.id !== target_series.video?.id) {
       const video = await this.mediaRepository.findOneById(dto.video.id);
       this.isValidVideo(video);
-      targetSeries.video = video;
+      target_series.video = video;
     }
 
-    targetSeries.resources = await this.handleResources(
-      targetSeries.resources,
+    target_series.resources = await this.handleResources(
+      target_series.resources,
       dto.resources,
     );
-    console.log(targetSeries.resources);
 
-    await this.lectureSeriesRepo.save(targetSeries);
+    await this.lectureSeriesRepo.save(target_series);
 
     // Optional: mark review comments as resolved
     // await this.commentService.markAllAsSolved(lecture.lecture_id);
 
     // Post-processing: signed URLs for resources
-    targetSeries.resources = await this.getResourceAccess(
-      targetSeries.resources,
+    target_series.resources = await this.getResourceAccess(
+      target_series.resources,
     );
 
     lecture.series = lecture.series.find(
-      (s) => s.lecture_series_id === targetSeries.lecture_series_id,
+      (s) => s.lecture_series_id === target_series.lecture_series_id,
     )
       ? lecture.series.map((s) =>
-          s.lecture_series_id === targetSeries.lecture_series_id
-            ? targetSeries
+          s.lecture_series_id === target_series.lecture_series_id
+            ? target_series
             : s,
         )
-      : [targetSeries, ...lecture.series];
+      : [target_series, ...lecture.series];
 
     return lecture.toDto(LectureRes);
   }

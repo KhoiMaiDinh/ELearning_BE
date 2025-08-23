@@ -53,7 +53,6 @@ export abstract class CourseItemService {
     previous_position: string | null,
     section_id: Uuid,
   ): Promise<string> {
-    console.log('previous_position', previous_position);
     const lecture_positions = await this.lectureRepository.find({
       select: ['position'],
       where: { section_id },
@@ -77,7 +76,6 @@ export abstract class CourseItemService {
       article_positions.map(({ position }) => position),
       quiz_positions.map(({ position }) => position),
     );
-    console.log('positions', positions);
 
     if (previous_position === null) {
       if (positions.length === 0) return LexoRank.middle().toString();
