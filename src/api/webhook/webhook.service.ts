@@ -89,7 +89,10 @@ export class WebhookService {
       this.logger.debug(
         `[STRIPE-WEBHOOK] Payment was successful for customer: ${customer}`,
       );
-      await this.orderService.markOrderAsPaid(metadata.order_id as Nanoid);
+      await this.orderService.markOrderAsPaid(
+        metadata.order_id as Nanoid,
+        null,
+      );
       // Send email to
     } else {
       this.logger.warn(
