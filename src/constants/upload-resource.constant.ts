@@ -7,10 +7,10 @@ export enum UploadResource {
 }
 
 export enum Bucket {
-  IMAGE = 'image',
-  VIDEO = 'video',
-  TEMP_VIDEO = 'temp-video',
-  DOCUMENT = 'document',
+  IMAGE = 'novalearn-images',
+  VIDEO = 'novalearn-videos',
+  TEMP_VIDEO = 'novalearn-temp-videos',
+  DOCUMENT = 'novalearn-documents',
 }
 
 export enum UploadStatus {
@@ -54,6 +54,7 @@ export const VALID_UPLOAD_TYPES: Record<ENTITY, UploadEntityProperty[]> = {
   reply: [],
   payout: [UploadEntityProperty.EVIDENCE],
   'order-detail': [],
+  course_notification: [],
 };
 
 export const UPLOAD_TYPE_RESOURCE: Record<

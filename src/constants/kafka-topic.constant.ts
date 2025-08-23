@@ -5,4 +5,5 @@ export enum KafkaTopic {
   COMMENT_CREATED = 'comment.fixed.topic',
   COMMENT_PROCESSED = 'comment-processed.fixed.topic',
   COURSE_SAVED = 'course-saved.fixed.topic',
+  VIDEO_UPLOADED = 'video-upload.fixed.topic',
 }

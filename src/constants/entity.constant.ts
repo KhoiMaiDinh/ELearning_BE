@@ -20,4 +20,5 @@ export enum ENTITY {
   PAYOUT = 'payout',
   ORDER_DETAIL = 'order-detail',
   LECTURE_SERIES = 'lecture-series',
+  COURSE_NOTIFICATION = 'course_notification',
 }
