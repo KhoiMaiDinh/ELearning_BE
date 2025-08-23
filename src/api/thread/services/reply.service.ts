@@ -122,7 +122,7 @@ export class ReplyService {
       reply.thread.author.user_id,
       NotificationType.NEW_REPLY,
       {
-        course_id: reply.thread.lecture.section.id,
+        course_id: reply.thread.lecture.section.course.id,
         lecture_id: reply.thread.lecture.id,
         thread_id: reply.thread.id,
         reply_id: reply.id,

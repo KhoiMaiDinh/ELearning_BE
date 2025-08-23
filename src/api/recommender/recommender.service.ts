@@ -25,6 +25,7 @@ export class RecommenderService {
 
   async findSimilarCourses(course_id: Nanoid) {
     const course_ids = await this.fetchRecommendations([course_id], 5);
+    return await this.courseService.findIn(course_ids);
   }
 
   async recommendCoursesForUser(user_id: Nanoid, query: RecommendCourseQuery) {

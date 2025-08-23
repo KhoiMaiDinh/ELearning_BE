@@ -16,10 +16,6 @@ export class RoleService {
     private readonly permissionRepository: PermissionRepository,
   ) {}
 
-  /**
-   * Get all roles
-   * @returns Role[]
-   */
   async get(): Promise<RoleRes[]> {
     const roles = await this.roleRepository.find({
       relations: ['permissions'],
@@ -27,11 +23,6 @@ export class RoleService {
     return plainToInstance(RoleRes, roles);
   }
 
-  /**
-   * Create new role
-   * @param dto CreateRoleReq
-   * @returns Role
-   */
   async create(dto: CreateRoleReq): Promise<RoleRes> {
     const { role_name, permission_keys } = dto;
     const permissions = await this.permissionRepository.find({
@@ -51,12 +42,6 @@ export class RoleService {
     return role.toDto(RoleRes);
   }
 
-  /**
-   * Update role's permissions
-   * @param role_id Role ID
-   * @param dto UpdateRolePermissionsReq
-   * @returns UpdateRolePermissionsRes
-   **/
   async update(role_name: string, dto: UpdateRoleReq): Promise<RoleRes> {
     const role = await this.roleRepository.getRoleByRoleName(role_name);
 
@@ -78,6 +63,8 @@ export class RoleService {
   async addToUser(user: UserEntity, role_name: string) {
     const new_role = await this.roleRepository.getRoleByRoleName(role_name);
     user.roles = [...user.roles, new_role];
+
+    delete user.password;
     await user.save();
   }
 }
