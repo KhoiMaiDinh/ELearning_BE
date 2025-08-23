@@ -1,5 +1,5 @@
 import { Aspect, Emotion } from '@/api/lecture-comment/enum';
-import { LectureCommentService } from '@/api/lecture-comment/lecture-comment.service';
+import { LectureCommentService } from '@/api/lecture-comment/services/lecture-comment.service';
 import { Uuid } from '@/common';
 import { KafkaTopic } from '@/constants';
 import { Controller, Logger } from '@nestjs/common';
