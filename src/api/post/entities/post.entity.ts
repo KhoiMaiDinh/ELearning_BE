@@ -1,6 +1,6 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { Uuid } from '@/common';
-import { Entity as E } from '@/constants';
+import { ENTITY } from '@/constants';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -11,7 +11,7 @@ import {
   Relation,
 } from 'typeorm';
 
-@Entity(E.POST)
+@Entity(ENTITY.POST)
 export class PostEntity extends AbstractEntity {
   constructor(data?: Partial<PostEntity>) {
     super();
