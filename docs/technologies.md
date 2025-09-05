@@ -114,6 +114,10 @@ A CI/CD service that automates workflows, allowing you to build, test, and deplo
 
 A platform for developing, shipping, and running applications in containers, providing an efficient and consistent environment for deployment.
 
+### ArgoCD
+
+A declarative, GitOps continuous delivery tool for Kubernetes that automates the deployment of applications to clusters.
+
 ### Renovate
 
 A tool for automating dependency updates, keeping your project up-to-date with the latest versions.

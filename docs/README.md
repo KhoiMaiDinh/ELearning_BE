@@ -11,6 +11,7 @@ This is a boilerplate for NestJS projects. It is a starting point for building a
 - [Testing](testing.md)
 - [Deployment](deployment.md)
 - [Technologies](technologies.md)
+- [Features](features.md)
 - [Troubleshooting](troubleshooting.md)
 - Convention
   - [Naming cheatsheet](conventions/naming-cheatsheet.md)
@@ -28,11 +29,11 @@ This is a boilerplate for NestJS projects. It is a starting point for building a
 - [x] Config Service ([@nestjs/config](https://www.npmjs.com/package/@nestjs/config)).
 - [x] Mailing ([@nestjs-modules/mailer](https://www.npmjs.com/package/@nestjs-modules/mailer) & [nodemailer](https://www.npmjs.com/package/nodemailer)).
 - [x] Sign in and sign up via email.
-- [ ] Social sign in (Apple, Facebook, Google, Twitter).
-- [ ] Admin and User roles.
+- [x] Social sign in (Facebook, Google).
+- [x] Admin and User roles.
 - [x] Pagination: Offset and Cursor (Clone from [typeorm-cursor-pagination](https://github.com/benjamin658/typeorm-cursor-pagination) and add more features).
 - [x] Internationalization/Translations (I18N) ([nestjs-i18n](https://www.npmjs.com/package/nestjs-i18n)).
-- [ ] File uploads. Support local and Amazon S3 drivers.
+- [x] File uploads. Support local and Amazon S3 drivers.
 - [x] Swagger.
 - [x] E2E and units tests.
 - [x] Docker.
