@@ -1,7 +1,7 @@
 {
-  "name": "auth-service",
+  "name": "nova-learn-api",
   "version": "0.0.1",
-  "description": "Auth Service of E-Learning Microservices",
+  "description": "API Server of Nova Learn distributed system",
   "author": "dkhoimai",
   "private": true,
   "license": "MIT",
@@ -47,7 +47,7 @@
     "@nestjs/core": "^10.4.7",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/mapped-types": "^2.0.6",
-    "@nestjs/microservices": "^11.0.11",
+    "@nestjs/microservices": "^10.4.20",
     "@nestjs/platform-express": "^10.4.7",
     "@nestjs/platform-socket.io": "^11.1.0",
     "@nestjs/schedule": "^6.0.0",
