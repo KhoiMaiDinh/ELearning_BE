@@ -3,6 +3,9 @@
 /node_modules
 /build
 pnpm-lock.yaml
+/data
+/infras/data/
+/infras/config/
 
 # Logs
 logs
