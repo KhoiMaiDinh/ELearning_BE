@@ -8,37 +8,41 @@ For seeding data, we use [typeorm-extension](https://github.com/tada5hi/typeorm-
 
 [[toc]]
 
+## Database Design
+
+![Database Diagram](assets/database_diagram.png)
+
 ## Working with database entity (TypeORM)
 
 ### Generate migration
 
 1. Create entity file with extension `.entity.ts`. For example `post.entity.ts`:
 
-    ```typescript
-    // /src/api/post/entities/post.entity.ts
+   ```typescript
+   // /src/api/post/entities/post.entity.ts
 
-    import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+   import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-    @Entity()
-    export class PostEntity {
-      @PrimaryGeneratedColumn()
-      id: number;
+   @Entity()
+   export class PostEntity {
+     @PrimaryGeneratedColumn()
+     id: number;
 
-      @Column()
-      title: string;
+     @Column()
+     title: string;
 
-      @Column()
-      content: string;
+     @Column()
+     content: string;
 
-      // Here any fields that you need
-    }
-    ```
+     // Here any fields that you need
+   }
+   ```
 
 1. Next, generate migration file:
 
-    ```bash
-    pnpm migration:generate src/database/migrations/create-post-table
-    ```
+   ```bash
+   pnpm migration:generate src/database/migrations/create-post-table
+   ```
 
 1. Apply this migration to database via [pnpm migration:up](#run-migration).
 
@@ -66,42 +70,39 @@ pnpm migration:down
 
 1. Create seed file with `pnpm seed:create` command:
 
-    ```bash
-    pnpm seed:create -n src/database/seeds/post-seeder
-    ```
+   ```bash
+   pnpm seed:create -n src/database/seeds/post-seeder
+   ```
 
 2. Go to `src/database/seeds/xxxtimestampxxx-post-seeder.ts` and write your seed data:
 
-    ```typescript
-    // /src/database/seeds/xxxtimestampxxx-post-seeder.ts
-    import { PostEntity } from '@/api/post/entities/post.entity';
-    import { DataSource } from 'typeorm';
-    import { Seeder, SeederFactoryManager } from 'typeorm-extension';
+   ```typescript
+   // /src/database/seeds/xxxtimestampxxx-post-seeder.ts
+   import { PostEntity } from '@/api/post/entities/post.entity';
+   import { DataSource } from 'typeorm';
+   import { Seeder, SeederFactoryManager } from 'typeorm-extension';
 
-    export class PostSeederxxxtimestampxxx implements Seeder {
-      track = false;
+   export class PostSeederxxxtimestampxxx implements Seeder {
+     track = false;
 
-      public async run(
-        dataSource: DataSource,
-        factoryManager: SeederFactoryManager,
-      ): Promise<any> {
-        // Creating post by using repository
-        const repository = dataSource.getRepository(PostEntity);
-        await repository.insert(
-          new PostEntity({
-            title: 'Post 1',
-            content: 'Content 1',
-          }),
-        );
+     public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<any> {
+       // Creating post by using repository
+       const repository = dataSource.getRepository(PostEntity);
+       await repository.insert(
+         new PostEntity({
+           title: 'Post 1',
+           content: 'Content 1',
+         }),
+       );
 
-        // Creating post by using factory
-        const postFactory = factoryManager.get(PostEntity);
-        await postFactory.saveMany(5);
-      }
-    }
-    ```
+       // Creating post by using factory
+       const postFactory = factoryManager.get(PostEntity);
+       await postFactory.saveMany(5);
+     }
+   }
+   ```
 
-    In `run` method extend your logic, you can use repository or factory to create data.
+   In `run` method extend your logic, you can use repository or factory to create data.
 
 3. Apply this seed to database via `pnpm seed:run`.
 
@@ -119,25 +120,25 @@ The factory callback provides an instance of the [faker](https://fakerjs.dev/gui
 
 1. Create factory file at `src/database/factories/post.factory.ts`:
 
-    ```typescript
-    import { PostEntity } from '@/api/post/entities/post.entity';
-    import { setSeederFactory } from 'typeorm-extension';
+   ```typescript
+   import { PostEntity } from '@/api/post/entities/post.entity';
+   import { setSeederFactory } from 'typeorm-extension';
 
-    export default setSeederFactory(PostEntity, (fake) => {
-      const post = new PostEntity();
-      post.title = fake.lorem.sentence();
-      post.content = fake.lorem.paragraph();
+   export default setSeederFactory(PostEntity, (fake) => {
+     const post = new PostEntity();
+     post.title = fake.lorem.sentence();
+     post.content = fake.lorem.paragraph();
 
-      return post;
-    });
-    ```
+     return post;
+   });
+   ```
 
 2. Use factory in `src/database/seeds/xxxtimestampxxx-post-seeder.ts`
 3. Run seed:
 
-    ```bash
-    pnpm seed:run
-    ```
+   ```bash
+   pnpm seed:run
+   ```
 
 ## Database Extensions
 

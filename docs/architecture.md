@@ -30,6 +30,10 @@ Husky is a tool to prevent bad git commit, git push, and more. See [the husky do
 
 Folder where we keep all our documentation files.
 
+## `infras`
+
+Folder where we keep all our docker infrastructure files.
+
 ### `.vuepress`
 
 Folder where we keep all our vuepress configuration files. See [the vuepress doc](https://vuepress.vuejs.org/) for more.
@@ -150,7 +154,7 @@ Folder where we keep all our e2e test files.
 
 ## `.env`
 
-Environment variables which will load before app start and will be stored in `process.env`, (*) is a env name (local, development, test, staging, production)
+Environment variables which will load before app start and will be stored in `process.env`, (\*) is a env name (local, development, test, staging, production)
 
 ## `.gitignore`
 
