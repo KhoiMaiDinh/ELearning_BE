@@ -20,7 +20,7 @@ export class WebhookService {
     private readonly orderService: OrderService,
   ) {
     this.stripe = new Stripe(this.apiKey, {
-      apiVersion: '2025-03-31.basil',
+      apiVersion: '2025-08-27.basil',
     });
   }
 
