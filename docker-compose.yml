@@ -1,7 +1,7 @@
 services:
-  nova-up-api:
-    image: nova-up-api
-    container_name: nova-up-api
+  nova-learn-api:
+    image: nova-learn-api
+    container_name: nova-learn-api
     restart: always
     build:
       context: .
@@ -11,91 +11,67 @@ services:
     ports:
       - '3000:3000'
     networks:
-      - nova-up-network
+      - nova-learn-network
     depends_on:
       - db
       - redis
       - maildev
-      - pgadmin
       - minio
+      - kafka
 
   db:
-    image: postgres:16
-    container_name: nova-up-postgres
-    restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: nova_up_database
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pg-pass
-      TZ: 'UTC'
-    ports:
-      - '25432:5432'
+    extends:
+      file: ./infras/postgresql.yaml
+      service: postgres
     networks:
-      - nova-up-network
+      - nova-learn-network
 
   redis:
-    image: redis/redis-stack:latest
-    restart: always
-    ports:
-      - '6379:6379'
-      - '8001:8001'
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
-    environment:
-      REDIS_ARGS: '--requirepass redispass'
+    extends:
+      file: ./infras/redis.yaml
+      service: redis
     networks:
-      - nova-up-network
+      - nova-learn-network
 
   maildev:
-    build:
-      context: .
-      dockerfile: maildev.Dockerfile
-    ports:
-      - ${MAIL_CLIENT_PORT}:1080
-      - ${MAIL_PORT}:1025
+    extends:
+      file: ./infras/maildev.yaml
+      service: maildev
     networks:
-      - nova-up-network
+      - nova-learn-network
 
   pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    ports:
-      - '18080:80'
-    volumes:
-      - pgadmin_data:/root/.pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: 12345678
-      PGADMIN_CONFIG_WTF_CSRF_ENABLED: 'False'
-      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'
+    extends:
+      file: ./infras/postgresql.yaml
+      service: pgadmin
+    depends_on:
+      - db
     networks:
-      - nova-up-network
+      - nova-learn-network
 
   minio:
-    image: bitnami/minio:latest
-    container_name: minio
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: admin@2024
-    volumes:
-      - ./data:/bitnami/minio/data
-      - ./config:/opt/bitnami/minio/config
-    ports:
-      - '9000:9000'
-      - '9001:9001'
-    command: minio server /bitnami/minio/data --console-address ":9001"
+    extends:
+      file: ./infras/minio.yaml
+      service: minio
     networks:
-      - nova-up-network
+      - nova-learn-network
+
+  kafka:
+    extends:
+      file: ./infras/kafka.yaml
+      service: kafka
+    networks:
+      - nova-learn-network
 
 volumes:
   postgres_data:
   pgadmin_data:
   redis_data:
+  minio_data:
+    driver: local
+  minio_config:
+    driver: local
 
 networks:
-  nova-up-network:
+  nova-learn-network:
     driver: bridge

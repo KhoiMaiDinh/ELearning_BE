@@ -1,5 +1,3 @@
-name: youtuberef
-
 services:
   minio:
     image: bitnami/minio:latest
